@@ -2,7 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { InputErrors } from "@/components/custom/input-errors";
+import { SubmitButton } from "@/components/custom/submit-button";
 import {
   Card,
   CardContent,
@@ -51,7 +52,9 @@ export function LoginForm({
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-xl text-center font-bold">
+            Sign In to A11y Bug Logger!
+          </CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
@@ -83,17 +86,21 @@ export function LoginForm({
                 <Input
                   id="password"
                   type="password"
+                  placeholder={"*************"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
+              {error && <InputErrors error={[error]} />}
+              <SubmitButton
+                className="w-full"
+                isLoading={isLoading}
+                text="Sign In"
+                loadingText="Loading"
+              />
             </div>
-            <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center te:wqxt-sm">
               Don&apos;t have an account?{" "}
               <Link
                 href="/auth/sign-up"
