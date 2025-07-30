@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import QueryClientContainer from "@/components/custom/query-client-container";
+import Header from "@/components/custom/header";
+import Footer from "@/components/custom/footer";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,8 +12,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "A11y Bug Logger",
+  description: "A11y Bug Logger",
 };
 
 const geistSans = Geist({
@@ -33,7 +36,27 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <QueryClientContainer>
+            <div className="fixed z-50 top-2 left-2 transition-transform duration-200 transform -translate-y-20 focus-within:translate-y-0">
+              <div className="flex gap-2 bg-background p-4 border-primary border-2">
+                <a
+                  href="#nav"
+                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium focus:outline-dashed focus:ring-2 focus:ring-offset-4 focus:bg-white focus:text-primary focus:underline focus:outline-primary"
+                >
+                  Skip to Nav
+                </a>
+                <a
+                  href="#main"
+                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium focus:outline-dashed focus:ring-2 focus:ring-offset-4 focus:bg-white focus:text-primary focus:underline focus:outline-primary focus:border-black"
+                >
+                  Skip to Main
+                </a>
+              </div>
+            </div>
+            <Header />
+            {children}
+            <Footer />
+          </QueryClientContainer>
         </ThemeProvider>
       </body>
     </html>
