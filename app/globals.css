@@ -94,10 +94,6 @@ body {
   }
 }
 
-#main {
-  min-height: calc(100vh - 140px);
-}
-
 #homepage-background {
   width: 100vw;
   height: 100vh;
