@@ -1,9 +1,11 @@
 import { NextLogo } from "./next-logo";
 import { SupabaseLogo } from "./supabase-logo";
+import { AuthButton } from "@/components/auth-button";
+import React from "react";
 
 export function Hero() {
   return (
-    <div className="flex flex-col gap-16 items-center">
+    <div className="flex flex-col gap-8 items-center">
       <div className="flex gap-8 justify-center items-center">
         <a
           href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
@@ -22,6 +24,7 @@ export function Hero() {
         Prototype for an <span className={"font-bold"}>AI driven</span>{" "}
         accessibility bug logger.
       </p>
+      <AuthButton />
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
     </div>
   );
