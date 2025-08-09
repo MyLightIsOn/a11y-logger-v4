@@ -5,7 +5,6 @@ import {
   LayoutDashboardIcon,
   FileCheck,
   User,
-  LogOut,
   Folder,
   AlertTriangle,
 } from "lucide-react";
