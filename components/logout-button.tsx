@@ -13,5 +13,13 @@ export function LogoutButton() {
     router.push("/auth/login");
   };
 
-  return <Button onClick={logout}>Logout</Button>;
+  return (
+    <Button
+      variant={"ghost"}
+      className="flex gap-3 w-fit rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+      onClick={logout}
+    >
+      Logout
+    </Button>
+  );
 }
