@@ -28,7 +28,6 @@ function Page() {
       });
 
       if (response.success && response.data) {
-        console.log("API response:", response);
         setProjects(response.data.data || []);
       } else {
         throw new Error(response.error || "Failed to fetch projects");

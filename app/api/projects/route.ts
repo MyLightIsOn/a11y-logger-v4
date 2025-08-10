@@ -42,7 +42,10 @@ export async function GET(request: NextRequest) {
     const transformedData =
       data?.map((project) => ({
         ...project,
-        tags: project.projects_tags?.map((pt: any) => pt.tags) || [],
+        tags:
+          project.projects_tags?.map(
+            (pt: { tags: import("@/types/tag").Tag }) => pt.tags,
+          ) || [],
       })) || [];
 
     return NextResponse.json({

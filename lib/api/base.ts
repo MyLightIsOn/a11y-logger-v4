@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 /**
  * Base API response interface
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   success: boolean;
@@ -16,7 +16,7 @@ export interface ApiResponse<T = any> {
 export interface ApiErrorResponse {
   message?: string;
   error?: string;
-  details?: any;
+  details?: unknown;
 }
 
 /**
@@ -89,7 +89,10 @@ export abstract class BaseApiService {
   /**
    * Generic GET request
    */
-  protected async get<T>(url: string, params?: any): Promise<ApiResponse<T>> {
+  protected async get<T>(
+    url: string,
+    params?: Record<string, unknown>,
+  ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.get<T>(url, { params });
       return {
@@ -104,7 +107,7 @@ export abstract class BaseApiService {
   /**
    * Generic POST request
    */
-  protected async post<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+  protected async post<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.post<T>(url, data);
       return {
@@ -119,7 +122,7 @@ export abstract class BaseApiService {
   /**
    * Generic PUT request
    */
-  protected async put<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+  protected async put<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.put<T>(url, data);
       return {
@@ -149,7 +152,7 @@ export abstract class BaseApiService {
   /**
    * Generic PATCH request
    */
-  protected async patch<T>(url: string, data?: any): Promise<ApiResponse<T>> {
+  protected async patch<T>(url: string, data?: unknown): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.patch<T>(url, data);
       return {
