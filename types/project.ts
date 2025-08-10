@@ -15,6 +15,7 @@ export interface Project {
   description?: string;
   created_at: string; // ISO timestamp
   updated_at: string;
+  tags?: Tag[];
 }
 
 export type ProjectWithRelations = Project & {

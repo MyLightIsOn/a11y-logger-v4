@@ -20,10 +20,17 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "created_at";
     const sortOrder = searchParams.get("sortOrder") === "asc";
 
-    // Fetch projects for the current user
+    // Fetch projects for the current user with tags
     const { data, error } = await supabase
       .from("projects")
-      .select("*")
+      .select(
+        `
+        *,
+        projects_tags(
+          tags(*)
+        )
+      `,
+      )
       .eq("user_id", user.id)
       .order(sortBy, { ascending: sortOrder });
 
@@ -31,9 +38,16 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
+    // Transform the data to flatten the tags structure
+    const transformedData =
+      data?.map((project) => ({
+        ...project,
+        tags: project.projects_tags?.map((pt: any) => pt.tags) || [],
+      })) || [];
+
     return NextResponse.json({
-      data: data || [],
-      count: data?.length || 0,
+      data: transformedData,
+      count: transformedData?.length || 0,
       totalPages: 1,
       currentPage: 1,
       hasNext: false,

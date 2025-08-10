@@ -22,6 +22,7 @@ export class ProjectsApiService extends BaseApiService {
 
   /**
    * Get all projects with optional query parameters
+   * Includes associated tags via many-to-many relationship
    */
   async getProjects(
     params?: Pick<QueryParams, "sortBy" | "sortOrder">,

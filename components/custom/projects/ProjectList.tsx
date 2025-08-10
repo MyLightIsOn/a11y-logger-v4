@@ -12,7 +12,6 @@ interface ProjectListProps {
  * Renders a grid of project cards
  */
 export function ProjectList({ projects }: ProjectListProps) {
-  console.log(projects);
   return (
     <div
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -42,7 +41,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                   <div className="flex flex-wrap gap-2">
                     {project.tags.map((tag) => (
                       <Badge
-                        key={tag.documentId}
+                        key={tag.id}
                         variant="outline"
                         className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full"
                       >
