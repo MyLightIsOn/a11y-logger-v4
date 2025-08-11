@@ -1,4 +1,4 @@
-import { UUID } from '@/types/common';
+import { UUID } from "@/types/common";
 
 /**
  * Common API request/response types
@@ -18,7 +18,7 @@ export interface PaginationParams {
  */
 export interface SortParams {
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 /**
@@ -34,7 +34,10 @@ export interface FilterParams {
 /**
  * Combined query parameters
  */
-export interface QueryParams extends PaginationParams, SortParams, FilterParams {}
+export interface QueryParams
+  extends PaginationParams,
+    SortParams,
+    FilterParams {}
 
 /**
  * API list response wrapper
@@ -51,9 +54,24 @@ export interface ListResponse<T> {
 /**
  * Create request type (omits id, created_at, updated_at)
  */
-export type CreateRequest<T> = Omit<T, 'id' | 'created_at' | 'updated_at'>;
+export type CreateRequest<T> = Omit<T, "id" | "created_at" | "updated_at">;
 
 /**
  * Update request type (omits id, created_at, updated_at and makes all fields optional)
  */
-export type UpdateRequest<T> = Partial<Omit<T, 'id' | 'created_at' | 'updated_at'>>;
+export type UpdateRequest<T> = Partial<
+  Omit<T, "id" | "created_at" | "updated_at">
+>;
+
+export type CreateRequestWithTags<T, TagKey extends keyof T> = Omit<
+  T,
+  "id" | "created_at" | "updated_at" | TagKey
+> & {
+  tag_ids?: UUID[];
+};
+
+export type UpdateRequestWithTags<T, TagKey extends keyof T> = Partial<
+  Omit<T, "id" | "created_at" | "updated_at" | TagKey>
+> & {
+  tag_ids?: UUID[];
+};

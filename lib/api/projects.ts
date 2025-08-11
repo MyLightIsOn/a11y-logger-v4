@@ -1,7 +1,11 @@
 import { BaseApiService, ApiResponse } from "./base";
 import { Project } from "@/types/project";
-import { QueryParams, CreateRequest, UpdateRequest } from "./types";
-import { UUID } from "node:crypto";
+import {
+  QueryParams,
+  CreateRequestWithTags,
+  UpdateRequestWithTags,
+} from "./types";
+import { UUID } from "@/types/common";
 
 /**
  * Simple response format that matches the current API route
@@ -11,8 +15,11 @@ interface ProjectsResponse {
   count: number;
 }
 
-export type CreateProjectRequest = CreateRequest<Project>;
-export type UpdateProjectRequest = UpdateRequest<Project>;
+// Accept name, optional description, and tag IDs
+export type CreateProjectRequest = CreateRequestWithTags<Project, "tags">;
+
+// Allow partial updates to name, description, and tag IDs
+export type UpdateProjectRequest = UpdateRequestWithTags<Project, "tags">;
 
 /**
  * Projects API service
