@@ -1,6 +1,5 @@
-// Export all API services and types
+// Export API services
 export * from "./base";
-export * from "./types";
 export * from "./projects";
 
 // Export service instances for easy importing

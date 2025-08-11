@@ -1,7 +1,11 @@
 import { BaseApiService, ApiResponse } from "./base";
 import { Project } from "@/types/project";
-import { QueryParams, CreateRequest, UpdateRequest } from "./types";
-import { UUID } from "node:crypto";
+import {
+  QueryParams,
+  CreateRequestWithTags,
+  UpdateRequestWithTags,
+} from "@/types/api";
+import { UUID } from "@/types/common";
 
 /**
  * Simple response format that matches the current API route
@@ -11,8 +15,11 @@ interface ProjectsResponse {
   count: number;
 }
 
-export type CreateProjectRequest = CreateRequest<Project>;
-export type UpdateProjectRequest = UpdateRequest<Project>;
+// Accept name, optional description, and tag IDs
+export type CreateProjectRequest = CreateRequestWithTags<Project, "tags">;
+
+// Allow partial updates to name, description, and tag IDs
+export type UpdateProjectRequest = UpdateRequestWithTags<Project, "tags">;
 
 /**
  * Projects API service
@@ -62,12 +69,6 @@ export class ProjectsApiService extends BaseApiService {
   async deleteProject(id: UUID): Promise<ApiResponse<void>> {
     return this.delete<void>(`${this.basePath}/${id}`);
   }
-
-  // TODO: Add these advanced features when needed:
-  // async getProjectWithRelations(id: UUID): Promise<ApiResponse<ProjectWithRelations>>
-  // async bulkDeleteProjects(ids: UUID[]): Promise<ApiResponse<{ deletedCount: number }>>
-  // async duplicateProject(id: UUID, newName?: string): Promise<ApiResponse<Project>>
-  // async searchProjects(query: string): Promise<ApiResponse<ListResponse<Project>>> - can use getProjects with search param instead
 }
 
 // Export a singleton instance

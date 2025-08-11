@@ -1,6 +1,4 @@
 import { Severity, IssueStatus, UUID } from "@/types/common";
-import { Assessment } from "./assessment";
-import { Tag } from "./tag";
 
 /**
  * Type definitions for Issue entities
@@ -25,8 +23,3 @@ export interface Issue {
   created_at: string;
   updated_at: string;
 }
-
-export type IssueWithRelations = Issue & {
-  assessments: Assessment[];
-  tags: Tag[];
-};

@@ -1,7 +1,4 @@
 import { UUID } from "@/types/common";
-import { Issue } from "./issue";
-import { Project } from "./project";
-import { Tag } from "./tag";
 
 /**
  * Type definitions for Assessment entities
@@ -17,9 +14,3 @@ export interface Assessment {
   created_at: string;
   updated_at: string;
 }
-
-export type AssessmentWithRelations = Assessment & {
-  projects: Project[];
-  tags: Tag[];
-  issues: Issue[];
-};
