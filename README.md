@@ -1,105 +1,105 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Accessibility Bug Logger
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+An AI-powered accessibility issue tracking platform with a Supabase-backed database, Next.js (React) web app, and Chrome extension integration. The system is designed to streamline accessibility testing, automate compliance documentation, and support real-time collaboration between auditors, developers, and compliance teams.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Tech Stack](#tech-stack)
+3. [Features](#features)
+4. [Database Schema](#database-schema)
+5. [Installation](#installation)
+6. [Development](#development)
+7. [Contributing](#contributing)
+
+---
+
+## Overview
+
+The Accessibility Bug Logger enables users to log, classify, and track accessibility issues in digital products. It integrates automated AI enrichment for issues, generates VPATs, and provides dashboards to monitor compliance.
+
+**Core Concepts:**
+
+* **Projects** → **Assessments** → **Issues**
+* AI-assisted logging with WCAG classification and recommended fixes
+* VPAT automation and compliance tracking
+* Multi-role support for auditors, developers, and compliance officers
+
+---
+
+## Tech Stack
+
+**Frontend:**
+
+* Next.js (React) with Tailwind CSS
+* Server-Side Rendering (SSR) & Incremental Static Regeneration (ISR)
+
+**Backend & AI:**
+
+* Supabase (PostgreSQL)
+* Next.js API routes for server-side calls
+* OpenAI SDK for AI enrichment
+* Cloudinary for image storage and management
+* JWT Authentication
+
+**Browser Extension:**
+
+* Vue 3 + Vite
+* Chrome Manifest V3
+
+---
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Middleware
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+* **AI-Powered Issue Logging**: Auto-generates titles, summaries, code fix suggestions, and WCAG mappings.
+* **Real-Time Dashboards**: Severity breakdowns and trend analysis.
+* **VPAT Automation**: Create and update compliance documentation directly from logged issues.
+* **Integrations**: GitHub, Jira, Trello, Slack notifications.
 
-## Demo
+---
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Database Schema
 
-## Deploy to Vercel
+The core entities include:
 
-Vercel deployment will guide you through creating a Supabase account and project.
+* **users**: Authentication and profile data.
+* **projects**: Top-level grouping for assessments.
+* **assessments**: Collections of related issues under a project.
+* **issues**: Accessibility issues with AI-enriched details.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+---
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+## Installation
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
+1. **Clone the Repository**
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+```bash
+git clone https://github.com/your-org/a11y-bug-logger.git
+cd a11y-bug-logger
+```
 
-## Clone and run locally
+2. **Install Dependencies**
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+```bash
+npm install
+```
 
-2. Create a Next.js app using the Supabase Starter template npx command
+3. **Set Up Environment Variables**
+   Create a `.env.local` file:
 
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_key
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+OPENAI_API_KEY=your_openai_key
+```
 
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
+4. **Run the Development Server**
 
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
-
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
-
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
-
-5. You can now run the Next.js local development server:
-
-   ```bash
-   npm run dev
-   ```
-
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
-
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
-
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
-
-## Feedback and issues
-
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
-
-## More Supabase examples
-
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+```bash
+npm run dev
+```
