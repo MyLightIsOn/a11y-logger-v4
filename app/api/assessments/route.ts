@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import type { Tag } from "@/types/tag";
+import type { Assessment } from "@/types/assessment";
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,13 +41,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to flatten the tags structure
-    const transformedData =
-      data?.map((assessment: any) => ({
+    // Define the shape returned by Supabase for assessments with joined tags
+  type AssessmentRowWithJoin = Assessment & { assessments_tags?: { tags: Tag }[] };
+
+  const transformedData =
+      (data as AssessmentRowWithJoin[] | null)?.map((assessment) => ({
         ...assessment,
         tags:
-          assessment.assessments_tags?.map(
-            (at: { tags: import("@/types/tag").Tag }) => at.tags,
-          ) || [],
+          assessment.assessments_tags?.map((at: { tags: Tag }) => at.tags) || [],
       })) || [];
 
     return NextResponse.json({

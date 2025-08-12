@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { Tag } from "@/types/tag";
+import type { Issue } from "@/types/issue";
 
 /**
  * Issues collection route (read-only for now)
@@ -46,8 +47,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Flatten tags from the join table if present
-    const transformedData =
-      data?.map((issue: any) => ({
+    // Define the shape returned by Supabase for issues with joined tags
+  type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
+
+  const transformedData =
+      (data as IssueRowWithJoin[] | null)?.map((issue) => ({
         ...issue,
         tags: issue.issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
       })) || [];
