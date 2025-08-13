@@ -7,16 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { issuesApi, tagsApi } from "@/lib/api";
-import wcagList from "@/data/wcag-criteria.json";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
-
-// Local helpers/types for criteria options
-interface WcagItem {
-  code: string;
-  name: string;
-  level: "A" | "AA" | "AAA";
-  versions: string[];
-}
+import { criteriaApi } from "@/lib/api/criteria";
 
 const severityOptions = [
   { value: "1", label: "Critical" },
@@ -56,18 +48,38 @@ export default function NewIssuePage() {
 
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
-  // Build options from wcag JSON (temporary client source until DB read route exists)
-  const wcagOptions = useMemo(() => {
-    const arr = (wcagList as WcagItem[]).flatMap((item) => {
-      const versions: (WcagVersion)[] = item.versions.filter((v) => v === "2.1" || v === "2.2") as any;
-      return versions.map((v) => ({
-        value: `${v}|${item.code}`,
-        label: `${item.code} ${item.name} (${v}, ${item.level})`,
-        level: item.level,
-        version: v,
-      }));
-    });
-    return arr;
+  // Load WCAG criteria from API and build options
+  const [wcagOptions, setWcagOptions] = useState<{
+    value: string;
+    label: string;
+    level: "A" | "AA" | "AAA";
+    version: WcagVersion;
+  }[]>([]);
+  const [wcagLoadError, setWcagLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await criteriaApi.getCriteria();
+        if (mounted && res.success && Array.isArray(res.data?.data)) {
+          const arr = res.data!.data.map((item) => ({
+            value: `${item.version}|${item.code}`,
+            label: `${item.code} ${item.name} (${item.version}, ${item.level})`,
+            level: item.level,
+            version: item.version,
+          }));
+          setWcagOptions(arr);
+        } else if (mounted && !res.success) {
+          setWcagLoadError(res.error || "Failed to load WCAG criteria");
+        }
+      } catch (e: any) {
+        if (mounted) setWcagLoadError(e?.message || "Failed to load WCAG criteria");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filteredWcagOptions = useMemo(() => {
@@ -349,6 +361,9 @@ export default function NewIssuePage() {
           {/* WCAG */}
           <section aria-labelledby="wcag-heading" className="bg-card rounded-lg p-4 border border-border">
             <h2 id="wcag-heading" className="text-lg font-semibold mb-4">WCAG Criteria</h2>
+                        {wcagLoadError && (
+                          <p role="status" className="text-sm text-red-700 mb-2">{wcagLoadError}</p>
+                        )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
               <div>
                 <Label htmlFor="wcag-version">Version</Label>

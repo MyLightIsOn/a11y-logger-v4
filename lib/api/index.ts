@@ -9,3 +9,4 @@ export { projectsApi } from "./projects";
 export { assessmentsApi } from "./assessments";
 export { issuesApi } from "./issues";
 export { tagsApi } from "./tags";
+export { criteriaApi } from "./criteria";
