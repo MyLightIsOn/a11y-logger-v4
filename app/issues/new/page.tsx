@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { issuesApi } from "@/lib/api";
+import { issuesApi, tagsApi } from "@/lib/api";
 import wcagList from "@/data/wcag-criteria.json";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 
@@ -77,9 +77,26 @@ export default function NewIssuePage() {
       .map((opt) => ({ value: opt.value, label: opt.label }));
   }, [wcagOptions, wcagVersionFilter, wcagLevelFilter]);
 
-  // Placeholder tags options (Phase 7 will wire real tags API)
-  const tagOptions = useMemo(() => {
-    return [] as { value: string; label: string }[];
+  // Tags options loaded from API
+  const [tagOptions, setTagOptions] = useState<{ value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await tagsApi.getTags();
+        if (mounted && res.success && Array.isArray(res.data?.data)) {
+          const options = res.data!.data.map((t) => ({ value: t.id, label: t.label }));
+          setTagOptions(options);
+        }
+      } catch (e) {
+        // silently ignore; tags are optional
+        console.warn("Failed to load tags");
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Uploader state

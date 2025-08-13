@@ -8,6 +8,4 @@ export * from "./issues";
 export { projectsApi } from "./projects";
 export { assessmentsApi } from "./assessments";
 export { issuesApi } from "./issues";
-
-// WIll add more as they're created:
-// export { tagsApi } from './tags';
+export { tagsApi } from "./tags";
