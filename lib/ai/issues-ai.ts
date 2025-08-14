@@ -32,10 +32,10 @@ const aiInsightsSchema = z
 
 // System prompt tailored for WCAG-oriented issue enrichment
 const SYSTEM_PROMPT = `
-You are an accessibility issue enrichment assistant specialized in WCAG 2.1 and 2.2.
+You are an accessibility issue enrichment assistant. Your task is to generate structured insights for a web accessibility issue. 
 Return only strict JSON matching this TypeScript type (no markdown, no extra text):
 {
-  "title": string,                    // short, WCAG-friendly
+  "title": string,                    // short, WCAG-friendly, mention what is wrong in the title. e.g., "Missing alt text"
   "description": string,              // refined interpretation, do not include impact
   "severity_suggestion": "1"|"2"|"3"|"4", // 1=highest impact, 4=lowest
   "criteria": Array<{ code: string; version: "2.1"|"2.2" }>,
