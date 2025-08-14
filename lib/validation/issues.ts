@@ -2,10 +2,6 @@ import { z } from "zod";
 import wcagList from "@/data/wcag-criteria.json";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 
-/**
- * Phase 1 — Zod schemas and helpers for Create Issue validation
- */
-
 // Enumerations aligned with existing type aliases
 export const severityEnum = z.enum(["1", "2", "3", "4"], {
   required_error: "Severity is required",
@@ -17,14 +13,27 @@ export const statusEnum = z.enum(["open", "closed", "archive"], {
   invalid_type_error: "Status must be one of 'open' | 'closed' | 'archive'",
 });
 
-export const wcagVersionEnum = z.enum(["2.1", "2.2"]).transform((v) => v as WcagVersion);
+export const wcagVersionEnum = z
+  .enum(["2.1", "2.2"])
+  .transform((v) => v as WcagVersion);
 
 // Build a cached allowlist: key = `${version}|${code}` -> {name, level}
-export type WcagJsonItem = { code: string; name: string; level: "A" | "AA" | "AAA"; versions: string[] };
+export type WcagJsonItem = {
+  code: string;
+  name: string;
+  level: "A" | "AA" | "AAA";
+  versions: string[];
+};
 const buildAllowlist = () => {
   const map = new Map<string, { name: string; level: "A" | "AA" | "AAA" }>();
   (wcagList as WcagJsonItem[]).forEach((item) => {
-    if (!item?.code || !item?.name || !item?.level || !Array.isArray(item?.versions)) return;
+    if (
+      !item?.code ||
+      !item?.name ||
+      !item?.level ||
+      !Array.isArray(item?.versions)
+    )
+      return;
     item.versions.forEach((v) => {
       if (v === "2.1" || v === "2.2") {
         map.set(`${v}|${item.code}`, { name: item.name, level: item.level });
@@ -33,7 +42,10 @@ const buildAllowlist = () => {
   });
   return map;
 };
-let _criteriaAllowlist: Map<string, { name: string; level: "A" | "AA" | "AAA" }> | null = null;
+let _criteriaAllowlist: Map<
+  string,
+  { name: string; level: "A" | "AA" | "AAA" }
+> | null = null;
 export function getCriteriaAllowlist() {
   if (!_criteriaAllowlist) _criteriaAllowlist = buildAllowlist();
   return _criteriaAllowlist;
@@ -55,7 +67,9 @@ export const criterionRefSchema = z
     code: z
       .string()
       .min(3, "Code is required")
-      .regex(/^\d+\.\d+\.\d+$/, { message: "Code must be in the form d.d.d (e.g., 1.4.3)" }),
+      .regex(/^\d+\.\d+\.\d+$/, {
+        message: "Code must be in the form d.d.d (e.g., 1.4.3)",
+      }),
     version: wcagVersionEnum,
   })
   .superRefine((val, ctx) => {
@@ -83,7 +97,10 @@ export const createIssueSchema = z
     code_snippet: z.string().max(10000).optional(),
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
     tag_ids: z.array(z.string()).optional(), // UUID shape not enforced here to keep runtime light
-    criteria: z.array(criterionRefSchema).min(1, "Select at least one WCAG criterion"),
+    criteria: z
+      .array(criterionRefSchema)
+      .min(1, "Select at least one WCAG criterion")
+      .optional(),
   })
   .strict();
 

@@ -1,4 +1,6 @@
 import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 /**
  * Loading indicator component for issues
@@ -16,8 +18,19 @@ export function LoadingIndicator() {
  */
 export function EmptyState() {
   return (
-    <div className="text-center py-8 bg-card rounded-lg" data-testid="empty-state">
-      <p className="text-gray-500">No issues found.</p>
+    <div
+      className="text-center py-8 bg-card rounded-lg"
+      data-testid="empty-state"
+    >
+      <p className="text-gray-500 mb-4">
+        No issues found. Create your first issue to get started.
+      </p>
+      <Link
+        href="/issues/new"
+        className="inline-flex items-center justify-center"
+      >
+        <Button>Create Issue</Button>
+      </Link>
     </div>
   );
 }
