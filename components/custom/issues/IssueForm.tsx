@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,25 @@ const statusOptions = [
 ];
 
 function IssueForm() {
+  const { handleSubmit: rhfHandleSubmit } = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+      aiPrompt: "",
+      severity: "3",
+      status: "open",
+      suggestedFix: "",
+      impact: "",
+      url: "",
+      selector: "",
+      codeSnippet: "",
+      screenshots: [] as string[],
+      tagIds: [] as string[],
+      criteriaSelected: [] as string[],
+    },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
+  });
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -194,8 +214,7 @@ function IssueForm() {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmitRHF = async () => {
     if (!validateClient()) return;
     setSubmitting(true);
     setError(null);
@@ -287,7 +306,7 @@ function IssueForm() {
           {error}
         </div>
       )}
-      <form id={"create-issue-form"} onSubmit={handleSubmit}>
+      <form id={"create-issue-form"} onSubmit={rhfHandleSubmit(onSubmitRHF)}>
         <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
           <div
             className={"text-md font-medium text-gray-700 dark:text-white mb-4"}
