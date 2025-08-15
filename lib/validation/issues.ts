@@ -54,8 +54,9 @@ export function getCriteriaAllowlist() {
 // Basic URL schema (allows http/https only)
 const urlSchema = z
   .string()
+  .trim()
   .url({ message: "Must be a valid URL" })
-  .refine((v) => v.startsWith("http://") || v.startsWith("https://"), {
+  .refine((v: string) => v.startsWith("http://") || v.startsWith("https://"), {
     message: "URL must start with http:// or https://",
   });
 
@@ -86,21 +87,20 @@ export const criterionRefSchema = z
 
 export const createIssueSchema = z
   .object({
-    title: z.string().min(1, "Title is required").max(200, "Title is too long"),
-    description: z.string().max(5000).optional(),
+    title: z.string().trim().min(1, "Title is required").max(200, "Title is too long"),
+    description: z.string().trim().max(5000).optional(),
     severity: severityEnum,
     status: statusEnum,
-    suggested_fix: z.string().max(5000).optional(),
-    impact: z.string().max(5000).optional(),
+    suggested_fix: z.string().trim().max(5000).optional(),
+    impact: z.string().trim().max(5000).optional(),
     url: urlSchema.optional(),
-    selector: z.string().max(2000).optional(),
-    code_snippet: z.string().max(10000).optional(),
+    selector: z.string().trim().max(2000).optional(),
+    code_snippet: z.string().trim().max(10000).optional(),
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
     tag_ids: z.array(z.string()).optional(),
     criteria: z
       .array(criterionRefSchema)
-      .min(1, "Select at least one WCAG criterion")
-      .optional(),
+      .min(1, "Select at least one WCAG criterion"),
   })
   .strict();
 
