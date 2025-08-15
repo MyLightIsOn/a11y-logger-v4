@@ -2,6 +2,11 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  createIssueSchema,
+  type CreateIssueInput,
+} from "@/lib/validation/issues";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,24 +40,30 @@ const statusOptions = [
 ];
 
 function IssueForm() {
-  const { handleSubmit: rhfHandleSubmit } = useForm({
+  const {
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors },
+    setValue,
+    clearErrors,
+  } = useForm<CreateIssueInput>({
     defaultValues: {
       title: "",
       description: "",
-      aiPrompt: "",
       severity: "3",
       status: "open",
-      suggestedFix: "",
+      suggested_fix: "",
       impact: "",
       url: "",
       selector: "",
-      codeSnippet: "",
-      screenshots: [] as string[],
-      tagIds: [] as string[],
-      criteriaSelected: [] as string[],
+      code_snippet: "",
+      screenshots: [],
+      tag_ids: [],
+      criteria: [],
     },
     mode: "onSubmit",
     reValidateMode: "onChange",
+    resolver: zodResolver(createIssueSchema),
+    shouldFocusError: true,
   });
   // Form state
   const [title, setTitle] = useState("");
@@ -89,6 +100,48 @@ function IssueForm() {
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(
     null,
   );
+
+  // Sync local state into RHF so the resolver can validate and provide inline errors
+  useEffect(() => {
+    setValue("title", title, { shouldValidate: false });
+  }, [title, setValue]);
+  useEffect(() => {
+    setValue("description", description || "", { shouldValidate: false });
+  }, [description, setValue]);
+  useEffect(() => {
+    setValue("severity", severity as any, { shouldValidate: false });
+  }, [severity, setValue]);
+  useEffect(() => {
+    setValue("status", status as any, { shouldValidate: false });
+  }, [status, setValue]);
+  useEffect(() => {
+    setValue("impact", impact || "", { shouldValidate: false });
+  }, [impact, setValue]);
+  useEffect(() => {
+    setValue("suggested_fix", suggestedFix || "", { shouldValidate: false });
+  }, [suggestedFix, setValue]);
+  useEffect(() => {
+    setValue("url", url || "", { shouldValidate: false });
+  }, [url, setValue]);
+  useEffect(() => {
+    setValue("selector", selector || "", { shouldValidate: false });
+  }, [selector, setValue]);
+  useEffect(() => {
+    setValue("code_snippet", codeSnippet || "", { shouldValidate: false });
+  }, [codeSnippet, setValue]);
+  useEffect(() => {
+    setValue("screenshots", screenshots || [], { shouldValidate: false });
+  }, [screenshots, setValue]);
+  useEffect(() => {
+    setValue("tag_ids", tagIds || [], { shouldValidate: false });
+  }, [tagIds, setValue]);
+  useEffect(() => {
+    const crit = (criteriaSelected || []).map((key) => {
+      const [version, code] = key.split("|");
+      return { version: version as WcagVersion, code };
+    });
+    setValue("criteria", crit as any, { shouldValidate: false });
+  }, [criteriaSelected, setValue]);
 
   useEffect(() => {
     let mounted = true;
@@ -199,23 +252,7 @@ function IssueForm() {
     }
   };
 
-  // Basic client validation to focus first invalid field
-  const validateClient = (): boolean => {
-    if (!title.trim()) {
-      setError("Title is required");
-      firstInvalidRef.current?.focus();
-      return false;
-    }
-    if (criteriaSelected.length === 0) {
-      setError("Select at least one WCAG criterion");
-      return false;
-    }
-    setError(null);
-    return true;
-  };
-
   const onSubmitRHF = async () => {
-    if (!validateClient()) return;
     setSubmitting(true);
     setError(null);
 
@@ -385,9 +422,15 @@ function IssueForm() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setTitle(e.target.value)
             }
-            className="mt-1 block w-full mb-8"
+            className="mt-1 block w-full"
             required
           />
+          {errors?.title && (
+            <p className="text-sm text-red-600 mt-1" role="status">
+              {String(errors.title.message)}
+            </p>
+          )}
+          <div className="mb-6" />
         </div>
         <div className="mb-4">
           <label htmlFor="description" className="block text-xl font-bold">
@@ -403,10 +446,16 @@ function IssueForm() {
               setDescription(e.target.value)
             }
             rows={4}
-            className="mt-1 block w-full mb-8"
+            className="mt-1 block w-full"
             placeholder="Example: The search button on the homepage is not focusable via keyboard."
             required
           />
+          {errors?.description && (
+            <p className="text-sm text-red-600 mt-1" role="status">
+              {String(errors.description.message)}
+            </p>
+          )}
+          <div className="mb-6" />
         </div>
         <div className="mb-4">
           <label htmlFor="url" className="block text-xl font-bold">
@@ -422,9 +471,15 @@ function IssueForm() {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setUrl(e.target.value)
             }
-            className="mt-1 block w-full mb-8 placeholder:text-gray-400"
+            className="mt-1 block w-full placeholder:text-gray-400"
             placeholder={"Example: https://example.com/page-with-issue"}
           />
+          {errors?.url && (
+            <p className="text-sm text-red-600 mt-1" role="status">
+              {String(errors.url.message)}
+            </p>
+          )}
+          <div className="mb-6" />
         </div>
         <div className="mb-4">
           <label htmlFor="severity" className="block text-xl font-bold">
@@ -434,7 +489,7 @@ function IssueForm() {
             Choose the severity of the issue.
           </p>
           <Select value={severity || "low"} onValueChange={setSeverity}>
-            <SelectTrigger className="w-full mb-8">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Select severity" />
             </SelectTrigger>
             <SelectContent>
@@ -445,6 +500,12 @@ function IssueForm() {
               ))}
             </SelectContent>
           </Select>
+          {errors?.severity && (
+            <p className="text-sm text-red-600 mt-1" role="status">
+              {String(errors.severity.message)}
+            </p>
+          )}
+          <div className="mb-6" />
         </div>
         <section
           aria-labelledby="wcag-heading"
@@ -503,6 +564,11 @@ function IssueForm() {
           <p className="text-sm text-gray-500 mt-2">
             Select at least one criterion.
           </p>
+          {errors?.criteria && (
+            <p className="text-sm text-red-600 mt-1" role="status">
+              {String((errors.criteria as any)?.message)}
+            </p>
+          )}
         </section>
         <div className="mb-4">
           <label htmlFor="impact" className="block text-xl font-bold">
