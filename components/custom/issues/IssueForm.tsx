@@ -7,6 +7,7 @@ import {
   createIssueSchema,
   type CreateIssueInput,
 } from "@/lib/validation/issues";
+import { severityOptions, makeCriteriaKey, parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,18 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const severityOptions = [
-  { value: "1", label: "Critical" },
-  { value: "2", label: "High" },
-  { value: "3", label: "Medium" },
-  { value: "4", label: "Low" },
-];
-
-const statusOptions = [
-  { value: "open", label: "Open" },
-  { value: "closed", label: "Closed" },
-  { value: "archive", label: "Archived" },
-];
 
 function IssueForm() {
   const {
@@ -137,7 +126,7 @@ function IssueForm() {
   }, [tagIds, setValue]);
   useEffect(() => {
     const crit = (criteriaSelected || []).map((key) => {
-      const [version, code] = key.split("|");
+      const { version, code } = parseCriteriaKey(key);
       return { version: version as WcagVersion, code };
     });
     setValue("criteria", crit as any, { shouldValidate: false });
@@ -233,10 +222,10 @@ function IssueForm() {
         setSeverity(String(json.severity_suggestion));
       if (Array.isArray(json?.criteria)) {
         const newKeys = json.criteria
-          .map((c: any) => `${c.version}|${c.code}`)
+          .map((c: any) => makeCriteriaKey(c.version as WcagVersion, c.code))
           .filter((k: string) => typeof k === "string");
         setCriteriaSelected((prev) =>
-          Array.from(new Set([...(prev || []), ...newKeys])),
+          dedupeStrings([...(prev || []), ...newKeys]),
         );
       }
       setAiMessage(
@@ -257,7 +246,7 @@ function IssueForm() {
     setError(null);
 
     const criteria = criteriaSelected.map((key) => {
-      const [version, code] = key.split("|");
+      const { version, code } = parseCriteriaKey(key);
       return { code, version: version as WcagVersion };
     });
 
@@ -327,7 +316,7 @@ function IssueForm() {
       }
       const json = await res.json();
       const urls = (json?.data || []).map((it: any) => it.url).filter(Boolean);
-      setScreenshots((prev) => Array.from(new Set([...prev, ...urls])));
+      setScreenshots((prev) => dedupeStrings([...(prev || []), ...urls]));
       setFilesToUpload(null);
     } catch (e: any) {
       console.error("Upload error", e);
