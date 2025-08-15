@@ -37,6 +37,7 @@ function IssueForm() {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
   const [severity, setSeverity] = useState("3");
   const [status, setStatus] = useState("open");
   const [suggestedFix, setSuggestedFix] = useState("");
@@ -138,7 +139,7 @@ function IssueForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          description: description,
+          description: aiPrompt,
         }),
       });
       if (!res.ok) {
@@ -149,12 +150,13 @@ function IssueForm() {
         throw new Error(text || `AI request failed (${res.status})`);
       }
       const json = await res.json();
+      // Non-destructive application: fill only empty fields
       if (json?.title && !title) setTitle(json.title);
       if (json?.description && !description) setDescription(json.description);
       if (json?.suggested_fix && !suggestedFix)
         setSuggestedFix(json.suggested_fix);
       if (json?.impact && !impact) setImpact(json.impact);
-      if (json?.severity_suggestion)
+      if (json?.severity_suggestion && severity === "3")
         setSeverity(String(json.severity_suggestion));
       if (Array.isArray(json?.criteria)) {
         const newKeys = json.criteria
@@ -164,7 +166,9 @@ function IssueForm() {
           Array.from(new Set([...(prev || []), ...newKeys])),
         );
       }
-      setAiMessage("Suggestions applied. Review and adjust as needed.");
+      setAiMessage(
+        "Suggestions applied. Empty fields were filled; existing values were left unchanged.",
+      );
     } catch (e: any) {
       setAiError(e?.message || "AI assist failed");
       setAiMessage(
@@ -316,9 +320,8 @@ function IssueForm() {
             </ol>
             <p className={"flex items-center mb-4 text-sm"}>
               <AlertTriangle className="h-10 w-10 fill-amber-200 mr-2 dark:stroke-black" />
-              Important: If you plan to use AI assistance, please do so before
-              filling out any issue fields. The AI will overwrite any existing
-              field data when generating the issue details.
+              AI assistance will only fill in fields you've left empty; it will
+              not overwrite values you've already entered.
             </p>
           </div>
 
@@ -330,9 +333,9 @@ function IssueForm() {
           </label>
           <Textarea
             id="aiAssistanceDescription"
-            value={description}
+            value={aiPrompt}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDescription(e.target.value)
+              setAiPrompt(e.target.value)
             }
             rows={4}
             placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
