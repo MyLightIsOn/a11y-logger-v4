@@ -96,7 +96,7 @@ export const createIssueSchema = z
     selector: z.string().max(2000).optional(),
     code_snippet: z.string().max(10000).optional(),
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
-    tag_ids: z.array(z.string()).optional(), // UUID shape not enforced here to keep runtime light
+    tag_ids: z.array(z.string()).optional(),
     criteria: z
       .array(criterionRefSchema)
       .min(1, "Select at least one WCAG criterion")

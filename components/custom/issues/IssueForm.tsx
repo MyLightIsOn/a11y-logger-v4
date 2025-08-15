@@ -70,48 +70,6 @@ function IssueForm() {
   );
 
   useEffect(() => {
-    /*TEST DATA*/
-    const testIssues = {
-      title: "Insufficient color contrast for login button",
-      description:
-        "The color contrast ratio of the login button does not meet the minimum requirements set by WCAG, making it difficult for users with visual impairments to perceive and interact with the button.",
-      severity_suggestion: "2",
-      criteria: [
-        {
-          code: "1.4.3",
-          version: "2.1",
-        },
-      ],
-      suggested_fix:
-        "Ensure that the color contrast ratio between the login button text and its background is at least 4.5:1. You can adjust the colors in your CSS, for example: `background-color: #005a9c; color: #ffffff;`.",
-      impact:
-        "Insufficient color contrast can hinder users with low vision or color blindness from effectively using the login button, potentially preventing them from accessing the website.",
-      tag_suggestions: ["color contrast", "accessibility", "WCAG"],
-      url: "https://example.com/login",
-      selector: "#login-button",
-      code_snippet:
-        '<button id="login-button" class="login-button">Login</button>',
-      screenshots: [
-        "https://example.com/login-screenshot-1.png",
-        "https://example.com/login-screenshot-2.png",
-      ],
-    };
-
-    setTitle(testIssues.title);
-    setDescription(testIssues.description);
-    setSeverity(testIssues.severity_suggestion);
-    setImpact(testIssues.impact);
-    setUrl(testIssues.url);
-    setSelector(testIssues.selector);
-    setCodeSnippet(testIssues.code_snippet);
-    setScreenshots(testIssues.screenshots);
-    setTagIds(testIssues.tag_suggestions);
-    setSuggestedFix(testIssues.suggested_fix);
-
-    console.log(severity);
-  }, []);
-
-  useEffect(() => {
     let mounted = true;
     (async () => {
       try {
@@ -191,7 +149,6 @@ function IssueForm() {
         throw new Error(text || `AI request failed (${res.status})`);
       }
       const json = await res.json();
-
       if (json?.title && !title) setTitle(json.title);
       if (json?.description && !description) setDescription(json.description);
       if (json?.suggested_fix && !suggestedFix)
@@ -235,7 +192,6 @@ function IssueForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("saving");
     if (!validateClient()) return;
     setSubmitting(true);
     setError(null);
@@ -259,9 +215,8 @@ function IssueForm() {
       tag_ids: tagIds.length ? tagIds : undefined,
       criteria,
     };
-    console.log("test");
+
     try {
-      console.log("hello?");
       const res = await issuesApi.createIssue(payload);
       if (!res.success) throw new Error(res.error || "Failed to create issue");
       // Navigate to issues list
@@ -469,132 +424,6 @@ function IssueForm() {
             </SelectContent>
           </Select>
         </div>
-        <div className="mb-4">
-          <label htmlFor="impact" className="block text-xl font-bold">
-            Impact
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Describe how this issue affects users, particularly those with
-            disabilities.
-          </p>
-          <Textarea
-            id="impact"
-            value={impact}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setImpact(e.target.value)
-            }
-            rows={3}
-            className="mt-1 block w-full mb-8"
-            placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="suggestedFix" className="block text-xl font-bold">
-            Suggested Fix
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Provide a specific recommendation for how to fix this issue.
-          </p>
-          <Textarea
-            id="suggestedFix"
-            value={suggestedFix}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setSuggestedFix(e.target.value)
-            }
-            rows={3}
-            className="mt-1 block w-full mb-8"
-            placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
-          />
-        </div>
-        <Button form="create-issue-form" type="submit" disabled={submitting}>
-          {submitting ? "Creating..." : "Create Issue"}
-        </Button>
-      </form>
-      {/*
-        <Label htmlFor="url">URL</Label>
-        <Input
-          id="url"
-          name="url"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://example.com/page"
-        />
-        <Label htmlFor="selector">Selector</Label>
-        <Input
-          id="selector"
-          name="selector"
-          value={selector}
-          onChange={(e) => setSelector(e.target.value)}
-          placeholder="#main .button"
-        />
-        <Label htmlFor="code_snippet">Code Snippet</Label>
-        <textarea
-          id="code_snippet"
-          name="code_snippet"
-          value={codeSnippet}
-          onChange={(e) => setCodeSnippet(e.target.value)}
-          className="w-full min-h-28 font-mono rounded-md border border-gray-300 p-2 a11y-focus"
-          placeholder="Paste relevant HTML/JSX/CSS..."
-        />
-        <Label htmlFor="severity">Severity</Label>
-        <select
-          id="severity"
-          name="severity"
-          className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-          value={severity}
-          onChange={(e) => setSeverity(e.target.value)}
-        >
-          {severityOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <Label htmlFor="status">Status</Label>
-        <select
-          id="status"
-          name="status"
-          className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          {statusOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <section
-          aria-labelledby="remediation-heading"
-          className="bg-card rounded-lg p-4 border border-border"
-        >
-          <h2 id="remediation-heading" className="text-lg font-semibold mb-4">
-            Remediation
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="suggested_fix">Suggested Fix</Label>
-              <textarea
-                id="suggested_fix"
-                name="suggested_fix"
-                value={suggestedFix}
-                onChange={(e) => setSuggestedFix(e.target.value)}
-                className="w-full min-h-24 rounded-md border border-gray-300 p-2 a11y-focus"
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="impact">Impact</Label>
-              <textarea
-                id="impact"
-                name="impact"
-                value={impact}
-                onChange={(e) => setImpact(e.target.value)}
-                className="w-full min-h-24 rounded-md border border-gray-300 p-2 a11y-focus"
-              />
-            </div>
-          </div>
-        </section>
-         WCAG
         <section
           aria-labelledby="wcag-heading"
           className="bg-card rounded-lg p-4 border border-border"
@@ -653,8 +482,64 @@ function IssueForm() {
             Select at least one criterion.
           </p>
         </section>
+        <div className="mb-4">
+          <label htmlFor="impact" className="block text-xl font-bold">
+            Impact
+          </label>
+          <p className="text-sm text-gray-500 mb-1">
+            Describe how this issue affects users, particularly those with
+            disabilities.
+          </p>
+          <Textarea
+            id="impact"
+            value={impact}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setImpact(e.target.value)
+            }
+            rows={3}
+            className="mt-1 block w-full mb-8"
+            placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="suggestedFix" className="block text-xl font-bold">
+            Suggested Fix
+          </label>
+          <p className="text-sm text-gray-500 mb-1">
+            Provide a specific recommendation for how to fix this issue.
+          </p>
+          <Textarea
+            id="suggestedFix"
+            value={suggestedFix}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setSuggestedFix(e.target.value)
+            }
+            rows={3}
+            className="mt-1 block w-full mb-8"
+            placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
+          />
+        </div>
+        <section
+          aria-labelledby="tags-heading"
+          className="bg-card rounded-lg p-4 border border-border"
+        >
+          <h2 id="tags-heading" className="text-lg font-semibold mb-4">
+            Tags
+          </h2>
+          <MultiSelect
+            id="tags"
+            options={tagOptions}
+            selected={tagIds}
+            onChangeAction={(arr) => setTagIds(arr as string[])}
+            placeholder="Select tags..."
+            className="w-full"
+          />
+          <p className="text-sm text-gray-500 mt-2">
+            Tags are optional. This environment may not have predefined tags
+            yet.
+          </p>
+        </section>
 
-         Attachments
         <section
           aria-labelledby="attachments-heading"
           className="bg-card rounded-lg p-4 border border-border"
@@ -669,7 +554,7 @@ function IssueForm() {
                 id="screenshots"
                 type="file"
                 multiple
-                accept="image/*"
+                accept="image/!*"
                 className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary"
                 onChange={(e) => setFilesToUpload(e.target.files)}
               />
@@ -709,35 +594,10 @@ function IssueForm() {
             </div>
           )}
         </section>
-
-         Tags
-        <section
-          aria-labelledby="tags-heading"
-          className="bg-card rounded-lg p-4 border border-border"
-        >
-          <h2 id="tags-heading" className="text-lg font-semibold mb-4">
-            Tags
-          </h2>
-          <MultiSelect
-            id="tags"
-            options={tagOptions}
-            selected={tagIds}
-            onChangeAction={(arr) => setTagIds(arr as string[])}
-            placeholder="Select tags..."
-            className="w-full"
-          />
-          <p className="text-sm text-gray-500 mt-2">
-            Tags are optional. This environment may not have predefined tags
-            yet.
-          </p>
-        </section>
+        <Button form="create-issue-form" type="submit" disabled={submitting}>
+          {submitting ? "Creating..." : "Create Issue"}
+        </Button>
       </form>
-      <Button form="create-issue-form" type="submit" disabled={submitting}>
-        {submitting ? "Creating..." : "Create Issue"}
-      </Button>
-      <Button type="button" onClick={handleAiAssist} disabled={aiBusy}>
-        {aiBusy ? "Working..." : "Generate/Refine with AI"}
-      </Button>*/}
     </div>
   );
 }
