@@ -3,6 +3,7 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import ErrorAlert from "@/components/ui/error-alert";
 
 export type AttachmentsSectionProps = {
   filesToUpload: FileList | null;
@@ -39,9 +40,7 @@ export function AttachmentsSection({ filesToUpload, onFilesChange, uploading, up
             {uploading ? "Uploading screenshots..." : ""}
           </span>
           {uploadError && (
-            <span className="text-sm text-red-600" role="alert">
-              {uploadError}
-            </span>
+            <ErrorAlert message={uploadError} />
           )}
         </div>
       </div>

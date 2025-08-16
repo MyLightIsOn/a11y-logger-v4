@@ -6,14 +6,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import AiIcon from "@/components/AiIcon";
 
+import ErrorAlert from "@/components/ui/error-alert";
+import { normalizeErrorMessage } from "@/lib/errors";
+
 export type AIAssistPanelProps = {
   aiPrompt: string;
   onAiPromptChange: (value: string) => void;
   aiBusy: boolean;
   onGenerate: (e: React.FormEvent) => void;
+  aiError?: unknown | null;
+  aiMessage?: string | null;
 };
 
-export function AIAssistPanel({ aiPrompt, onAiPromptChange, aiBusy, onGenerate }: AIAssistPanelProps) {
+export function AIAssistPanel({ aiPrompt, onAiPromptChange, aiBusy, onGenerate, aiError, aiMessage }: AIAssistPanelProps) {
   return (
     <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
       <div className={"text-md font-medium text-gray-700 dark:text-white mb-4"}>

@@ -2,6 +2,8 @@
 
 import React from "react";
 import { MultiSelect } from "@/components/ui/multi-select";
+import ErrorAlert from "@/components/ui/error-alert";
+import { normalizeErrorMessage } from "@/lib/errors";
 
 export type Option = { value: string; label: string };
 
@@ -29,7 +31,7 @@ export function TagsSection({ isLoading, error, options, selected, onSelectedCha
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-700 mb-2">{error.message}</p>
+        <ErrorAlert message={normalizeErrorMessage(error)} />
       )}
       {!isLoading && options.length === 0 && !error && (
         <p className="text-sm text-gray-600 mb-2">No tags available.</p>

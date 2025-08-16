@@ -3,6 +3,8 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
+import ErrorAlert from "@/components/ui/error-alert";
+import { normalizeErrorMessage } from "@/lib/errors";
 import type { FieldErrors } from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 import type { WcagVersion } from "@/types/issue";
@@ -66,7 +68,7 @@ export function WcagCriteriaSection({
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-700 mb-2">{error.message}</p>
+        <ErrorAlert message={normalizeErrorMessage(error)} />
       )}
       {!isLoading && options.length === 0 && !error && (
         <p className="text-sm text-gray-600 mb-2">No WCAG criteria available.</p>
