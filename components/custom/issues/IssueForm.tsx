@@ -14,9 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { issuesApi, tagsApi } from "@/lib/api";
+import { issuesApi } from "@/lib/api";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
-import { criteriaApi } from "@/lib/api/criteria";
+import { useTagsQuery } from "@/lib/query/use-tags-query";
+import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 import { AlertTriangle } from "lucide-react";
 import AiIcon from "@/components/AiIcon";
 import {
@@ -132,64 +133,34 @@ function IssueForm() {
     setValue("criteria", crit as any, { shouldValidate: false });
   }, [criteriaSelected, setValue]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await criteriaApi.getCriteria();
-        if (mounted && res.success && Array.isArray(res.data?.data)) {
-          const arr = res.data!.data.map((item) => ({
-            value: `${item.version}|${item.code}`,
-            label: `${item.code} ${item.name} (${item.version}, ${item.level})`,
-            level: item.level,
-            version: item.version,
-          }));
-          setWcagOptions(arr);
-        } else if (mounted && !res.success) {
-          setWcagLoadError(res.error || "Failed to load WCAG criteria");
-        }
-      } catch (e: any) {
-        if (mounted)
-          setWcagLoadError(e?.message || "Failed to load WCAG criteria");
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // Data fetching via TanStack Query
+  const {
+    data: criteriaData = [],
+    isLoading: criteriaLoading,
+    error: criteriaError,
+  } = useWcagCriteriaQuery();
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await tagsApi.getTags();
-        if (mounted && res.success && Array.isArray(res.data?.data)) {
-          const options = res.data!.data.map((t) => ({
-            value: t.id,
-            label: t.label,
-          }));
-          setTagOptions(options);
-        }
-      } catch (e) {
-        // silently ignore; tags are optional
-        console.warn("Failed to load tags");
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const wcagOptions = useMemo(
+    () =>
+      (criteriaData || []).map((item) => ({
+        value: `${item.version}|${item.code}`,
+        label: `${item.code} ${item.name} (${item.version}, ${item.level})`,
+        level: item.level,
+        version: item.version,
+      })),
+    [criteriaData],
+  );
 
-  // Load WCAG criteria from API and build options
-  const [wcagOptions, setWcagOptions] = useState<
-    {
-      value: string;
-      label: string;
-      level: "A" | "AA" | "AAA";
-      version: WcagVersion;
-    }[]
-  >([]);
-  const [wcagLoadError, setWcagLoadError] = useState<string | null>(null);
+  const {
+    data: tagsData = [],
+    isLoading: tagsLoading,
+    error: tagsError,
+  } = useTagsQuery();
+
+  const tagOptions = useMemo(
+    () => (tagsData || []).map((t) => ({ value: t.id, label: t.label })),
+    [tagsData],
+  );
 
   const handleAiAssist = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,9 +260,6 @@ function IssueForm() {
       .map((opt) => ({ value: opt.value, label: opt.label }));
   }, [wcagOptions, wcagVersionFilter, wcagLevelFilter]);
 
-  const [tagOptions, setTagOptions] = useState<
-    { value: string; label: string }[]
-  >([]);
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -503,10 +471,18 @@ function IssueForm() {
           <h2 id="wcag-heading" className="text-lg font-semibold mb-4">
             WCAG Criteria
           </h2>
-          {wcagLoadError && (
-            <p role="status" className="text-sm text-red-700 mb-2">
-              {wcagLoadError}
+          {criteriaLoading && (
+            <p role="status" className="text-sm text-gray-600 mb-2">
+              Loading WCAG criteria...
             </p>
+          )}
+          {criteriaError && (
+            <p role="status" className="text-sm text-red-700 mb-2">
+              {criteriaError.message}
+            </p>
+          )}
+          {!criteriaLoading && wcagOptions.length === 0 && !criteriaError && (
+            <p className="text-sm text-gray-600 mb-2">No WCAG criteria available.</p>
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
             <div>
@@ -603,6 +579,19 @@ function IssueForm() {
           <h2 id="tags-heading" className="text-lg font-semibold mb-4">
             Tags
           </h2>
+          {tagsLoading && (
+            <p role="status" className="text-sm text-gray-600 mb-2">
+              Loading tags...
+            </p>
+          )}
+          {tagsError && (
+            <p role="status" className="text-sm text-red-700 mb-2">
+              {tagsError.message}
+            </p>
+          )}
+          {!tagsLoading && tagOptions.length === 0 && !tagsError && (
+            <p className="text-sm text-gray-600 mb-2">No tags available.</p>
+          )}
           <MultiSelect
             id="tags"
             options={tagOptions}
