@@ -10,6 +10,7 @@ import {
 import { parseCriteriaKey } from "@/lib/issues/constants";
 import { useRouter } from "next/navigation";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
+import type { IssueStatus, Severity } from "@/types/common";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
@@ -82,14 +83,14 @@ function IssueForm() {
     ],
   }) as unknown as [
     string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
-    string,
+    string | undefined,
+    Severity,
+    IssueStatus,
+    string | undefined,
+    string | undefined,
+    string | undefined,
+    string | undefined,
+    string | undefined,
     string[],
     string[],
   ];
@@ -100,11 +101,13 @@ function IssueForm() {
   const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    const crit = (criteriaSelected || []).map((key) => {
-      const { version, code } = parseCriteriaKey(key);
-      return { version: version as WcagVersion, code };
-    });
-    setValue("criteria", crit as any, { shouldValidate: false });
+    const crit: CreateIssueInput["criteria"] = (criteriaSelected || []).map(
+      (key) => {
+        const { version, code } = parseCriteriaKey(key);
+        return { version: version as WcagVersion, code };
+      },
+    );
+    setValue("criteria", crit, { shouldValidate: false });
   }, [criteriaSelected, setValue]);
 
   const createIssue = useCreateIssueMutation();
@@ -113,19 +116,15 @@ function IssueForm() {
     setValue("title", v, { shouldValidate: false });
   const setDescription = (v: string) =>
     setValue("description", v, { shouldValidate: false });
-  const setSeverity = (v: string) =>
-    setValue("severity", v as any, { shouldValidate: false });
-  const setStatus = (v: string) =>
-    setValue("status", v as any, { shouldValidate: false });
+  const setSeverity = (v: Severity) =>
+    setValue("severity", v, { shouldValidate: false });
+  const setSeverityFromString = (v: string) => setSeverity(v as Severity);
+  // Note: status is not currently user-editable in this form; no setter needed
   const setSuggestedFix = (v: string) =>
     setValue("suggested_fix", v, { shouldValidate: false });
   const setImpact = (v: string) =>
     setValue("impact", v, { shouldValidate: false });
   const setUrl = (v: string) => setValue("url", v, { shouldValidate: false });
-  const setSelector = (v: string) =>
-    setValue("selector", v, { shouldValidate: false });
-  const setCodeSnippet = (v: string) =>
-    setValue("code_snippet", v, { shouldValidate: false });
   const setScreenshots = (arr: string[]) =>
     setValue("screenshots", arr, { shouldValidate: false });
   const setTagIds = (arr: string[]) =>
@@ -162,7 +161,7 @@ function IssueForm() {
       code_snippet: codeSnippet || undefined,
       screenshots: screenshots && screenshots.length ? screenshots : undefined,
       tags: tagIds && tagIds.length ? tagIds : undefined,
-      severity_hint: severity as any,
+      severity_hint: severity,
       criteria_hints: criteriaSelected.map((key) => {
         const { version, code } = parseCriteriaKey(key);
         return { version: version as WcagVersion, code };
@@ -175,7 +174,7 @@ function IssueForm() {
           description,
           suggested_fix: suggestedFix,
           impact,
-          severity: severity as any,
+          severity: severity,
           criteriaKeys: criteriaSelected,
         },
         set: {
@@ -183,7 +182,7 @@ function IssueForm() {
           setDescription,
           setSuggestedFix,
           setImpact,
-          setSeverity,
+          setSeverity: setSeverityFromString,
           setCriteriaKeys: setCriteriaSelected,
         },
       }),
@@ -205,8 +204,8 @@ function IssueForm() {
     const payload: CreateIssueRequest = {
       title: (title || "").trim(),
       description: (description || "").trim() || undefined,
-      severity: severity as any,
-      status: status as any,
+      severity: severity,
+      status: status,
       suggested_fix: (suggestedFix || "").trim() || undefined,
       impact: (impact || "").trim() || undefined,
       url: (url || "").trim() || undefined,
@@ -248,15 +247,15 @@ function IssueForm() {
         <CoreFields
           title={title}
           onTitleChange={setTitle}
-          description={description}
+          description={description || ""}
           onDescriptionChange={setDescription}
-          url={url}
+          url={url || ""}
           onUrlChange={setUrl}
           severity={severity}
-          onSeverityChange={setSeverity}
-          impact={impact}
+          onSeverityChange={setSeverityFromString}
+          impact={impact || ""}
           onImpactChange={setImpact}
-          suggestedFix={suggestedFix}
+          suggestedFix={suggestedFix || ""}
           onSuggestedFixChange={setSuggestedFix}
           errors={errors}
         />
