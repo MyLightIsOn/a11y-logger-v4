@@ -264,12 +264,12 @@ function IssueForm() {
           isLoading={criteriaLoading}
           error={criteriaError as Error | undefined}
           versionFilter={wcagVersionFilter}
-          onVersionFilterChange={setWcagVersionFilter}
+          onVersionFilterChangeAction={setWcagVersionFilter}
           levelFilter={wcagLevelFilter}
-          onLevelFilterChange={setWcagLevelFilter}
+          onLevelFilterChangeAction={setWcagLevelFilter}
           options={filteredWcagOptions}
           selected={criteriaSelected}
-          onSelectedChange={(arr) => setCriteriaSelected(arr)}
+          onSelectedChangeAction={(arr) => setCriteriaSelected(arr)}
           errors={errors}
         />
 
@@ -278,7 +278,7 @@ function IssueForm() {
           error={tagsError as Error | undefined}
           options={tagOptions}
           selected={tagIds}
-          onSelectedChange={(arr) => setTagIds(arr)}
+          onSelectedChangeAction={(arr) => setTagIds(arr)}
         />
 
         <AttachmentsSection

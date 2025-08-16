@@ -5,24 +5,8 @@ import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import ErrorAlert from "@/components/ui/error-alert";
 import { normalizeErrorMessage } from "@/lib/errors";
-import type { FieldErrors } from "react-hook-form";
-import type { CreateIssueInput } from "@/lib/validation/issues";
+import type { WcagCriteriaSectionProps } from "@/types/issues-ui";
 import type { WcagVersion } from "@/types/issue";
-
-export type Option = { value: string; label: string };
-
-export type WcagCriteriaSectionProps = {
-  isLoading: boolean;
-  error: Error | null | undefined;
-  versionFilter: WcagVersion | "all";
-  onVersionFilterChange: (v: WcagVersion | "all") => void;
-  levelFilter: "all" | "A" | "AA" | "AAA";
-  onLevelFilterChange: (v: "all" | "A" | "AA" | "AAA") => void;
-  options: Option[];
-  selected: string[];
-  onSelectedChange: (arr: string[]) => void;
-  errors: FieldErrors<CreateIssueInput>;
-};
 
 function isWcagVersion(value: string): value is WcagVersion {
   return value === "2.1" || value === "2.2";
@@ -44,33 +28,33 @@ export function WcagCriteriaSection({
   isLoading,
   error,
   versionFilter,
-  onVersionFilterChange,
+  onVersionFilterChangeAction,
   levelFilter,
-  onLevelFilterChange,
+  onLevelFilterChangeAction,
   options,
   selected,
-  onSelectedChange,
+  onSelectedChangeAction,
   errors,
 }: WcagCriteriaSectionProps) {
   const handleVersionChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onVersionFilterChange(toVersionFilter(e.target.value));
+      onVersionFilterChangeAction(toVersionFilter(e.target.value));
     },
-    [onVersionFilterChange],
+    [onVersionFilterChangeAction],
   );
 
   const handleLevelChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onLevelFilterChange(toLevelFilter(e.target.value));
+      onLevelFilterChangeAction(toLevelFilter(e.target.value));
     },
-    [onLevelFilterChange],
+    [onLevelFilterChangeAction],
   );
 
   const handleSelectedChange = React.useCallback(
     (arr: unknown[]) => {
-      onSelectedChange(arr as string[]);
+      onSelectedChangeAction(arr as string[]);
     },
-    [onSelectedChange],
+    [onSelectedChangeAction],
   );
 
   return (
