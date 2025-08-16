@@ -80,6 +80,22 @@ function estimateTokens(str: string): number {
   return Math.ceil((str?.length || 0) / 4);
 }
 
+// Minimal shape of OpenAI Chat Completions response used by this service
+// (we only access `usage` and `choices[0].message.content`).
+type OpenAIChatResponse = {
+  choices?: Array<{
+    message?: {
+      role?: string;
+      content?: string | null;
+    };
+  }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+};
+
 export class IssuesAiService {
   private readonly apiKey: string;
   private readonly model: string;
@@ -117,7 +133,7 @@ export class IssuesAiService {
   }> {
     const doRequest = async () => {
       try {
-        const res = await axios.post(
+        const res = await axios.post<OpenAIChatResponse>(
           `${this.baseUrl}/chat/completions`,
           {
             model: this.model,
@@ -136,10 +152,10 @@ export class IssuesAiService {
             timeout: this.timeoutMs,
           },
         );
-        const data = res?.data as any;
+        const data = res.data;
         const usage = data?.usage;
         const content = data?.choices?.[0]?.message?.content ?? "";
-        return { jsonText: content as string, usage };
+        return { jsonText: content ?? "", usage };
       } catch (err) {
         if (axios.isAxiosError(err)) {
           const status = err.response?.status;
@@ -157,7 +173,7 @@ export class IssuesAiService {
             `OpenAI API error ${status ?? "unknown"}: ${text ?? err.message}`,
           );
         }
-        throw err as any;
+        throw err;
       }
     };
 
@@ -279,14 +295,12 @@ export class IssuesAiService {
     const totalTokens = usage?.total_tokens ?? promptTokens + completionTokens;
 
     const line = `AI usage — model=${this.model} prompt=${promptTokens} completion=${completionTokens} total=${totalTokens}`;
-    // eslint-disable-next-line no-console
     console.log(line);
 
     if (retryUsage) {
       const rPrompt = retryUsage?.prompt_tokens ?? 0;
       const rComp = retryUsage?.completion_tokens ?? 0;
       const rTotal = retryUsage?.total_tokens ?? rPrompt + rComp;
-      // eslint-disable-next-line no-console
       console.log(
         `AI usage (retry) — prompt=${rPrompt} completion=${rComp} total=${rTotal}`,
       );

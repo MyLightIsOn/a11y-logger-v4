@@ -24,6 +24,22 @@ export type WcagCriteriaSectionProps = {
   errors: FieldErrors<CreateIssueInput>;
 };
 
+function isWcagVersion(value: string): value is WcagVersion {
+  return value === "2.1" || value === "2.2";
+}
+
+function toVersionFilter(value: string): WcagVersion | "all" {
+  return isWcagVersion(value) ? value : "all";
+}
+
+function isWcagLevel(value: string): value is "A" | "AA" | "AAA" {
+  return value === "A" || value === "AA" || value === "AAA";
+}
+
+function toLevelFilter(value: string): "all" | "A" | "AA" | "AAA" {
+  return isWcagLevel(value) ? value : "all";
+}
+
 export function WcagCriteriaSection({
   isLoading,
   error,
@@ -38,14 +54,14 @@ export function WcagCriteriaSection({
 }: WcagCriteriaSectionProps) {
   const handleVersionChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onVersionFilterChange((e.target.value as any) || "all");
+      onVersionFilterChange(toVersionFilter(e.target.value));
     },
     [onVersionFilterChange],
   );
 
   const handleLevelChange = React.useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onLevelFilterChange((e.target.value as any) || "all");
+      onLevelFilterChange(toLevelFilter(e.target.value));
     },
     [onLevelFilterChange],
   );
@@ -118,7 +134,7 @@ export function WcagCriteriaSection({
       <p id="criteria-help" className="text-sm text-gray-500 mt-2">Select at least one criterion.</p>
       {errors?.criteria && (
         <p id="criteria-error" className="text-sm text-red-600 mt-1" role="alert">
-          {String((errors.criteria as any)?.message)}
+          {String((errors.criteria as { message?: unknown })?.message)}
         </p>
       )}
     </section>
