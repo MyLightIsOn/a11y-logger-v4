@@ -283,10 +283,10 @@ function IssueForm() {
 
         <AttachmentsSection
           filesToUpload={filesToUpload}
-          onFilesChange={setFilesToUpload}
+          onFilesChangeAction={setFilesToUpload}
           uploading={uploading}
           uploadError={uploadError}
-          onUpload={handleUpload}
+          onUploadAction={handleUpload}
           screenshots={screenshots}
         />
 

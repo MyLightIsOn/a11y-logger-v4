@@ -22,3 +22,13 @@ export interface NormalizedItem {
   format?: string;
   bytes?: number;
 }
+
+/** Props for the AttachmentsSection client component */
+export type AttachmentsSectionProps = {
+  filesToUpload: FileList | null;
+  onFilesChangeAction: (files: FileList | null) => void;
+  uploading: boolean;
+  uploadError: string | null;
+  onUploadAction: () => void;
+  screenshots: string[];
+};

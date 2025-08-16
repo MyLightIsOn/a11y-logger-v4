@@ -4,17 +4,9 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import ErrorAlert from "@/components/ui/error-alert";
+import type { AttachmentsSectionProps } from "@/types/uploads";
 
-export type AttachmentsSectionProps = {
-  filesToUpload: FileList | null;
-  onFilesChange: (files: FileList | null) => void;
-  uploading: boolean;
-  uploadError: string | null;
-  onUpload: () => void;
-  screenshots: string[];
-};
-
-export function AttachmentsSection({ filesToUpload, onFilesChange, uploading, uploadError, onUpload, screenshots }: AttachmentsSectionProps) {
+export function AttachmentsSection({ filesToUpload, onFilesChangeAction, uploading, uploadError, onUploadAction, screenshots }: AttachmentsSectionProps) {
   return (
     <section aria-labelledby="attachments-heading" className="bg-card rounded-lg p-4 border border-border">
       <h2 id="attachments-heading" className="text-lg font-semibold mb-4">
@@ -29,11 +21,11 @@ export function AttachmentsSection({ filesToUpload, onFilesChange, uploading, up
             multiple
             accept="image/*"
             className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary"
-            onChange={(e) => onFilesChange(e.target.files)}
+            onChange={(e) => onFilesChangeAction(e.target.files)}
           />
         </div>
         <div className="flex gap-2">
-          <Button type="button" onClick={onUpload} disabled={uploading || !filesToUpload} aria-describedby="upload-status">
+          <Button type="button" onClick={onUploadAction} disabled={uploading || !filesToUpload} aria-describedby="upload-status">
             {uploading ? "Uploading..." : "Upload"}
           </Button>
           <span id="upload-status" role="status" aria-live="polite" className="sr-only">
