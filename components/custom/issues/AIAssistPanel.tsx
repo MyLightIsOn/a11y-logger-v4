@@ -6,8 +6,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import AiIcon from "@/components/AiIcon";
 
-import ErrorAlert from "@/components/ui/error-alert";
-import { normalizeErrorMessage } from "@/lib/errors";
 
 export type AIAssistPanelProps = {
   aiPrompt: string;

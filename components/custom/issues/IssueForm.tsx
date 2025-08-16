@@ -107,10 +107,8 @@ function IssueForm() {
     setValue("criteria", crit as any, { shouldValidate: false });
   }, [criteriaSelected, setValue]);
 
-  // Create Issue mutation (Step 9)
   const createIssue = useCreateIssueMutation();
 
-  // Setters mapping to RHF (Step 10 - remove local state)
   const setTitle = (v: string) =>
     setValue("title", v, { shouldValidate: false });
   const setDescription = (v: string) =>
