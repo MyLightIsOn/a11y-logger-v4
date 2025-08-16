@@ -34,6 +34,27 @@ export function WcagCriteriaSection({
   onSelectedChange,
   errors,
 }: WcagCriteriaSectionProps) {
+  const handleVersionChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onVersionFilterChange((e.target.value as any) || "all");
+    },
+    [onVersionFilterChange],
+  );
+
+  const handleLevelChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      onLevelFilterChange((e.target.value as any) || "all");
+    },
+    [onLevelFilterChange],
+  );
+
+  const handleSelectedChange = React.useCallback(
+    (arr: unknown[]) => {
+      onSelectedChange(arr as string[]);
+    },
+    [onSelectedChange],
+  );
+
   return (
     <section aria-labelledby="wcag-heading" className="bg-card rounded-lg p-4 border border-border">
       <h2 id="wcag-heading" className="text-lg font-semibold mb-4">
@@ -57,7 +78,7 @@ export function WcagCriteriaSection({
             id="wcag-version"
             className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
             value={versionFilter}
-            onChange={(e) => onVersionFilterChange((e.target.value as any) || "all")}
+            onChange={handleVersionChange}
             aria-label="WCAG Version filter"
           >
             <option value="all">All</option>
@@ -71,7 +92,7 @@ export function WcagCriteriaSection({
             id="wcag-level"
             className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
             value={levelFilter}
-            onChange={(e) => onLevelFilterChange((e.target.value as any) || "all")}
+            onChange={handleLevelChange}
             aria-label="WCAG Level filter"
           >
             <option value="all">All</option>
@@ -86,7 +107,7 @@ export function WcagCriteriaSection({
         id="criteria"
         options={options}
         selected={selected}
-        onChangeAction={(arr) => onSelectedChange(arr as string[])}
+        onChangeAction={handleSelectedChange}
         placeholder="Search and select WCAG criteria..."
         className="w-full"
         aria-invalid={!!errors?.criteria}

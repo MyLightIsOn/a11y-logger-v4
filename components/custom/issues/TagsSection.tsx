@@ -14,6 +14,10 @@ export type TagsSectionProps = {
 };
 
 export function TagsSection({ isLoading, error, options, selected, onSelectedChange }: TagsSectionProps) {
+  const handleSelectedChange = React.useCallback((arr: unknown[]) => {
+    onSelectedChange(arr as string[]);
+  }, [onSelectedChange]);
+
   return (
     <section aria-labelledby="tags-heading" className="bg-card rounded-lg p-4 border border-border">
       <h2 id="tags-heading" className="text-lg font-semibold mb-4">
@@ -34,7 +38,7 @@ export function TagsSection({ isLoading, error, options, selected, onSelectedCha
         id="tags"
         options={options}
         selected={selected}
-        onChangeAction={(arr) => onSelectedChange(arr as string[])}
+        onChangeAction={handleSelectedChange}
         placeholder="Select tags..."
         className="w-full"
         aria-describedby="tags-help"
