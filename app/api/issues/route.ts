@@ -51,11 +51,14 @@ export async function GET(request: NextRequest) {
     // Define the shape returned by Supabase for issues with joined tags
     type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
 
-    const transformedData =
-      (data as IssueRowWithJoin[] | null)?.map((issue) => ({
-        ...issue,
-        tags: issue.issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
-      })) || [];
+    const transformedData: Issue[] =
+      ((data as IssueRowWithJoin[] | null) || []).map((issue) => {
+        const { issues_tags, ...rest } = issue as IssueRowWithJoin & { issues_tags?: { tags: Tag }[] };
+        return {
+          ...(rest as Issue),
+          tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
+        };
+      });
 
     return NextResponse.json({
       data: transformedData,
@@ -241,8 +244,12 @@ export async function POST(request: NextRequest) {
     const criteria_codes = Array.from(new Set(criteriaItems.map((c) => c.code)));
 
     // Construct response object similar to Issue but with criteria arrays and flattened tags
+    const baseIssue =
+      issueWithTags
+        ? (({ issues_tags, ...rest }) => rest)(issueWithTags as any)
+        : issueRow;
     const responseIssue = {
-      ...(issueWithTags || issueRow),
+      ...baseIssue,
       tags,
       criteria: criteriaItems,
       criteria_codes,

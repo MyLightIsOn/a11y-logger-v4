@@ -49,9 +49,13 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(result, { status: 200 });
-  } catch (e: any) {
+  } catch (e: unknown) {
     const message =
-      e?.message || (typeof e === "string" ? e : "AI assist failed");
+      e instanceof Error
+        ? e.message
+        : typeof e === "string"
+          ? e
+          : "AI assist failed";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
