@@ -32,11 +32,14 @@ export function AttachmentsSection({ filesToUpload, onFilesChange, uploading, up
           />
         </div>
         <div className="flex gap-2">
-          <Button type="button" onClick={onUpload} disabled={uploading || !filesToUpload}>
+          <Button type="button" onClick={onUpload} disabled={uploading || !filesToUpload} aria-describedby="upload-status">
             {uploading ? "Uploading..." : "Upload"}
           </Button>
+          <span id="upload-status" role="status" aria-live="polite" className="sr-only">
+            {uploading ? "Uploading screenshots..." : ""}
+          </span>
           {uploadError && (
-            <span className="text-sm text-red-600" role="status">
+            <span className="text-sm text-red-600" role="alert">
               {uploadError}
             </span>
           )}

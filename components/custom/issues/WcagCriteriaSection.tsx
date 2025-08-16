@@ -40,12 +40,12 @@ export function WcagCriteriaSection({
         WCAG Criteria
       </h2>
       {isLoading && (
-        <p role="status" className="text-sm text-gray-600 mb-2">
+        <p role="status" aria-live="polite" className="text-sm text-gray-600 mb-2">
           Loading WCAG criteria...
         </p>
       )}
       {error && (
-        <p role="status" className="text-sm text-red-700 mb-2">{error.message}</p>
+        <p role="alert" className="text-sm text-red-700 mb-2">{error.message}</p>
       )}
       {!isLoading && options.length === 0 && !error && (
         <p className="text-sm text-gray-600 mb-2">No WCAG criteria available.</p>
@@ -58,6 +58,7 @@ export function WcagCriteriaSection({
             className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
             value={versionFilter}
             onChange={(e) => onVersionFilterChange((e.target.value as any) || "all")}
+            aria-label="WCAG Version filter"
           >
             <option value="all">All</option>
             <option value="2.1">2.1</option>
@@ -71,6 +72,7 @@ export function WcagCriteriaSection({
             className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
             value={levelFilter}
             onChange={(e) => onLevelFilterChange((e.target.value as any) || "all")}
+            aria-label="WCAG Level filter"
           >
             <option value="all">All</option>
             <option value="A">A</option>
@@ -87,10 +89,12 @@ export function WcagCriteriaSection({
         onChangeAction={(arr) => onSelectedChange(arr as string[])}
         placeholder="Search and select WCAG criteria..."
         className="w-full"
+        aria-invalid={!!errors?.criteria}
+        aria-describedby={`criteria-help${errors?.criteria ? ' criteria-error' : ''}`}
       />
-      <p className="text-sm text-gray-500 mt-2">Select at least one criterion.</p>
+      <p id="criteria-help" className="text-sm text-gray-500 mt-2">Select at least one criterion.</p>
       {errors?.criteria && (
-        <p className="text-sm text-red-600 mt-1" role="status">
+        <p id="criteria-error" className="text-sm text-red-600 mt-1" role="alert">
           {String((errors.criteria as any)?.message)}
         </p>
       )}

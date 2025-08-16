@@ -20,12 +20,12 @@ export function TagsSection({ isLoading, error, options, selected, onSelectedCha
         Tags
       </h2>
       {isLoading && (
-        <p role="status" className="text-sm text-gray-600 mb-2">
+        <p role="status" aria-live="polite" className="text-sm text-gray-600 mb-2">
           Loading tags...
         </p>
       )}
       {error && (
-        <p role="status" className="text-sm text-red-700 mb-2">{error.message}</p>
+        <p role="alert" className="text-sm text-red-700 mb-2">{error.message}</p>
       )}
       {!isLoading && options.length === 0 && !error && (
         <p className="text-sm text-gray-600 mb-2">No tags available.</p>
@@ -37,8 +37,9 @@ export function TagsSection({ isLoading, error, options, selected, onSelectedCha
         onChangeAction={(arr) => onSelectedChange(arr as string[])}
         placeholder="Select tags..."
         className="w-full"
+        aria-describedby="tags-help"
       />
-      <p className="text-sm text-gray-500 mt-2">
+      <p id="tags-help" className="text-sm text-gray-500 mt-2">
         Tags are optional. This environment may not have predefined tags yet.
       </p>
     </section>

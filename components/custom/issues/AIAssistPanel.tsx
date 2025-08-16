@@ -50,10 +50,15 @@ export function AIAssistPanel({ aiPrompt, onAiPromptChange, aiBusy, onGenerate }
         rows={4}
         placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
         className="mt-1 block w-full mb-4"
+        aria-describedby="ai-assist-help"
       />
-      <Button className={"bg-button-background text-md gap-4"} type="button" onClick={onGenerate} disabled={aiBusy}>
+      <p id="ai-assist-help" className="sr-only">Enter an issue description to help the AI generate suggestions.</p>
+      <Button className={"bg-button-background text-md gap-4"} type="button" onClick={onGenerate} disabled={aiBusy} aria-describedby="ai-status">
         {aiBusy ? "Working..." : "Generate/Refine with AI"} <AiIcon />
       </Button>
+      <span id="ai-status" role="status" aria-live="polite" className="sr-only">
+        {aiBusy ? "Generating suggestions from AI..." : ""}
+      </span>
     </div>
   );
 }

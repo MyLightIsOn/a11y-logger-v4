@@ -80,7 +80,6 @@ function IssueForm() {
       "screenshots",
       "tag_ids",
     ],
-    defaultValue: ["", "", "3", "open", "", "", "", "", "", [], []],
   }) as unknown as [
     string,
     string,

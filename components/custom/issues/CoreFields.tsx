@@ -51,7 +51,7 @@ export function CoreFields({
         <label htmlFor="title" className="block text-xl font-bold">
           Title <span className={"text-destructive"}>*</span>
         </label>
-        <p className="text-sm text-gray-500 mb-1">Provide a short title of the issue.</p>
+        <p id="title-help" className="text-sm text-gray-500 mb-1">Provide a short title of the issue.</p>
         <Input
           type="text"
           id="title"
@@ -60,9 +60,11 @@ export function CoreFields({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChange(e.target.value)}
           className="mt-1 block w-full"
           required
+          aria-invalid={!!errors?.title}
+          aria-describedby={`title-help${errors?.title ? ' title-error' : ''}`}
         />
         {errors?.title && (
-          <p className="text-sm text-red-600 mt-1" role="status">
+          <p id="title-error" className="text-sm text-red-600 mt-1" role="alert">
             {String(errors.title.message)}
           </p>
         )}
@@ -73,7 +75,7 @@ export function CoreFields({
         <label htmlFor="description" className="block text-xl font-bold">
           Description <span className={"text-destructive"}>*</span>
         </label>
-        <p className="text-sm text-gray-500 mb-1">Provide a detailed description of the issue.</p>
+        <p id="description-help" className="text-sm text-gray-500 mb-1">Provide a detailed description of the issue.</p>
         <Textarea
           id="description"
           value={description || ""}
@@ -82,9 +84,11 @@ export function CoreFields({
           className="mt-1 block w-full"
           placeholder="Example: The search button on the homepage is not focusable via keyboard."
           required
+          aria-invalid={!!errors?.description}
+          aria-describedby={`description-help${errors?.description ? ' description-error' : ''}`}
         />
         {errors?.description && (
-          <p className="text-sm text-red-600 mt-1" role="status">
+          <p id="description-error" className="text-sm text-red-600 mt-1" role="alert">
             {String(errors.description.message)}
           </p>
         )}
@@ -95,7 +99,7 @@ export function CoreFields({
         <label htmlFor="url" className="block text-xl font-bold">
           URL
         </label>
-        <p className="text-sm text-gray-500 mb-1">Enter the URL of the page where the issue was found.</p>
+        <p id="url-help" className="text-sm text-gray-500 mb-1">Enter the URL of the page where the issue was found.</p>
         <Input
           type="url"
           id="url"
@@ -103,9 +107,11 @@ export function CoreFields({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUrlChange(e.target.value)}
           className="mt-1 block w-full placeholder:text-gray-400"
           placeholder={"Example: https://example.com/page-with-issue"}
+          aria-invalid={!!errors?.url}
+          aria-describedby={`url-help${errors?.url ? ' url-error' : ''}`}
         />
         {errors?.url && (
-          <p className="text-sm text-red-600 mt-1" role="status">
+          <p id="url-error" className="text-sm text-red-600 mt-1" role="alert">
             {String(errors.url.message)}
           </p>
         )}
@@ -116,9 +122,9 @@ export function CoreFields({
         <label htmlFor="severity" className="block text-xl font-bold">
           Severity <span className={"text-destructive"}>*</span>
         </label>
-        <p className="text-sm text-gray-500 mb-1">Choose the severity of the issue.</p>
+        <p id="severity-help" className="text-sm text-gray-500 mb-1">Choose the severity of the issue.</p>
         <Select value={severity || "low"} onValueChange={onSeverityChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="severity" className="w-full" aria-invalid={!!errors?.severity} aria-describedby={`severity-help${errors?.severity ? ' severity-error' : ''}`}>
             <SelectValue placeholder="Select severity" />
           </SelectTrigger>
           <SelectContent>
@@ -130,7 +136,7 @@ export function CoreFields({
           </SelectContent>
         </Select>
         {errors?.severity && (
-          <p className="text-sm text-red-600 mt-1" role="status">
+          <p id="severity-error" className="text-sm text-red-600 mt-1" role="alert">
             {String(errors.severity.message)}
           </p>
         )}
