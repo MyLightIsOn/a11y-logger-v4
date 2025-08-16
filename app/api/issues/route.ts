@@ -1,7 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { Tag } from "@/types/tag";
-import type { Issue, CreateIssueRequest, IssueCriteriaItem, WcagVersion } from "@/types/issue";
+import type {
+  Issue,
+  IssueRead,
+  CreateIssueRequest,
+  IssueCriteriaItem,
+  WcagVersion,
+  WcagCriterion,
+} from "@/types/issue";
 import { validateCreateIssue } from "@/lib/validation/issues";
 
 /**
@@ -51,14 +58,17 @@ export async function GET(request: NextRequest) {
     // Define the shape returned by Supabase for issues with joined tags
     type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
 
-    const transformedData: Issue[] =
-      ((data as IssueRowWithJoin[] | null) || []).map((issue) => {
-        const { issues_tags, ...rest } = issue as IssueRowWithJoin & { issues_tags?: { tags: Tag }[] };
-        return {
-          ...(rest as Issue),
-          tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
-        };
-      });
+    const transformedData: Issue[] = (
+      (data as IssueRowWithJoin[] | null) || []
+    ).map((issue) => {
+      const { issues_tags, ...rest } = issue as IssueRowWithJoin & {
+        issues_tags?: { tags: Tag }[];
+      };
+      return {
+        ...(rest as Issue),
+        tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
+      };
+    });
 
     return NextResponse.json({
       data: transformedData,
@@ -98,8 +108,12 @@ export async function POST(request: NextRequest) {
     try {
       const body = await request.json();
       payload = validateCreateIssue(body);
-    } catch (err: any) {
-      const message = err?.issues?.[0]?.message || err?.message || "Invalid request";
+    } catch (err: unknown) {
+      let message = "Invalid request";
+      if (err && typeof err === "object") {
+        const e = err as { issues?: { message?: string }[]; message?: string };
+        message = e.issues?.[0]?.message ?? e.message ?? message;
+      }
       return NextResponse.json({ error: message }, { status: 400 });
     }
 
@@ -126,17 +140,22 @@ export async function POST(request: NextRequest) {
 
     if (insertErr || !issueRow) {
       console.error("Issue insert failed:", insertErr);
-      return NextResponse.json({ error: "Failed to create issue" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create issue" },
+        { status: 500 },
+      );
     }
 
-    const issueId = (issueRow as any).id as string;
+    const issueId = (issueRow as { id: string }).id;
 
     // 2) Resolve each (version, code) to wcag_criteria.id
     // We'll fetch in a single query when possible by code IN and version IN, then filter pairs.
-    const versions = Array.from(new Set(payload.criteria.map((c) => c.version)));
+    const versions = Array.from(
+      new Set(payload.criteria.map((c) => c.version)),
+    );
     const codes = Array.from(new Set(payload.criteria.map((c) => c.code)));
 
-    let wcagRows: { id: string; code: string; version: WcagVersion; name: string; level: "A"|"AA"|"AAA" }[] = [];
+    let wcagRows: (WcagCriterion & { id: string })[] = [];
 
     if (versions.length && codes.length) {
       const { data: wcagData, error: wcagErr } = await supabase
@@ -146,17 +165,24 @@ export async function POST(request: NextRequest) {
         .in("code", codes);
       if (wcagErr) {
         console.error("WCAG lookup failed:", wcagErr);
-        return NextResponse.json({ error: "Failed to resolve WCAG criteria" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to resolve WCAG criteria" },
+          { status: 500 },
+        );
       }
-      wcagRows = (wcagData || []) as any;
+      wcagRows = (wcagData ?? []) as (WcagCriterion & { id: string })[];
     }
 
     // Map requested criteria to found ids; validate all resolved
     const criteriaKey = (v: WcagVersion, c: string) => `${v}|${c}`;
-    const wcagMap = new Map<string, { id: string; code: string; version: WcagVersion; name: string; level: "A"|"AA"|"AAA" }>();
-    for (const row of wcagRows) wcagMap.set(criteriaKey(row.version, row.code), row);
+    const wcagMap = new Map<string, WcagCriterion & { id: string }>();
+    for (const row of wcagRows)
+      wcagMap.set(criteriaKey(row.version, row.code), row);
 
-    const dedupPairs = new Map<string, { version: WcagVersion; code: string }>();
+    const dedupPairs = new Map<
+      string,
+      { version: WcagVersion; code: string }
+    >();
     for (const ref of payload.criteria) {
       const key = criteriaKey(ref.version, ref.code);
       dedupPairs.set(key, ref);
@@ -176,23 +202,38 @@ export async function POST(request: NextRequest) {
     if (linkRows.length) {
       const { error: linkErr } = await supabase
         .from("issue_criteria")
-        .upsert(linkRows, { onConflict: "issue_id,criterion_id", ignoreDuplicates: true });
+        .upsert(linkRows, {
+          onConflict: "issue_id,criterion_id",
+          ignoreDuplicates: true,
+        });
       if (linkErr) {
         console.error("Inserting issue_criteria failed:", linkErr);
-        return NextResponse.json({ error: "Failed to link criteria" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to link criteria" },
+          { status: 500 },
+        );
       }
     }
 
     // 3) Insert tag relations if provided
     if (Array.isArray(payload.tag_ids) && payload.tag_ids.length) {
       const uniqueTagIds = Array.from(new Set(payload.tag_ids));
-      const tagRows = uniqueTagIds.map((tag_id) => ({ issue_id: issueId, tag_id }));
+      const tagRows = uniqueTagIds.map((tag_id) => ({
+        issue_id: issueId,
+        tag_id,
+      }));
       const { error: tagsErr } = await supabase
         .from("issues_tags")
-        .upsert(tagRows, { onConflict: "issue_id,tag_id", ignoreDuplicates: true });
+        .upsert(tagRows, {
+          onConflict: "issue_id,tag_id",
+          ignoreDuplicates: true,
+        });
       if (tagsErr) {
         console.error("Inserting issues_tags failed:", tagsErr);
-        return NextResponse.json({ error: "Failed to link tags" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Failed to link tags" },
+          { status: 500 },
+        );
       }
     }
 
@@ -229,27 +270,41 @@ export async function POST(request: NextRequest) {
       console.error("Fetching issue criteria failed:", critErr);
     }
 
-    const tags = (issueWithTags?.issues_tags as any[] | undefined)?.map((it) => it.tags) || [];
+    type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
+    const tags: Tag[] =
+      ((issueWithTags as IssueRowWithJoin | null)?.issues_tags?.map((it) => it.tags)) ??
+      [];
 
-    const criteriaItems: IssueCriteriaItem[] = ((joinedCriteria as any[]) || [])
-      .map((row: any) => row.wcag_criteria)
-      .filter(Boolean)
-      .map((c: any) => ({
-        code: c.code,
-        name: c.name,
-        version: c.version as WcagVersion,
-        level: c.level,
-      }));
+    type CriteriaJoinRow = { wcag_criteria: (WcagCriterion & { id: string }) | null };
+    const criteriaItems: IssueCriteriaItem[] =
+      (((joinedCriteria as CriteriaJoinRow[] | null) ?? [])
+        .map((row) => row.wcag_criteria)
+        .filter((c): c is WcagCriterion & { id: string } => Boolean(c))
+        .map((c) => ({
+          code: c.code,
+          name: c.name,
+          version: c.version,
+          level: c.level,
+        })));
 
-    const criteria_codes = Array.from(new Set(criteriaItems.map((c) => c.code)));
+    const criteria_codes = Array.from(
+      new Set(criteriaItems.map((c) => c.code)),
+    );
 
     // Construct response object similar to Issue but with criteria arrays and flattened tags
-    const baseIssue =
-      issueWithTags
-        ? (({ issues_tags, ...rest }) => rest)(issueWithTags as any)
-        : issueRow;
-    const responseIssue = {
-      ...baseIssue,
+    let baseIssue: Issue;
+    if (issueWithTags) {
+      const { issues_tags: _omit, ...rest } = issueWithTags as Issue & {
+        issues_tags?: unknown;
+      };
+      void _omit; // explicitly mark omitted field as used to satisfy lint
+      baseIssue = rest as Issue;
+    } else {
+      baseIssue = issueRow as Issue;
+    }
+
+    const responseIssue: IssueRead = {
+      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes">),
       tags,
       criteria: criteriaItems,
       criteria_codes,
