@@ -5,21 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import AiIcon from "@/components/AiIcon";
+import type { AIAssistPanelProps } from "@/types/ai";
 
-export type AIAssistPanelProps = {
-  aiPrompt: string;
-  onAiPromptChange: (value: string) => void;
-  aiBusy: boolean;
-  onGenerate: (e: React.FormEvent) => void;
-  aiError?: unknown | null;
-  aiMessage?: string | null;
-};
 
 export function AIAssistPanel({
   aiPrompt,
-  onAiPromptChange,
+  onAiPromptChangeAction,
   aiBusy,
-  onGenerate,
+  onGenerateAction,
 }: AIAssistPanelProps) {
   return (
     <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
@@ -66,7 +59,7 @@ export function AIAssistPanel({
         id="aiAssistanceDescription"
         value={aiPrompt}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          onAiPromptChange(e.target.value)
+          onAiPromptChangeAction(e.target.value)
         }
         rows={4}
         placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
@@ -79,7 +72,7 @@ export function AIAssistPanel({
       <Button
         className={"bg-button-background text-md gap-4"}
         type="button"
-        onClick={onGenerate}
+        onClick={onGenerateAction}
         disabled={aiBusy}
         aria-describedby="ai-status"
       >

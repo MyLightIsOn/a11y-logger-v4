@@ -14,9 +14,9 @@ export type FormActionsProps = {
 export function FormActions({ formId, submitting, error }: FormActionsProps) {
   return (
     <div>
-      {error && (
+      {error ? (
         <ErrorAlert variant="banner" message={normalizeErrorMessage(error)} />
-      )}
+      ) : null}
       <Button form={formId} type="submit" disabled={submitting} aria-describedby="submit-status">
         {submitting ? "Creating..." : "Create Issue"}
       </Button>

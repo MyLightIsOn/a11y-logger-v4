@@ -1,4 +1,5 @@
 import type { CriterionRef } from "@/types/issue";
+import type React from "react";
 
 // Shared AI-related types for issue insights and service configuration
 
@@ -31,4 +32,14 @@ export type OpenAiServiceOptions = {
   maxRetries?: number; // JSON-parse retry count for invalid JSON
   temperature?: number;
   baseUrl?: string; // override for enterprise proxies
+};
+
+// UI component props for the AI Assist panel
+export type AIAssistPanelProps = {
+  aiPrompt: string;
+  onAiPromptChangeAction: (value: string) => void;
+  aiBusy: boolean;
+  onGenerateAction: (e: React.FormEvent) => void;
+  aiError?: unknown | null;
+  aiMessage?: string | null;
 };

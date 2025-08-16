@@ -239,9 +239,9 @@ function IssueForm() {
       <form id={"create-issue-form"} onSubmit={rhfHandleSubmit(onSubmitRHF)}>
         <AIAssistPanel
           aiPrompt={aiPrompt}
-          onAiPromptChange={setAiPrompt}
+          onAiPromptChangeAction={setAiPrompt}
           aiBusy={aiBusy}
-          onGenerate={handleAiAssist}
+          onGenerateAction={handleAiAssist}
         />
 
         <CoreFields
