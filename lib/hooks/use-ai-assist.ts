@@ -71,8 +71,9 @@ export function useAiAssist(opts: UseAiAssistOptions) {
       setAiMessage(
         "Suggestions applied. Empty fields were filled; existing values were left unchanged.",
       );
-    } catch (e: any) {
-      setAiError(e?.message || "AI assist failed");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "AI assist failed";
+      setAiError(message);
       setAiMessage(
         "AI assist unavailable. You can continue filling the form manually.",
       );

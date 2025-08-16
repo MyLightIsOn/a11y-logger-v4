@@ -4,6 +4,13 @@ import type { WcagCriterion, WcagVersion } from "@/types/issue";
 
 export type Level = "A" | "AA" | "AAA";
 
+type Option = {
+  value: string;
+  label: string;
+  level: Level;
+  version: WcagVersion;
+};
+
 export function useWcagFilters() {
   const [versionFilter, setVersionFilter] = useState<WcagVersion | "all">(
     "all",
@@ -12,7 +19,7 @@ export function useWcagFilters() {
 
   const { data = [], isLoading, error } = useWcagCriteriaQuery();
 
-  const allOptions = useMemo(() => {
+  const allOptions = useMemo<Option[]>(() => {
     return (data || []).map((item: WcagCriterion) => ({
       value: `${item.version}|${item.code}`,
       label: `${item.code} ${item.name} (${item.version}, ${item.level})`,
@@ -23,10 +30,10 @@ export function useWcagFilters() {
 
   const filteredOptions = useMemo(() => {
     return allOptions
-      .filter((opt: any) =>
+      .filter((opt) =>
         versionFilter === "all" ? true : opt.version === versionFilter,
       )
-      .filter((opt: any) => (levelFilter === "all" ? true : opt.level === levelFilter))
+      .filter((opt) => (levelFilter === "all" ? true : opt.level === levelFilter))
       .map((opt) => ({ value: opt.value, label: opt.label }));
   }, [allOptions, versionFilter, levelFilter]);
 

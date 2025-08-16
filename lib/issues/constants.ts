@@ -3,6 +3,10 @@ import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 
 export type Option = { value: string; label: string };
 
+// Explicit value union types for Zod enums
+type SeverityValue = (typeof severityEnum)["_def"]["values"][number];
+type StatusValue = (typeof statusEnum)["_def"]["values"][number];
+
 // Human-readable labels for enums
 const severityLabels: Record<(typeof severityEnum)["_def"]["values"][number], string> = {
   "1": "Critical",
@@ -104,8 +108,8 @@ export function normalizeCreateIssuePayload(input: {
   return {
     title: (trim(input.title) || "").toString(),
     description: emptyToUndef(input.description),
-    severity: input.severity as any,
-    status: input.status as any,
+    severity: input.severity as SeverityValue,
+    status: input.status as StatusValue,
     suggested_fix: emptyToUndef(input.suggested_fix),
     impact: emptyToUndef(input.impact),
     url: emptyToUndef(input.url),

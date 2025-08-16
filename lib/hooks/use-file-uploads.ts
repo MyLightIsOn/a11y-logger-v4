@@ -8,6 +8,10 @@ export type UseFileUploadsOptions = {
   onUploaded?: (urls: string[]) => void;
 };
 
+// Expected shape of the uploads API response
+type UploadApiItem = { url: string };
+type UploadApiResponse = { data?: UploadApiItem[] };
+
 export function useFileUploads(opts: UseFileUploadsOptions = {}) {
   const { folder = "a11y-logger/issues", onUploaded } = opts;
   const [filesToUpload, setFilesToUpload] = useState<FileList | null>(null);
@@ -32,18 +36,20 @@ export function useFileUploads(opts: UseFileUploadsOptions = {}) {
         const text = await res.text();
         throw new Error(text || `Upload failed (${res.status})`);
       }
-      const json = await res.json();
-      const urls = (json?.data || []).map((it: any) => it.url).filter(Boolean);
+      const json: UploadApiResponse = await res.json();
+      const urls = (json?.data ?? [])
+        .map((it) => it.url)
+        .filter((u): u is string => typeof u === "string" && u.length > 0);
       setUploadedUrls((prev) => {
         const merged = dedupeStrings([...(prev || []), ...urls]);
         onUploaded?.(merged);
         return merged;
       });
       setFilesToUpload(null);
-    } catch (e: any) {
-      // eslint-disable-next-line no-console
+    } catch (e: unknown) {
       console.error("Upload error", e);
-      setUploadError(e?.message || "Failed to upload images");
+      const message = e instanceof Error ? e.message : "Failed to upload images";
+      setUploadError(message);
     } finally {
       setUploading(false);
     }

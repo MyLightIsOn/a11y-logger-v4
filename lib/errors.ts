@@ -1,4 +1,7 @@
-export function normalizeErrorMessage(err: unknown, fallback = "Something went wrong. Please try again."): string {
+export function normalizeErrorMessage(
+  err: unknown,
+  fallback = "Something went wrong. Please try again.",
+): string {
   if (!err) return fallback;
   // TanStack Query errors are often Error instances with message
   if (err instanceof Error) {
@@ -20,10 +23,4 @@ export function normalizeErrorMessage(err: unknown, fallback = "Something went w
     // ignore
   }
   return fallback;
-}
-
-export function logUnexpectedError(scope: string, err: unknown): void {
-  // Centralized logging; can be swapped for external logger later
-  // eslint-disable-next-line no-console
-  console.error(`[${scope}] Unexpected error:`, err);
 }
