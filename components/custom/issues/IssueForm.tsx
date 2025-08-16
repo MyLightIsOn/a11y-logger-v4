@@ -246,17 +246,17 @@ function IssueForm() {
 
         <CoreFields
           title={title}
-          onTitleChange={setTitle}
+          onTitleChangeAction={setTitle}
           description={description || ""}
-          onDescriptionChange={setDescription}
+          onDescriptionChangeAction={setDescription}
           url={url || ""}
-          onUrlChange={setUrl}
+          onUrlChangeAction={setUrl}
           severity={severity}
-          onSeverityChange={setSeverityFromString}
+          onSeverityChangeAction={setSeverityFromString}
           impact={impact || ""}
-          onImpactChange={setImpact}
+          onImpactChangeAction={setImpact}
           suggestedFix={suggestedFix || ""}
-          onSuggestedFixChange={setSuggestedFix}
+          onSuggestedFixChangeAction={setSuggestedFix}
           errors={errors}
         />
 

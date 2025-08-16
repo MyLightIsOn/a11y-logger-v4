@@ -11,38 +11,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { severityOptions } from "@/lib/issues/constants";
-import type { FieldErrors } from "react-hook-form";
-import type { CreateIssueInput } from "@/lib/validation/issues";
-
-export type CoreFieldsProps = {
-  title: string;
-  onTitleChange: (v: string) => void;
-  description: string;
-  onDescriptionChange: (v: string) => void;
-  url: string;
-  onUrlChange: (v: string) => void;
-  severity: string;
-  onSeverityChange: (v: string) => void;
-  impact: string;
-  onImpactChange: (v: string) => void;
-  suggestedFix: string;
-  onSuggestedFixChange: (v: string) => void;
-  errors: FieldErrors<CreateIssueInput>;
-};
+import type { CoreFieldsProps } from "@/types/issues-ui";
 
 export function CoreFields({
   title,
-  onTitleChange,
+  onTitleChangeAction,
   description,
-  onDescriptionChange,
+  onDescriptionChangeAction,
   url,
-  onUrlChange,
+  onUrlChangeAction,
   severity,
-  onSeverityChange,
+  onSeverityChangeAction,
   impact,
-  onImpactChange,
+  onImpactChangeAction,
   suggestedFix,
-  onSuggestedFixChange,
+  onSuggestedFixChangeAction,
   errors,
 }: CoreFieldsProps) {
   return (
@@ -57,7 +40,7 @@ export function CoreFields({
           id="title"
           value={title}
           placeholder={"Example: Search button not focusable..."}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChangeAction(e.target.value)}
           className="mt-1 block w-full"
           required
           aria-invalid={!!errors?.title}
@@ -79,7 +62,7 @@ export function CoreFields({
         <Textarea
           id="description"
           value={description || ""}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onDescriptionChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onDescriptionChangeAction(e.target.value)}
           rows={4}
           className="mt-1 block w-full"
           placeholder="Example: The search button on the homepage is not focusable via keyboard."
@@ -104,7 +87,7 @@ export function CoreFields({
           type="url"
           id="url"
           value={url}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUrlChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUrlChangeAction(e.target.value)}
           className="mt-1 block w-full placeholder:text-gray-400"
           placeholder={"Example: https://example.com/page-with-issue"}
           aria-invalid={!!errors?.url}
@@ -123,7 +106,7 @@ export function CoreFields({
           Severity <span className={"text-destructive"}>*</span>
         </label>
         <p id="severity-help" className="text-sm text-gray-500 mb-1">Choose the severity of the issue.</p>
-        <Select value={severity || "low"} onValueChange={onSeverityChange}>
+        <Select value={severity || "low"} onValueChange={onSeverityChangeAction}>
           <SelectTrigger id="severity" className="w-full" aria-invalid={!!errors?.severity} aria-describedby={`severity-help${errors?.severity ? ' severity-error' : ''}`}>
             <SelectValue placeholder="Select severity" />
           </SelectTrigger>
@@ -153,7 +136,7 @@ export function CoreFields({
         <Textarea
           id="impact"
           value={impact}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onImpactChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onImpactChangeAction(e.target.value)}
           rows={3}
           className="mt-1 block w-full mb-8"
           placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
@@ -170,7 +153,7 @@ export function CoreFields({
         <Textarea
           id="suggestedFix"
           value={suggestedFix}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onSuggestedFixChange(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onSuggestedFixChangeAction(e.target.value)}
           rows={3}
           className="mt-1 block w-full mb-8"
           placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
