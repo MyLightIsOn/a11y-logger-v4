@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import crypto from "crypto";
+import type { CloudinaryUploadResponse, NormalizedItem } from "@/types/uploads";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,21 +27,14 @@ function buildSignature(params: Record<string, string>, apiSecret: string) {
 }
 
 // Normalize Cloudinary upload response to the contract in the plan
-function normalizeItem(cloudRes: any) {
+function normalizeItem(cloudRes: CloudinaryUploadResponse): NormalizedItem {
   return {
-    url: cloudRes.secure_url || cloudRes.url,
+    url: cloudRes.secure_url || cloudRes.url || "",
     public_id: cloudRes.public_id,
     width: cloudRes.width,
     height: cloudRes.height,
     format: cloudRes.format,
     bytes: cloudRes.bytes,
-  } as {
-    url: string;
-    public_id: string;
-    width?: number;
-    height?: number;
-    format?: string;
-    bytes?: number;
   };
 }
 
@@ -93,7 +87,7 @@ export async function POST(request: NextRequest) {
     const folder = (form.get("folder") as string) || "a11y-logger/uploads";
 
     // Validate and upload sequentially (keeps memory lower and simpler error handling)
-    const results: any[] = [];
+    const results: NormalizedItem[] = [];
 
     for (const file of fileEntries) {
       const mime = file.type || "";
