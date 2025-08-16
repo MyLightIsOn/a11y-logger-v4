@@ -7,18 +7,20 @@ import {
   createIssueSchema,
   type CreateIssueInput,
 } from "@/lib/validation/issues";
-import { makeCriteriaKey, parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
+import { parseCriteriaKey } from "@/lib/issues/constants";
 import { useRouter } from "next/navigation";
 import { issuesApi } from "@/lib/api";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
-import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import CoreFields from "@/components/custom/issues/CoreFields";
 import WcagCriteriaSection from "@/components/custom/issues/WcagCriteriaSection";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
 import FormActions from "@/components/custom/issues/FormActions";
+import { useAiAssist, applyAiSuggestionsNonDestructive } from "@/lib/hooks/use-ai-assist";
+import { useFileUploads } from "@/lib/hooks/use-file-uploads";
+import { useWcagFilters } from "@/lib/hooks/use-wcag-filters";
 
 
 function IssueForm() {
@@ -50,7 +52,6 @@ function IssueForm() {
   // Form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [aiPrompt, setAiPrompt] = useState("");
   const [severity, setSeverity] = useState("3");
   const [status, setStatus] = useState("open");
   const [suggestedFix, setSuggestedFix] = useState("");
@@ -61,22 +62,11 @@ function IssueForm() {
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [aiError, setAiError] = useState<string | null>(null);
-  const [aiMessage, setAiMessage] = useState<string>(
-    "Use AI to suggest fields based on current context.",
-  );
-  const [aiBusy, setAiBusy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const router = useRouter();
 
   // WCAG criteria selection
-  const [wcagVersionFilter, setWcagVersionFilter] = useState<
-    WcagVersion | "all"
-  >("all");
-  const [wcagLevelFilter, setWcagLevelFilter] = useState<
-    "all" | "A" | "AA" | "AAA"
-  >("all");
   const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
 
   const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(
@@ -125,23 +115,16 @@ function IssueForm() {
     setValue("criteria", crit as any, { shouldValidate: false });
   }, [criteriaSelected, setValue]);
 
-  // Data fetching via TanStack Query
+  // WCAG criteria filters via hook
   const {
-    data: criteriaData = [],
+    versionFilter: wcagVersionFilter,
+    setVersionFilter: setWcagVersionFilter,
+    levelFilter: wcagLevelFilter,
+    setLevelFilter: setWcagLevelFilter,
+    options: filteredWcagOptions,
     isLoading: criteriaLoading,
     error: criteriaError,
-  } = useWcagCriteriaQuery();
-
-  const wcagOptions = useMemo(
-    () =>
-      (criteriaData || []).map((item) => ({
-        value: `${item.version}|${item.code}`,
-        label: `${item.code} ${item.name} (${item.version}, ${item.level})`,
-        level: item.level,
-        version: item.version,
-      })),
-    [criteriaData],
-  );
+  } = useWcagFilters();
 
   const {
     data: tagsData = [],
@@ -154,54 +137,45 @@ function IssueForm() {
     [tagsData],
   );
 
-  const handleAiAssist = async (e: React.FormEvent) => {
+  // AI Assist via hook
+  const { aiPrompt, setAiPrompt, aiBusy, generate } = useAiAssist({
+    getContext: () => ({
+      description: aiPrompt || description || "",
+      url: url || undefined,
+      selector: selector || undefined,
+      code_snippet: codeSnippet || undefined,
+      screenshots: screenshots && screenshots.length ? screenshots : undefined,
+      tags: tagIds && tagIds.length ? tagIds : undefined,
+      severity_hint: severity as any,
+      criteria_hints: criteriaSelected.map((key) => {
+        const { version, code } = parseCriteriaKey(key);
+        return { version: version as WcagVersion, code };
+      }),
+    }),
+    applySuggestions: (json) =>
+      applyAiSuggestionsNonDestructive(json, {
+        current: {
+          title,
+          description,
+          suggested_fix: suggestedFix,
+          impact,
+          severity: severity as any,
+          criteriaKeys: criteriaSelected,
+        },
+        set: {
+          setTitle,
+          setDescription,
+          setSuggestedFix,
+          setImpact,
+          setSeverity,
+          setCriteriaKeys: setCriteriaSelected,
+        },
+      }),
+  });
+
+  const handleAiAssist = (e: React.FormEvent) => {
     e.preventDefault();
-    setAiBusy(true);
-    setAiError(null);
-    setAiMessage("Generating suggestions...");
-    try {
-      const res = await fetch("/api/ai/issue-assist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description: aiPrompt,
-        }),
-      });
-      if (!res.ok) {
-        if (res.status === 404) {
-          throw new Error("AI assist is not configured on this environment.");
-        }
-        const text = await res.text();
-        throw new Error(text || `AI request failed (${res.status})`);
-      }
-      const json = await res.json();
-      // Non-destructive application: fill only empty fields
-      if (json?.title && !title) setTitle(json.title);
-      if (json?.description && !description) setDescription(json.description);
-      if (json?.suggested_fix && !suggestedFix)
-        setSuggestedFix(json.suggested_fix);
-      if (json?.impact && !impact) setImpact(json.impact);
-      if (json?.severity_suggestion && severity === "3")
-        setSeverity(String(json.severity_suggestion));
-      if (Array.isArray(json?.criteria)) {
-        const newKeys = json.criteria
-          .map((c: any) => makeCriteriaKey(c.version as WcagVersion, c.code))
-          .filter((k: string) => typeof k === "string");
-        setCriteriaSelected((prev) =>
-          dedupeStrings([...(prev || []), ...newKeys]),
-        );
-      }
-      setAiMessage(
-        "Suggestions applied. Empty fields were filled; existing values were left unchanged.",
-      );
-    } catch (e: any) {
-      setAiError(e?.message || "AI assist failed");
-      setAiMessage(
-        "AI assist unavailable. You can continue filling the form manually.",
-      );
-    } finally {
-      setAiBusy(false);
-    }
+    void generate();
   };
 
   const onSubmitRHF = async () => {
@@ -241,49 +215,20 @@ function IssueForm() {
     }
   };
 
-  const filteredWcagOptions = useMemo(() => {
-    return wcagOptions
-      .filter((opt: any) =>
-        wcagVersionFilter === "all" ? true : opt.version === wcagVersionFilter,
-      )
-      .filter((opt: any) =>
-        wcagLevelFilter === "all" ? true : opt.level === wcagLevelFilter,
-      )
-      .map((opt) => ({ value: opt.value, label: opt.label }));
-  }, [wcagOptions, wcagVersionFilter, wcagLevelFilter]);
-
-
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [filesToUpload, setFilesToUpload] = useState<FileList | null>(null);
+  // Uploads via hook
+  const {
+    filesToUpload,
+    setFilesToUpload,
+    uploading,
+    uploadError,
+    upload,
+  } = useFileUploads({
+    folder: "a11y-logger/issues",
+    onUploaded: (urls) => setScreenshots(urls),
+  });
 
   const handleUpload = async () => {
-    if (!filesToUpload || filesToUpload.length === 0) return;
-    setUploading(true);
-    setUploadError(null);
-    try {
-      const form = new FormData();
-      Array.from(filesToUpload).forEach((f) => form.append("files", f));
-      // optional folder to help organization
-      form.append("folder", "a11y-logger/issues");
-      const res = await fetch("/api/uploads/images", {
-        method: "POST",
-        body: form,
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Upload failed (${res.status})`);
-      }
-      const json = await res.json();
-      const urls = (json?.data || []).map((it: any) => it.url).filter(Boolean);
-      setScreenshots((prev) => dedupeStrings([...(prev || []), ...urls]));
-      setFilesToUpload(null);
-    } catch (e: any) {
-      console.error("Upload error", e);
-      setUploadError(e?.message || "Failed to upload images");
-    } finally {
-      setUploading(false);
-    }
+    await upload();
   };
   return (
     <div>
