@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createIssueSchema,
@@ -9,19 +9,21 @@ import {
 } from "@/lib/validation/issues";
 import { parseCriteriaKey } from "@/lib/issues/constants";
 import { useRouter } from "next/navigation";
-import { issuesApi } from "@/lib/api";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
+import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import CoreFields from "@/components/custom/issues/CoreFields";
 import WcagCriteriaSection from "@/components/custom/issues/WcagCriteriaSection";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
 import FormActions from "@/components/custom/issues/FormActions";
-import { useAiAssist, applyAiSuggestionsNonDestructive } from "@/lib/hooks/use-ai-assist";
+import {
+  useAiAssist,
+  applyAiSuggestionsNonDestructive,
+} from "@/lib/hooks/use-ai-assist";
 import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useWcagFilters } from "@/lib/hooks/use-wcag-filters";
-
 
 function IssueForm() {
   const {
@@ -29,6 +31,8 @@ function IssueForm() {
     formState: { errors },
     setValue,
     clearErrors,
+    reset,
+    control,
   } = useForm<CreateIssueInput>({
     defaultValues: {
       title: "",
@@ -49,64 +53,53 @@ function IssueForm() {
     resolver: zodResolver(createIssueSchema),
     shouldFocusError: true,
   });
-  // Form state
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [severity, setSeverity] = useState("3");
-  const [status, setStatus] = useState("open");
-  const [suggestedFix, setSuggestedFix] = useState("");
-  const [impact, setImpact] = useState("");
-  const [url, setUrl] = useState("");
-  const [selector, setSelector] = useState("");
-  const [codeSnippet, setCodeSnippet] = useState("");
-  const [screenshots, setScreenshots] = useState<string[]>([]);
-  const [tagIds, setTagIds] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [
+    title,
+    description,
+    severity,
+    status,
+    suggestedFix,
+    impact,
+    url,
+    selector,
+    codeSnippet,
+    screenshots,
+    tagIds,
+  ] = useWatch({
+    control,
+    name: [
+      "title",
+      "description",
+      "severity",
+      "status",
+      "suggested_fix",
+      "impact",
+      "url",
+      "selector",
+      "code_snippet",
+      "screenshots",
+      "tag_ids",
+    ],
+    defaultValue: ["", "", "3", "open", "", "", "", "", "", [], []],
+  }) as unknown as [
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string[],
+    string[],
+  ];
 
   const router = useRouter();
 
   // WCAG criteria selection
   const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
 
-  const firstInvalidRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(
-    null,
-  );
-
-  // Sync local state into RHF so the resolver can validate and provide inline errors
-  useEffect(() => {
-    setValue("title", title, { shouldValidate: false });
-  }, [title, setValue]);
-  useEffect(() => {
-    setValue("description", description || "", { shouldValidate: false });
-  }, [description, setValue]);
-  useEffect(() => {
-    setValue("severity", severity as any, { shouldValidate: false });
-  }, [severity, setValue]);
-  useEffect(() => {
-    setValue("status", status as any, { shouldValidate: false });
-  }, [status, setValue]);
-  useEffect(() => {
-    setValue("impact", impact || "", { shouldValidate: false });
-  }, [impact, setValue]);
-  useEffect(() => {
-    setValue("suggested_fix", suggestedFix || "", { shouldValidate: false });
-  }, [suggestedFix, setValue]);
-  useEffect(() => {
-    setValue("url", url || "", { shouldValidate: false });
-  }, [url, setValue]);
-  useEffect(() => {
-    setValue("selector", selector || "", { shouldValidate: false });
-  }, [selector, setValue]);
-  useEffect(() => {
-    setValue("code_snippet", codeSnippet || "", { shouldValidate: false });
-  }, [codeSnippet, setValue]);
-  useEffect(() => {
-    setValue("screenshots", screenshots || [], { shouldValidate: false });
-  }, [screenshots, setValue]);
-  useEffect(() => {
-    setValue("tag_ids", tagIds || [], { shouldValidate: false });
-  }, [tagIds, setValue]);
   useEffect(() => {
     const crit = (criteriaSelected || []).map((key) => {
       const { version, code } = parseCriteriaKey(key);
@@ -114,6 +107,32 @@ function IssueForm() {
     });
     setValue("criteria", crit as any, { shouldValidate: false });
   }, [criteriaSelected, setValue]);
+
+  // Create Issue mutation (Step 9)
+  const createIssue = useCreateIssueMutation();
+
+  // Setters mapping to RHF (Step 10 - remove local state)
+  const setTitle = (v: string) =>
+    setValue("title", v, { shouldValidate: false });
+  const setDescription = (v: string) =>
+    setValue("description", v, { shouldValidate: false });
+  const setSeverity = (v: string) =>
+    setValue("severity", v as any, { shouldValidate: false });
+  const setStatus = (v: string) =>
+    setValue("status", v as any, { shouldValidate: false });
+  const setSuggestedFix = (v: string) =>
+    setValue("suggested_fix", v, { shouldValidate: false });
+  const setImpact = (v: string) =>
+    setValue("impact", v, { shouldValidate: false });
+  const setUrl = (v: string) => setValue("url", v, { shouldValidate: false });
+  const setSelector = (v: string) =>
+    setValue("selector", v, { shouldValidate: false });
+  const setCodeSnippet = (v: string) =>
+    setValue("code_snippet", v, { shouldValidate: false });
+  const setScreenshots = (arr: string[]) =>
+    setValue("screenshots", arr, { shouldValidate: false });
+  const setTagIds = (arr: string[]) =>
+    setValue("tag_ids", arr, { shouldValidate: false });
 
   // WCAG criteria filters via hook
   const {
@@ -179,8 +198,7 @@ function IssueForm() {
   };
 
   const onSubmitRHF = async () => {
-    setSubmitting(true);
-    setError(null);
+    clearErrors();
 
     const criteria = criteriaSelected.map((key) => {
       const { version, code } = parseCriteriaKey(key);
@@ -188,44 +206,34 @@ function IssueForm() {
     });
 
     const payload: CreateIssueRequest = {
-      title: title.trim(),
-      description: description.trim() || undefined,
+      title: (title || "").trim(),
+      description: (description || "").trim() || undefined,
       severity: severity as any,
       status: status as any,
-      suggested_fix: suggestedFix.trim() || undefined,
-      impact: impact.trim() || undefined,
-      url: url.trim() || undefined,
-      selector: selector.trim() || undefined,
+      suggested_fix: (suggestedFix || "").trim() || undefined,
+      impact: (impact || "").trim() || undefined,
+      url: (url || "").trim() || undefined,
+      selector: (selector || "").trim() || undefined,
       code_snippet: codeSnippet || undefined,
-      screenshots: screenshots.length ? screenshots : undefined,
-      tag_ids: tagIds.length ? tagIds : undefined,
+      screenshots: (screenshots || []).length ? screenshots : undefined,
+      tag_ids: (tagIds || []).length ? tagIds : undefined,
       criteria,
     };
 
-    try {
-      const res = await issuesApi.createIssue(payload);
-      if (!res.success) throw new Error(res.error || "Failed to create issue");
-      // Navigate to issues list
-      router.push("/issues");
-    } catch (e: any) {
-      console.error("Create issue error", e);
-      setError(e?.message || "Failed to create issue");
-    } finally {
-      setSubmitting(false);
-    }
+    createIssue.mutate(payload, {
+      onSuccess: () => {
+        reset();
+        router.push("/issues");
+      },
+    });
   };
 
   // Uploads via hook
-  const {
-    filesToUpload,
-    setFilesToUpload,
-    uploading,
-    uploadError,
-    upload,
-  } = useFileUploads({
-    folder: "a11y-logger/issues",
-    onUploaded: (urls) => setScreenshots(urls),
-  });
+  const { filesToUpload, setFilesToUpload, uploading, uploadError, upload } =
+    useFileUploads({
+      folder: "a11y-logger/issues",
+      onUploaded: (urls) => setScreenshots(urls),
+    });
 
   const handleUpload = async () => {
     await upload();
@@ -286,7 +294,11 @@ function IssueForm() {
           screenshots={screenshots}
         />
 
-        <FormActions formId="create-issue-form" submitting={submitting} error={error} />
+        <FormActions
+          formId="create-issue-form"
+          submitting={createIssue.isPending}
+          error={(createIssue.error?.message ?? null) as string | null}
+        />
       </form>
     </div>
   );
