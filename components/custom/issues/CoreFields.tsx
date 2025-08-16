@@ -1,0 +1,177 @@
+"use client";
+
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { severityOptions } from "@/lib/issues/constants";
+import type { FieldErrors } from "react-hook-form";
+import type { CreateIssueInput } from "@/lib/validation/issues";
+
+export type CoreFieldsProps = {
+  title: string;
+  onTitleChange: (v: string) => void;
+  description: string;
+  onDescriptionChange: (v: string) => void;
+  url: string;
+  onUrlChange: (v: string) => void;
+  severity: string;
+  onSeverityChange: (v: string) => void;
+  impact: string;
+  onImpactChange: (v: string) => void;
+  suggestedFix: string;
+  onSuggestedFixChange: (v: string) => void;
+  errors: FieldErrors<CreateIssueInput>;
+};
+
+export function CoreFields({
+  title,
+  onTitleChange,
+  description,
+  onDescriptionChange,
+  url,
+  onUrlChange,
+  severity,
+  onSeverityChange,
+  impact,
+  onImpactChange,
+  suggestedFix,
+  onSuggestedFixChange,
+  errors,
+}: CoreFieldsProps) {
+  return (
+    <>
+      <div className="mb-4">
+        <label htmlFor="title" className="block text-xl font-bold">
+          Title <span className={"text-destructive"}>*</span>
+        </label>
+        <p className="text-sm text-gray-500 mb-1">Provide a short title of the issue.</p>
+        <Input
+          type="text"
+          id="title"
+          value={title}
+          placeholder={"Example: Search button not focusable..."}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onTitleChange(e.target.value)}
+          className="mt-1 block w-full"
+          required
+        />
+        {errors?.title && (
+          <p className="text-sm text-red-600 mt-1" role="status">
+            {String(errors.title.message)}
+          </p>
+        )}
+        <div className="mb-6" />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="description" className="block text-xl font-bold">
+          Description <span className={"text-destructive"}>*</span>
+        </label>
+        <p className="text-sm text-gray-500 mb-1">Provide a detailed description of the issue.</p>
+        <Textarea
+          id="description"
+          value={description || ""}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onDescriptionChange(e.target.value)}
+          rows={4}
+          className="mt-1 block w-full"
+          placeholder="Example: The search button on the homepage is not focusable via keyboard."
+          required
+        />
+        {errors?.description && (
+          <p className="text-sm text-red-600 mt-1" role="status">
+            {String(errors.description.message)}
+          </p>
+        )}
+        <div className="mb-6" />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="url" className="block text-xl font-bold">
+          URL
+        </label>
+        <p className="text-sm text-gray-500 mb-1">Enter the URL of the page where the issue was found.</p>
+        <Input
+          type="url"
+          id="url"
+          value={url}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUrlChange(e.target.value)}
+          className="mt-1 block w-full placeholder:text-gray-400"
+          placeholder={"Example: https://example.com/page-with-issue"}
+        />
+        {errors?.url && (
+          <p className="text-sm text-red-600 mt-1" role="status">
+            {String(errors.url.message)}
+          </p>
+        )}
+        <div className="mb-6" />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="severity" className="block text-xl font-bold">
+          Severity <span className={"text-destructive"}>*</span>
+        </label>
+        <p className="text-sm text-gray-500 mb-1">Choose the severity of the issue.</p>
+        <Select value={severity || "low"} onValueChange={onSeverityChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select severity" />
+          </SelectTrigger>
+          <SelectContent>
+            {severityOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors?.severity && (
+          <p className="text-sm text-red-600 mt-1" role="status">
+            {String(errors.severity.message)}
+          </p>
+        )}
+        <div className="mb-6" />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="impact" className="block text-xl font-bold">
+          Impact
+        </label>
+        <p className="text-sm text-gray-500 mb-1">
+          Describe how this issue affects users, particularly those with disabilities.
+        </p>
+        <Textarea
+          id="impact"
+          value={impact}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onImpactChange(e.target.value)}
+          rows={3}
+          className="mt-1 block w-full mb-8"
+          placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="suggestedFix" className="block text-xl font-bold">
+          Suggested Fix
+        </label>
+        <p className="text-sm text-gray-500 mb-1">
+          Provide a specific recommendation for how to fix this issue.
+        </p>
+        <Textarea
+          id="suggestedFix"
+          value={suggestedFix}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onSuggestedFixChange(e.target.value)}
+          rows={3}
+          className="mt-1 block w-full mb-8"
+          placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
+        />
+      </div>
+    </>
+  );
+}
+
+export default CoreFields;

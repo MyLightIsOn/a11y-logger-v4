@@ -7,26 +7,18 @@ import {
   createIssueSchema,
   type CreateIssueInput,
 } from "@/lib/validation/issues";
-import { severityOptions, makeCriteriaKey, parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
+import { makeCriteriaKey, parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { MultiSelect } from "@/components/ui/multi-select";
 import { issuesApi } from "@/lib/api";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
-import { AlertTriangle } from "lucide-react";
-import AiIcon from "@/components/AiIcon";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
+import CoreFields from "@/components/custom/issues/CoreFields";
+import WcagCriteriaSection from "@/components/custom/issues/WcagCriteriaSection";
+import TagsSection from "@/components/custom/issues/TagsSection";
+import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
+import FormActions from "@/components/custom/issues/FormActions";
 
 
 function IssueForm() {
@@ -295,374 +287,61 @@ function IssueForm() {
   };
   return (
     <div>
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
       <form id={"create-issue-form"} onSubmit={rhfHandleSubmit(onSubmitRHF)}>
-        <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
-          <div
-            className={"text-md font-medium text-gray-700 dark:text-white mb-4"}
-          >
-            <p className={"mb-4"}>
-              You can enter a description here and press the Generate Issue
-              Button to have the rest of the issue filled out by the AI. For the
-              best results, please include the following information:
-            </p>
+        <AIAssistPanel
+          aiPrompt={aiPrompt}
+          onAiPromptChange={setAiPrompt}
+          aiBusy={aiBusy}
+          onGenerate={handleAiAssist}
+        />
 
-            <ol className={"mb-5 pl-10 list-decimal"}>
-              <li>
-                <span className={"font-bold pl-1"}>Component</span>: What
-                element is affected? (e.g., &#34;Search button&#34;)
-              </li>
-              <li>
-                <span className={"font-bold pl-1"}>Location</span>: Where does
-                the issue occur? (e.g., &#34;Homepage&#34;)
-              </li>
-              <li>
-                <span className={"font-bold pl-1"}>What&apos;s Happening?</span>
-                : What is wrong? (e.g., &#34;Not focusable via keyboard&#34;)
-              </li>
-              <li>
-                <span className={"font-bold pl-1"}>
-                  Expected Behavoir (Optional)
-                </span>
-                : What is the expected behavoir?
-              </li>
-            </ol>
-            <p className={"flex items-center mb-4 text-sm"}>
-              <AlertTriangle className="h-10 w-10 fill-amber-200 mr-2 dark:stroke-black" />
-              AI assistance will only fill in fields you've left empty; it will
-              not overwrite values you've already entered.
-            </p>
-          </div>
+        <CoreFields
+          title={title}
+          onTitleChange={setTitle}
+          description={description}
+          onDescriptionChange={setDescription}
+          url={url}
+          onUrlChange={setUrl}
+          severity={severity}
+          onSeverityChange={setSeverity}
+          impact={impact}
+          onImpactChange={setImpact}
+          suggestedFix={suggestedFix}
+          onSuggestedFixChange={setSuggestedFix}
+          errors={errors}
+        />
 
-          <label
-            htmlFor="aiAssistanceDescription"
-            className="block text-xl font-bold"
-          >
-            AI Assistance Description
-          </label>
-          <Textarea
-            id="aiAssistanceDescription"
-            value={aiPrompt}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setAiPrompt(e.target.value)
-            }
-            rows={4}
-            placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
-            className="mt-1 block w-full mb-4"
-          />
-          <Button
-            className={"bg-button-background text-md gap-4"}
-            type="button"
-            onClick={handleAiAssist}
-            disabled={aiBusy}
-          >
-            {aiBusy ? "Working..." : "Generate/Refine with AI"} <AiIcon />
-          </Button>
-        </div>
+        <WcagCriteriaSection
+          isLoading={criteriaLoading}
+          error={criteriaError as Error | undefined}
+          versionFilter={wcagVersionFilter}
+          onVersionFilterChange={setWcagVersionFilter}
+          levelFilter={wcagLevelFilter}
+          onLevelFilterChange={setWcagLevelFilter}
+          options={filteredWcagOptions}
+          selected={criteriaSelected}
+          onSelectedChange={(arr) => setCriteriaSelected(arr)}
+          errors={errors}
+        />
 
-        <div className="mb-4">
-          <label htmlFor="title" className="block text-xl font-bold">
-            Title <span className={"text-destructive"}>*</span>
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Provide a short title of the issue.
-          </p>
-          <Input
-            type="text"
-            id="title"
-            value={title}
-            placeholder={"Example: Search button not focusable..."}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setTitle(e.target.value)
-            }
-            className="mt-1 block w-full"
-            required
-          />
-          {errors?.title && (
-            <p className="text-sm text-red-600 mt-1" role="status">
-              {String(errors.title.message)}
-            </p>
-          )}
-          <div className="mb-6" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-xl font-bold">
-            Description <span className={"text-destructive"}>*</span>
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Provide a detailed description of the issue.
-          </p>
-          <Textarea
-            id="description"
-            value={description || ""}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDescription(e.target.value)
-            }
-            rows={4}
-            className="mt-1 block w-full"
-            placeholder="Example: The search button on the homepage is not focusable via keyboard."
-            required
-          />
-          {errors?.description && (
-            <p className="text-sm text-red-600 mt-1" role="status">
-              {String(errors.description.message)}
-            </p>
-          )}
-          <div className="mb-6" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="url" className="block text-xl font-bold">
-            URL
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Enter the URL of the page where the issue was found.
-          </p>
-          <Input
-            type="url"
-            id="url"
-            value={url}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setUrl(e.target.value)
-            }
-            className="mt-1 block w-full placeholder:text-gray-400"
-            placeholder={"Example: https://example.com/page-with-issue"}
-          />
-          {errors?.url && (
-            <p className="text-sm text-red-600 mt-1" role="status">
-              {String(errors.url.message)}
-            </p>
-          )}
-          <div className="mb-6" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="severity" className="block text-xl font-bold">
-            Severity <span className={"text-destructive"}>*</span>
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Choose the severity of the issue.
-          </p>
-          <Select value={severity || "low"} onValueChange={setSeverity}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select severity" />
-            </SelectTrigger>
-            <SelectContent>
-              {severityOptions.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors?.severity && (
-            <p className="text-sm text-red-600 mt-1" role="status">
-              {String(errors.severity.message)}
-            </p>
-          )}
-          <div className="mb-6" />
-        </div>
-        <section
-          aria-labelledby="wcag-heading"
-          className="bg-card rounded-lg p-4 border border-border"
-        >
-          <h2 id="wcag-heading" className="text-lg font-semibold mb-4">
-            WCAG Criteria
-          </h2>
-          {criteriaLoading && (
-            <p role="status" className="text-sm text-gray-600 mb-2">
-              Loading WCAG criteria...
-            </p>
-          )}
-          {criteriaError && (
-            <p role="status" className="text-sm text-red-700 mb-2">
-              {criteriaError.message}
-            </p>
-          )}
-          {!criteriaLoading && wcagOptions.length === 0 && !criteriaError && (
-            <p className="text-sm text-gray-600 mb-2">No WCAG criteria available.</p>
-          )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-            <div>
-              <Label htmlFor="wcag-version">Version</Label>
-              <select
-                id="wcag-version"
-                className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-                value={wcagVersionFilter}
-                onChange={(e) =>
-                  setWcagVersionFilter((e.target.value as any) || "all")
-                }
-              >
-                <option value="all">All</option>
-                <option value="2.1">2.1</option>
-                <option value="2.2">2.2</option>
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="wcag-level">Level</Label>
-              <select
-                id="wcag-level"
-                className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-                value={wcagLevelFilter}
-                onChange={(e) =>
-                  setWcagLevelFilter((e.target.value as any) || "all")
-                }
-              >
-                <option value="all">All</option>
-                <option value="A">A</option>
-                <option value="AA">AA</option>
-                <option value="AAA">AAA</option>
-              </select>
-            </div>
-          </div>
-          <Label htmlFor="criteria">Criteria</Label>
-          <MultiSelect
-            id="criteria"
-            options={filteredWcagOptions}
-            selected={criteriaSelected}
-            onChangeAction={(arr) => setCriteriaSelected(arr as string[])}
-            placeholder="Search and select WCAG criteria..."
-            className="w-full"
-          />
-          <p className="text-sm text-gray-500 mt-2">
-            Select at least one criterion.
-          </p>
-          {errors?.criteria && (
-            <p className="text-sm text-red-600 mt-1" role="status">
-              {String((errors.criteria as any)?.message)}
-            </p>
-          )}
-        </section>
-        <div className="mb-4">
-          <label htmlFor="impact" className="block text-xl font-bold">
-            Impact
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Describe how this issue affects users, particularly those with
-            disabilities.
-          </p>
-          <Textarea
-            id="impact"
-            value={impact}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setImpact(e.target.value)
-            }
-            rows={3}
-            className="mt-1 block w-full mb-8"
-            placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="suggestedFix" className="block text-xl font-bold">
-            Suggested Fix
-          </label>
-          <p className="text-sm text-gray-500 mb-1">
-            Provide a specific recommendation for how to fix this issue.
-          </p>
-          <Textarea
-            id="suggestedFix"
-            value={suggestedFix}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setSuggestedFix(e.target.value)
-            }
-            rows={3}
-            className="mt-1 block w-full mb-8"
-            placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
-          />
-        </div>
-        <section
-          aria-labelledby="tags-heading"
-          className="bg-card rounded-lg p-4 border border-border"
-        >
-          <h2 id="tags-heading" className="text-lg font-semibold mb-4">
-            Tags
-          </h2>
-          {tagsLoading && (
-            <p role="status" className="text-sm text-gray-600 mb-2">
-              Loading tags...
-            </p>
-          )}
-          {tagsError && (
-            <p role="status" className="text-sm text-red-700 mb-2">
-              {tagsError.message}
-            </p>
-          )}
-          {!tagsLoading && tagOptions.length === 0 && !tagsError && (
-            <p className="text-sm text-gray-600 mb-2">No tags available.</p>
-          )}
-          <MultiSelect
-            id="tags"
-            options={tagOptions}
-            selected={tagIds}
-            onChangeAction={(arr) => setTagIds(arr as string[])}
-            placeholder="Select tags..."
-            className="w-full"
-          />
-          <p className="text-sm text-gray-500 mt-2">
-            Tags are optional. This environment may not have predefined tags
-            yet.
-          </p>
-        </section>
+        <TagsSection
+          isLoading={tagsLoading}
+          error={tagsError as Error | undefined}
+          options={tagOptions}
+          selected={tagIds}
+          onSelectedChange={(arr) => setTagIds(arr)}
+        />
 
-        <section
-          aria-labelledby="attachments-heading"
-          className="bg-card rounded-lg p-4 border border-border"
-        >
-          <h2 id="attachments-heading" className="text-lg font-semibold mb-4">
-            Attachments
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-            <div>
-              <Label htmlFor="screenshots">Screenshots</Label>
-              <input
-                id="screenshots"
-                type="file"
-                multiple
-                accept="image/!*"
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary"
-                onChange={(e) => setFilesToUpload(e.target.files)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                onClick={handleUpload}
-                disabled={uploading || !filesToUpload}
-              >
-                {uploading ? "Uploading..." : "Upload"}
-              </Button>
-              {uploadError && (
-                <span className="text-sm text-red-600" role="status">
-                  {uploadError}
-                </span>
-              )}
-            </div>
-          </div>
-          {screenshots.length > 0 && (
-            <div className="mt-3">
-              <p className="text-sm mb-2">Uploaded:</p>
-              <ul className="list-disc pl-5 text-sm">
-                {screenshots.map((u) => (
-                  <li key={u} className="break-all">
-                    <a
-                      href={u}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline"
-                    >
-                      {u}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-        <Button form="create-issue-form" type="submit" disabled={submitting}>
-          {submitting ? "Creating..." : "Create Issue"}
-        </Button>
+        <AttachmentsSection
+          filesToUpload={filesToUpload}
+          onFilesChange={setFilesToUpload}
+          uploading={uploading}
+          uploadError={uploadError}
+          onUpload={handleUpload}
+          screenshots={screenshots}
+        />
+
+        <FormActions formId="create-issue-form" submitting={submitting} error={error} />
       </form>
     </div>
   );
