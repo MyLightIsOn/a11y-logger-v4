@@ -28,7 +28,7 @@ export interface Issue {
 }
 
 // Normalized WCAG linkage types
-export type WcagVersion = "2.1" | "2.2";
+export type WcagVersion = "2.0" | "2.1" | "2.2";
 
 /** Canonical WCAG criterion as stored/returned from DB (one row per version). */
 export interface WcagCriterion {

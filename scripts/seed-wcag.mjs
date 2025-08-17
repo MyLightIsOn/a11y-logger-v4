@@ -41,7 +41,7 @@ async function main() {
       continue;
     }
     for (const v of it.versions) {
-      if (!["2.1", "2.2"].includes(v)) {
+      if (!["2.0", "2.1", "2.2"].includes(v)) {
         console.warn(`Skipping unsupported version "${v}" for code ${it.code}`);
         continue;
       }
