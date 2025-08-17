@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import type { Tag } from "@/types/tag";
 import type { Assessment } from "@/types/assessment";
+import { wcagVersionEnum } from "@/lib/validation/issues";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,6 +58,65 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching assessments:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    // Get the current user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const name = (body?.name ?? "").toString().trim();
+    const description = typeof body?.description === "string" ? body.description.trim() : undefined;
+    const wcag_version_raw = body?.wcag_version;
+
+    if (!name) {
+      return NextResponse.json({ error: "Assessment name is required" }, { status: 400 });
+    }
+
+    // Validate wcag_version explicitly using existing enum
+    let wcag_version: string;
+    try {
+      wcag_version = wcagVersionEnum.parse(wcag_version_raw);
+    } catch {
+      return NextResponse.json(
+        { error: "wcag_version is required and must be one of '2.0' | '2.1' | '2.2'" },
+        { status: 400 },
+      );
+    }
+
+    const { data, error } = await supabase
+      .from("assessments")
+      .insert({
+        name,
+        description,
+        wcag_version,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    console.error("Error creating assessment:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

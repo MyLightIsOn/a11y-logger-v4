@@ -56,7 +56,9 @@ export function parseCriteriaKey(key: string): { version: WcagVersion; code: str
 
 export function isCriteriaKey(key: string): boolean {
   const [version, code] = key.split("|");
-  return (version === "2.1" || version === "2.2") && typeof code === "string" && code.length > 0;
+  return (
+    version === "2.0" || version === "2.1" || version === "2.2"
+  ) && typeof code === "string" && code.length > 0;
 }
 
 /** Array dedupers */
@@ -98,6 +100,7 @@ export function normalizeCreateIssuePayload(input: {
   screenshots?: string[];
   tag_ids?: string[];
   criteria: { version: WcagVersion; code: string }[];
+  assessment_id: string;
 }): CreateIssueRequest {
   const trim = (v?: string) => (typeof v === "string" ? v.trim() : v);
   const emptyToUndef = (v?: string) => {
@@ -118,5 +121,6 @@ export function normalizeCreateIssuePayload(input: {
     screenshots: input.screenshots && input.screenshots.length ? dedupeStrings(input.screenshots) : undefined,
     tag_ids: input.tag_ids && input.tag_ids.length ? dedupeStrings(input.tag_ids) : undefined,
     criteria: input.criteria,
+    assessment_id: input.assessment_id,
   };
 }

@@ -1,5 +1,5 @@
 import { BaseApiService, ApiResponse } from "./base";
-import { Issue, CreateIssueRequest, IssueRead } from "@/types/issue";
+import { Issue, CreateIssueRequest, IssueRead, UpdateIssueRequest } from "@/types/issue";
 import { QueryParams } from "@/types/api";
 
 /**
@@ -35,6 +35,14 @@ export class IssuesApiService extends BaseApiService {
    */
   async createIssue(payload: CreateIssueRequest): Promise<ApiResponse<IssueRead>> {
     return this.post<IssueRead>(this.basePath, payload);
+  }
+
+  /**
+   * Update an existing issue by ID (PATCH semantics)
+   * Accepts partial payload; when criteria is provided, it represents the full desired set.
+   */
+  async updateIssue(id: string, payload: UpdateIssueRequest): Promise<ApiResponse<IssueRead>> {
+    return this.patch<IssueRead>(`${this.basePath}/${id}`, payload);
   }
 }
 

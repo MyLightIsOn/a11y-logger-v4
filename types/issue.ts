@@ -7,7 +7,6 @@ import { Tag } from "./tag";
  * - Adds WCAG and create-request types introduced in Phase 1
  */
 
-// Legacy Issue entity (as currently returned/consumed by list views)
 export interface Issue {
   id: UUID;
   title: string;
@@ -90,4 +89,27 @@ export interface CreateIssueRequest {
   screenshots?: string[];
   tag_ids?: UUID[];
   criteria: CriterionRef[];
+  assessment_id: UUID;
+}
+
+/** Update/Patch request type for Issues. All fields optional; criteria replaces the full set when provided. */
+export interface UpdateIssueRequest {
+  title?: string;
+  description?: string;
+  severity?: Severity;
+  status?: IssueStatus;
+  suggested_fix?: string;
+  impact?: string;
+  url?: string;
+  selector?: string;
+  code_snippet?: string;
+  screenshots?: string[];
+  tag_ids?: UUID[];
+  /**
+   * When provided, this array represents the full desired criteria set for the Issue
+   * (bulk add/remove). It will be validated and de-duplicated by the API.
+   */
+  criteria?: CriterionRef[];
+  /** Optional for reassociation flows; API must enforce single-assessment-per-issue. */
+  assessment_id?: UUID;
 }

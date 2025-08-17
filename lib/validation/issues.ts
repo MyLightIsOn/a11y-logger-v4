@@ -14,7 +14,7 @@ export const statusEnum = z.enum(["open", "closed", "archive"], {
 });
 
 export const wcagVersionEnum = z
-  .enum(["2.1", "2.2"])
+  .enum(["2.0", "2.1", "2.2"])
   .transform((v) => v as WcagVersion);
 
 // Build a cached allowlist: key = `${version}|${code}` -> {name, level}
@@ -35,7 +35,7 @@ const buildAllowlist = () => {
     )
       return;
     item.versions.forEach((v) => {
-      if (v === "2.1" || v === "2.2") {
+      if (v === "2.0" || v === "2.1" || v === "2.2") {
         map.set(`${v}|${item.code}`, { name: item.name, level: item.level });
       }
     });
@@ -107,6 +107,22 @@ export const createIssueSchema = z
 export type CreateIssueSchema = typeof createIssueSchema;
 export type CreateIssueInput = z.infer<typeof createIssueSchema>;
 
+/** Utility to deduplicate a criteria array by version+code. */
+export function dedupeCriteria<T extends { version: WcagVersion; code: string }>(
+  arr: T[]
+): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const it of arr || []) {
+    const key = `${it.version}|${it.code}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      out.push(it);
+    }
+  }
+  return out;
+}
+
 /**
  * Validate a CreateIssue request. Returns the parsed value or throws ZodError.
  */
@@ -115,3 +131,37 @@ export function validateCreateIssue(input: unknown): CreateIssueRequest {
   // cast to CreateIssueRequest since the schema matches the shape
   return parsed as CreateIssueRequest;
 }
+
+/**
+ * Validate an UpdateIssue request. Returns the parsed value.
+ * Note: further validation (e.g., assessment/version checks) should be performed server-side.
+ */
+export function validateUpdateIssue(input: unknown) {
+  return updateIssueSchema.parse(input);
+}
+
+/**
+ * Update/Patch schema for Issues.
+ * - All fields optional.
+ * - criteria, when provided, represents the full desired set (may be empty to clear).
+ */
+export const updateIssueSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200).optional(),
+    description: z.string().trim().max(5000).optional(),
+    severity: severityEnum.optional(),
+    status: statusEnum.optional(),
+    suggested_fix: z.string().trim().max(5000).optional(),
+    impact: z.string().trim().max(5000).optional(),
+    url: urlSchema.optional(),
+    selector: z.string().trim().max(2000).optional(),
+    code_snippet: z.string().trim().max(10000).optional(),
+    screenshots: z.array(screenshotUrlSchema).max(10).optional(),
+    tag_ids: z.array(z.string()).optional(),
+    criteria: z.array(criterionRefSchema).optional(),
+    assessment_id: z.string().uuid().optional(),
+  })
+  .strict();
+
+export type UpdateIssueSchema = typeof updateIssueSchema;
+export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;

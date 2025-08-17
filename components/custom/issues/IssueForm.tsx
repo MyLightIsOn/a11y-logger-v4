@@ -8,7 +8,7 @@ import {
   type CreateIssueInput,
 } from "@/lib/validation/issues";
 import { parseCriteriaKey } from "@/lib/issues/constants";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import type { IssueStatus, Severity } from "@/types/common";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
@@ -96,6 +96,9 @@ function IssueForm() {
   ];
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const assessmentId = (searchParams?.get("assessment_id") || "");
+  const [localError, setLocalError] = useState<string | null>(null);
 
   // WCAG criteria selection
   const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
@@ -195,6 +198,12 @@ function IssueForm() {
 
   const onSubmitRHF = async () => {
     clearErrors();
+    if (!assessmentId) {
+      setLocalError("Assessment is required. Open this form from an Assessment context or include ?assessment_id=<uuid> in the URL.");
+      return;
+    } else {
+      setLocalError(null);
+    }
 
     const criteria = criteriaSelected.map((key) => {
       const { version, code } = parseCriteriaKey(key);
@@ -214,6 +223,7 @@ function IssueForm() {
       screenshots: (screenshots || []).length ? screenshots : undefined,
       tag_ids: (tagIds || []).length ? tagIds : undefined,
       criteria,
+      assessment_id: assessmentId,
     };
 
     createIssue.mutate(payload, {
@@ -293,7 +303,7 @@ function IssueForm() {
         <FormActions
           formId="create-issue-form"
           submitting={createIssue.isPending}
-          error={(createIssue.error?.message ?? null) as string | null}
+          error={(localError ?? createIssue.error?.message ?? null) as string | null}
         />
       </form>
     </div>
