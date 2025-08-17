@@ -7,15 +7,19 @@ import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
 // Define a type for the items that can be selected
-type SelectItem = string | { value: string; label?: string } | Record<string, unknown>;
+type SelectItem =
+  | string
+  | { value: string; label?: string }
+  | Record<string, unknown>;
 
 interface MultiSelectProps {
   options: { value: string; label: string }[];
-  selected: SelectItem[]; // Can be string[] or object[]
+  selected: SelectItem[];
   onChangeAction: (selected: SelectItem[]) => void;
   placeholder?: string;
   className?: string;
   id?: string;
+  disabled?: boolean | undefined;
 }
 
 export function MultiSelect({
@@ -25,6 +29,7 @@ export function MultiSelect({
   placeholder = "Select items...",
   className,
   id,
+  disabled,
 }: MultiSelectProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -32,61 +37,76 @@ export function MultiSelect({
 
   // Get a unique key for an item (handles both strings and objects)
   const getUniqueKey = React.useCallback((item: SelectItem): string => {
-    if (item === null || item === undefined) return 'null';
-    if (typeof item === 'string') return item;
-    if (typeof item === 'object') {
-      if ('value' in item && typeof item.value === 'string') return item.value;
+    if (item === null || item === undefined) return "null";
+    if (typeof item === "string") return item;
+    if (typeof item === "object") {
+      if ("value" in item && typeof item.value === "string") return item.value;
       return `obj-${JSON.stringify(item)}`;
     }
     return String(item);
   }, []);
 
-  const handleUnselect = React.useCallback((item: SelectItem) => {
-    if (typeof item === 'string') {
-      onChangeAction(selected.filter((i) => i !== item));
-    } else {
-      const itemKey = getUniqueKey(item);
-      onChangeAction(selected.filter((i) => getUniqueKey(i) !== itemKey));
-    }
-  }, [onChangeAction, selected, getUniqueKey]);
+  const handleUnselect = React.useCallback(
+    (item: SelectItem) => {
+      if (typeof item === "string") {
+        onChangeAction(selected.filter((i) => i !== item));
+      } else {
+        const itemKey = getUniqueKey(item);
+        onChangeAction(selected.filter((i) => getUniqueKey(i) !== itemKey));
+      }
+    },
+    [onChangeAction, selected, getUniqueKey],
+  );
 
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    const input = inputRef.current;
-    if (input) {
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (input.value === "" && selected.length > 0) {
-          onChangeAction(selected.slice(0, -1));
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const input = inputRef.current;
+      if (input) {
+        if (e.key === "Delete" || e.key === "Backspace") {
+          if (input.value === "" && selected.length > 0) {
+            onChangeAction(selected.slice(0, -1));
+          }
+        }
+        if (e.key === "Escape") {
+          input.blur();
         }
       }
-      if (e.key === "Escape") {
-        input.blur();
-      }
-    }
-  }, [onChangeAction, selected]);
+    },
+    [onChangeAction, selected],
+  );
 
-  const selectables = React.useMemo(() => options.filter(
-    (option) => !selected.some(item =>
-      typeof item === 'string'
-        ? item === option.value
-        : (item?.value === option.value)
-    ),
-  ), [options, selected]);
+  const selectables = React.useMemo(
+    () =>
+      options.filter(
+        (option) =>
+          !selected.some((item) =>
+            typeof item === "string"
+              ? item === option.value
+              : item?.value === option.value,
+          ),
+      ),
+    [options, selected],
+  );
 
   // Find the label for a selected value
-  const getLabelForValue = React.useCallback((value: SelectItem): string => {
-    if (typeof value === 'string') {
-      const option = options.find(opt => opt.value === value);
-      return option ? option.label : value;
-    } else if (value && typeof value === 'object') {
-      if ('label' in value && typeof value.label === 'string') return value.label;
-      if ('value' in value && typeof value.value === 'string') {
-        const option = options.find(opt => opt.value === value.value);
-        return option ? option.label : value.value;
+  const getLabelForValue = React.useCallback(
+    (value: SelectItem): string => {
+      if (typeof value === "string") {
+        const option = options.find((opt) => opt.value === value);
+        return option ? option.label : value;
+      } else if (value && typeof value === "object") {
+        if ("label" in value && typeof value.label === "string")
+          return value.label;
+        if ("value" in value && typeof value.value === "string") {
+          const option = options.find((opt) => opt.value === value.value);
+          return option ? option.label : value.value;
+        }
+        return String(value);
       }
       return String(value);
-    }
-    return String(value);
-  }, [options]);
+    },
+    [options],
+  );
 
   // Debug: console.log('Selected items:', selected);
 
@@ -146,11 +166,13 @@ export function MultiSelect({
                     onSelect={() => {
                       setInputValue("");
                       // Check if we already have this value to avoid duplicates
-                      if (!selected.some(item =>
-                        typeof item === 'string'
-                          ? item === option.value
-                          : (item?.value === option.value)
-                      )) {
+                      if (
+                        !selected.some((item) =>
+                          typeof item === "string"
+                            ? item === option.value
+                            : item?.value === option.value,
+                        )
+                      ) {
                         onChangeAction([...selected, option.value]);
                       }
                     }}

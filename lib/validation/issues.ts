@@ -63,27 +63,47 @@ const urlSchema = z
 // Screenshots are URL strings; modest limits
 const screenshotUrlSchema = urlSchema;
 
-export const criterionRefSchema = z
-  .object({
-    code: z
-      .string()
-      .min(3, "Code is required")
-      .regex(/^\d+\.\d+\.\d+$/, {
-        message: "Code must be in the form d.d.d (e.g., 1.4.3)",
-      }),
-    version: wcagVersionEnum,
-  })
-  .superRefine((val, ctx) => {
-    const key = `${val.version}|${val.code}`;
-    const allow = getCriteriaAllowlist();
-    if (!allow.has(key)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Unknown WCAG criterion: ${val.code} (version ${val.version})`,
-        path: ["code"],
-      });
+export const criterionRefSchema = z.preprocess((raw) => {
+  // Accept either { version, code: 'd.d.d' } or { version?, code: 'v|d.d.d' }
+  if (raw && typeof raw === "object") {
+    const r = raw as Record<string, unknown>;
+    const codeVal = typeof r.code === "string" ? r.code : undefined;
+    const versionVal = typeof r.version === "string" ? r.version : undefined;
+    if (codeVal && codeVal.includes("|")) {
+      const [maybeVersion, maybeCode] = codeVal.split("|", 2);
+      if (maybeVersion && maybeCode) {
+        // If version is missing, take it from code; otherwise keep provided version
+        const finalVersion = (versionVal ?? maybeVersion) as unknown;
+        return { ...r, version: finalVersion, code: maybeCode };
+      }
     }
-  });
+  }
+  return raw;
+},
+  z
+    .object({
+      code: z
+        .string()
+        .min(3, "Code is required")
+        .regex(/^\d+\.\d+\.\d+$/, {
+          message: "Code must be in the form d.d.d (e.g., 1.4.3)",
+        }),
+      version: wcagVersionEnum,
+    })
+    .superRefine((val, ctx) => {
+      // If the original code had an embedded version that disagrees with version, flag it
+      // This is a soft check: we only can validate allowlist reliably.
+      const key = `${val.version}|${val.code}`;
+      const allow = getCriteriaAllowlist();
+      if (!allow.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Unknown WCAG criterion: ${val.code} (version ${val.version})`,
+          path: ["code"],
+        });
+      }
+    })
+);
 
 export const createIssueSchema = z
   .object({
@@ -98,9 +118,8 @@ export const createIssueSchema = z
     code_snippet: z.string().trim().max(10000).optional(),
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
     tag_ids: z.array(z.string()).optional(),
-    criteria: z
-      .array(criterionRefSchema)
-      .min(1, "Select at least one WCAG criterion"),
+    assessment_id: z.string().uuid().optional(),
+    criteria: z.array(criterionRefSchema).default([]),
   })
   .strict();
 

@@ -24,12 +24,10 @@ export type CoreFieldsProps = {
 export type WcagCriteriaSectionProps = {
   isLoading: boolean;
   error: Error | null | undefined;
-  versionFilter: WcagVersion | "all";
-  onVersionFilterChangeAction: (v: WcagVersion | "all") => void;
-  levelFilter: "all" | "A" | "AA" | "AAA";
-  onLevelFilterChangeAction: (v: "all" | "A" | "AA" | "AAA") => void;
   options: Option[];
   selected: string[];
   onSelectedChangeAction: (arr: string[]) => void;
+  disabled?: boolean;
+  version?: WcagVersion | null;
   errors: FieldErrors<CreateIssueInput>;
 };

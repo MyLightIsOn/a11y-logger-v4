@@ -2,12 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  createIssueSchema,
-  type CreateIssueInput,
-} from "@/lib/validation/issues";
-import { parseCriteriaKey } from "@/lib/issues/constants";
+import type { CreateIssueInput } from "@/lib/validation/issues";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import type { IssueStatus, Severity } from "@/types/common";
@@ -15,7 +10,6 @@ import { useTagsQuery } from "@/lib/query/use-tags-query";
 import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import CoreFields from "@/components/custom/issues/CoreFields";
-import WcagCriteriaSection from "@/components/custom/issues/WcagCriteriaSection";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
 import FormActions from "@/components/custom/issues/FormActions";
@@ -24,8 +18,9 @@ import {
   applyAiSuggestionsNonDestructive,
 } from "@/lib/hooks/use-ai-assist";
 import { useFileUploads } from "@/lib/hooks/use-file-uploads";
-import { useWcagFilters } from "@/lib/hooks/use-wcag-filters";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
+import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
+import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 
 function IssueForm() {
   const {
@@ -52,7 +47,6 @@ function IssueForm() {
     },
     mode: "onSubmit",
     reValidateMode: "onChange",
-    resolver: zodResolver(createIssueSchema),
     shouldFocusError: true,
   });
   const [
@@ -98,26 +92,51 @@ function IssueForm() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const assessmentId = (searchParams?.get("assessment_id") || "");
+  const assessmentIdFromUrl = searchParams?.get("assessment_id") || "";
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
 
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
-  const assessment = useMemo(() => assessments.find(a => a.id === assessmentId), [assessments, assessmentId]);
+
+  // Current effective assessment context: URL param wins (locked), otherwise local selection
+  const effectiveAssessmentId =
+    assessmentIdFromUrl || selectedAssessmentId || "";
+  const assessment = useMemo(
+    () => assessments.find((a) => a.id === effectiveAssessmentId),
+    [assessments, effectiveAssessmentId],
+  );
   const wcagVersionForAi = assessment?.wcag_version as WcagVersion | undefined;
 
-  // WCAG criteria selection
-  const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
+  // Load full criteria catalog and filter by the assessment's version
+  const {
+    data: allCriteria = [],
+    isLoading: wcagLoading,
+    error: wcagError,
+  } = useWcagCriteriaQuery();
 
-  useEffect(() => {
-    const crit: CreateIssueInput["criteria"] = (criteriaSelected || []).map(
-      (key) => {
-        const { version, code } = parseCriteriaKey(key);
-        return { version: version as WcagVersion, code };
-      },
-    );
-    setValue("criteria", crit, { shouldValidate: false });
-  }, [criteriaSelected, setValue]);
+  const wcagOptions = useMemo(() => {
+    if (!assessment?.wcag_version) return [];
+    const v = assessment.wcag_version as WcagVersion;
+    const dotAware = (a: string, b: string) => {
+      const pa = a.split(".").map(Number);
+      const pb = b.split(".").map(Number);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const da = pa[i] ?? 0;
+        const db = pb[i] ?? 0;
+        if (da !== db) return da - db;
+      }
+      return 0;
+    };
+    return (allCriteria || [])
+      .filter((c) => c.version === v)
+      .sort((c1, c2) => dotAware(c1.code, c2.code))
+      .map((c) => ({
+        value: c.code,
+        label: `${c.code} — ${c.name} (${c.level})`,
+      }));
+  }, [allCriteria, assessment?.wcag_version]);
 
   const createIssue = useCreateIssueMutation();
 
@@ -138,17 +157,6 @@ function IssueForm() {
     setValue("screenshots", arr, { shouldValidate: false });
   const setTagIds = (arr: string[]) =>
     setValue("tag_ids", arr, { shouldValidate: false });
-
-  // WCAG criteria filters via hook
-  const {
-    versionFilter: wcagVersionFilter,
-    setVersionFilter: setWcagVersionFilter,
-    levelFilter: wcagLevelFilter,
-    setLevelFilter: setWcagLevelFilter,
-    options: filteredWcagOptions,
-    isLoading: criteriaLoading,
-    error: criteriaError,
-  } = useWcagFilters();
 
   const {
     data: tagsData = [],
@@ -171,11 +179,7 @@ function IssueForm() {
       screenshots: screenshots && screenshots.length ? screenshots : undefined,
       tags: tagIds && tagIds.length ? tagIds : undefined,
       severity_hint: severity,
-      criteria_hints: criteriaSelected.map((key) => {
-        const { version, code } = parseCriteriaKey(key);
-        return { version: version as WcagVersion, code };
-      }),
-      assessment_id: assessmentId || undefined,
+      assessment_id: effectiveAssessmentId || undefined,
       wcag_version: wcagVersionForAi,
     }),
     applySuggestions: (json) =>
@@ -186,7 +190,7 @@ function IssueForm() {
           suggested_fix: suggestedFix,
           impact,
           severity: severity,
-          criteriaKeys: criteriaSelected,
+          criteriaKeys: criteriaCodes,
         },
         set: {
           setTitle,
@@ -194,7 +198,7 @@ function IssueForm() {
           setSuggestedFix,
           setImpact,
           setSeverity: setSeverityFromString,
-          setCriteriaKeys: setCriteriaSelected,
+          setCriteriaKeys: setCriteriaCodes,
         },
       }),
   });
@@ -206,19 +210,16 @@ function IssueForm() {
 
   const onSubmitRHF = async () => {
     clearErrors();
-    if (!assessmentId) {
-      setLocalError("Assessment is required. Open this form from an Assessment context or include ?assessment_id=<uuid> in the URL.");
+    if (!effectiveAssessmentId) {
+      setLocalError(
+        "Assessment is required. Please select an Assessment before creating an issue.",
+      );
       return;
     } else {
       setLocalError(null);
     }
 
-    const criteria = criteriaSelected.map((key) => {
-      const { version, code } = parseCriteriaKey(key);
-      return { code, version: version as WcagVersion };
-    });
-
-    const payload: CreateIssueRequest = {
+    const payload = {
       title: (title || "").trim(),
       description: (description || "").trim() || undefined,
       severity: severity,
@@ -230,9 +231,15 @@ function IssueForm() {
       code_snippet: codeSnippet || undefined,
       screenshots: (screenshots || []).length ? screenshots : undefined,
       tag_ids: (tagIds || []).length ? tagIds : undefined,
-      criteria,
-      assessment_id: assessmentId,
-    };
+      assessment_id: effectiveAssessmentId,
+      criteria:
+        assessment?.wcag_version && criteriaCodes.length
+          ? criteriaCodes.map((code) => ({
+              code,
+              version: assessment.wcag_version as WcagVersion,
+            }))
+          : [],
+    } as unknown as CreateIssueRequest;
 
     createIssue.mutate(payload, {
       onSuccess: () => {
@@ -255,6 +262,67 @@ function IssueForm() {
   return (
     <div>
       <form id={"create-issue-form"} onSubmit={rhfHandleSubmit(onSubmitRHF)}>
+        {/* Assessment selection */}
+        <section className="bg-card rounded-lg p-4 border border-border mb-4">
+          <h2 className="text-lg font-semibold mb-4">Assessment</h2>
+          {assessments.length === 0 ? (
+            <div className="text-sm text-gray-700">
+              <p className="mb-2">
+                You need to create an Assessment before creating issues.
+              </p>
+              <a href="/assessments" className="text-primary underline">
+                Go to Assessments
+              </a>
+            </div>
+          ) : assessmentIdFromUrl ? (
+            <div className="text-sm">
+              <p>
+                <span className="font-medium">Selected:</span>{" "}
+                {assessment?.name || assessmentIdFromUrl}{" "}
+                <span className="ml-2 text-gray-500">(locked by context)</span>
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label
+                htmlFor="assessment-select"
+                className="block text-sm font-medium mb-1"
+              >
+                Choose an Assessment
+              </label>
+              <select
+                id="assessment-select"
+                className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
+                value={selectedAssessmentId}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setSelectedAssessmentId(next);
+                  // reflect in URL for consistency
+                  const params = new URLSearchParams(
+                    Array.from(searchParams?.entries?.() || []),
+                  );
+                  if (next) {
+                    params.set("assessment_id", next);
+                  } else {
+                    params.delete("assessment_id");
+                  }
+                  router.push(
+                    `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
+                  );
+                }}
+                aria-required="true"
+              >
+                <option value="">Select an assessment...</option>
+                {assessments.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </section>
+
         <AIAssistPanel
           aiPrompt={aiPrompt}
           onAiPromptChangeAction={setAiPrompt}
@@ -279,15 +347,13 @@ function IssueForm() {
         />
 
         <WcagCriteriaSection
-          isLoading={criteriaLoading}
-          error={criteriaError as Error | undefined}
-          versionFilter={wcagVersionFilter}
-          onVersionFilterChangeAction={setWcagVersionFilter}
-          levelFilter={wcagLevelFilter}
-          onLevelFilterChangeAction={setWcagLevelFilter}
-          options={filteredWcagOptions}
-          selected={criteriaSelected}
-          onSelectedChangeAction={(arr) => setCriteriaSelected(arr)}
+          isLoading={wcagLoading}
+          error={wcagError as Error | undefined}
+          options={wcagOptions}
+          selected={criteriaCodes}
+          onSelectedChangeAction={setCriteriaCodes}
+          disabled={!assessment?.wcag_version}
+          version={assessment?.wcag_version ?? null}
           errors={errors}
         />
 
@@ -311,7 +377,9 @@ function IssueForm() {
         <FormActions
           formId="create-issue-form"
           submitting={createIssue.isPending}
-          error={(localError ?? createIssue.error?.message ?? null) as string | null}
+          error={
+            (localError ?? createIssue.error?.message ?? null) as string | null
+          }
         />
       </form>
     </div>

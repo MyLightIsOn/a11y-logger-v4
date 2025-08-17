@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate input
     let payload: CreateIssueRequest;
+
     try {
       const body = await request.json();
       payload = validateCreateIssue(body);
@@ -215,6 +216,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Link the issue to an assessment if provided (join table: assessments_issues)
+    if (payload.assessment_id) {
+      const { error: assessLinkErr } = await supabase
+        .from("assessments_issues")
+        .upsert([{ assessment_id: payload.assessment_id, issue_id: issueId }], {
+          onConflict: "assessment_id,issue_id",
+          ignoreDuplicates: true,
+        });
+
+      if (assessLinkErr) {
+        console.error("Inserting assessments_issues failed:", assessLinkErr);
+        return NextResponse.json(
+          { error: "Failed to link assessment" },
+          { status: 500 },
+        );
+      }
+    }
+
     // 3) Insert tag relations if provided
     if (Array.isArray(payload.tag_ids) && payload.tag_ids.length) {
       const uniqueTagIds = Array.from(new Set(payload.tag_ids));
@@ -272,20 +291,24 @@ export async function POST(request: NextRequest) {
 
     type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
     const tags: Tag[] =
-      ((issueWithTags as IssueRowWithJoin | null)?.issues_tags?.map((it) => it.tags)) ??
-      [];
+      (issueWithTags as IssueRowWithJoin | null)?.issues_tags?.map(
+        (it) => it.tags,
+      ) ?? [];
 
-    type CriteriaJoinRow = { wcag_criteria: (WcagCriterion & { id: string }) | null };
-    const criteriaItems: IssueCriteriaItem[] =
-      (((joinedCriteria as CriteriaJoinRow[] | null) ?? [])
-        .map((row) => row.wcag_criteria)
-        .filter((c): c is WcagCriterion & { id: string } => Boolean(c))
-        .map((c) => ({
-          code: c.code,
-          name: c.name,
-          version: c.version,
-          level: c.level,
-        })));
+    type CriteriaJoinRow = {
+      wcag_criteria: (WcagCriterion & { id: string }) | null;
+    };
+    const criteriaItems: IssueCriteriaItem[] = (
+      (joinedCriteria as CriteriaJoinRow[] | null) ?? []
+    )
+      .map((row) => row.wcag_criteria)
+      .filter((c): c is WcagCriterion & { id: string } => Boolean(c))
+      .map((c) => ({
+        code: c.code,
+        name: c.name,
+        version: c.version,
+        level: c.level,
+      }));
 
     const criteria_codes = Array.from(
       new Set(criteriaItems.map((c) => c.code)),
