@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { GenerateIssueInsightsOutput, SeveritySuggestion } from "@/types/ai";
 import type { CriterionRef, WcagVersion } from "@/types/issue";
-import { dedupeStrings, makeCriteriaKey } from "@/lib/issues/constants";
+import { dedupeStrings, makeCriteriaKey, parseCriteriaKey } from "@/lib/issues/constants";
 
 export type AiAssistContextInput = {
   description: string; // required prompt text
@@ -12,6 +12,8 @@ export type AiAssistContextInput = {
   tags?: string[];
   severity_hint?: SeveritySuggestion;
   criteria_hints?: CriterionRef[];
+  assessment_id?: string;
+  wcag_version?: WcagVersion;
 };
 
 export type ApplySuggestionsPayload = GenerateIssueInsightsOutput;
@@ -55,6 +57,8 @@ export function useAiAssist(opts: UseAiAssistOptions) {
           tags: ctx.tags,
           severity_hint: ctx.severity_hint,
           criteria_hints: ctx.criteria_hints,
+          assessment_id: (ctx as any).assessment_id,
+          wcag_version: (ctx as any).wcag_version,
         }),
       });
       if (!res.ok) {
@@ -132,6 +136,22 @@ export function applyAiSuggestionsNonDestructive(
     const newKeys = ai.criteria
       .map((c: CriterionRef) => makeCriteriaKey(c.version as WcagVersion, c.code))
       .filter((k: string) => typeof k === "string");
-    set.setCriteriaKeys((prev) => dedupeStrings([...(prev || []), ...newKeys]));
+    set.setCriteriaKeys((prev) => {
+      const deduped = dedupeStrings([...(prev || []), ...newKeys]);
+      // Sort by numeric, dot-aware code within the key (version|code)
+      const cmp = (a: string, b: string) => {
+        const ac = parseCriteriaKey(a).code;
+        const bc = parseCriteriaKey(b).code;
+        const as = ac.split(".").map((n) => parseInt(n, 10));
+        const bs = bc.split(".").map((n) => parseInt(n, 10));
+        for (let i = 0; i < Math.max(as.length, bs.length); i++) {
+          const av = as[i] ?? 0;
+          const bv = bs[i] ?? 0;
+          if (av !== bv) return av - bv;
+        }
+        return a.localeCompare(b);
+      };
+      return [...deduped].sort(cmp);
+    });
   }
 }

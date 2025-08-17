@@ -25,6 +25,7 @@ import {
 } from "@/lib/hooks/use-ai-assist";
 import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useWcagFilters } from "@/lib/hooks/use-wcag-filters";
+import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 
 function IssueForm() {
   const {
@@ -100,6 +101,11 @@ function IssueForm() {
   const assessmentId = (searchParams?.get("assessment_id") || "");
   const [localError, setLocalError] = useState<string | null>(null);
 
+  // Load assessments to resolve the selected assessment's WCAG version for AI context
+  const { data: assessments = [] } = useAssessmentsQuery();
+  const assessment = useMemo(() => assessments.find(a => a.id === assessmentId), [assessments, assessmentId]);
+  const wcagVersionForAi = assessment?.wcag_version as WcagVersion | undefined;
+
   // WCAG criteria selection
   const [criteriaSelected, setCriteriaSelected] = useState<string[]>([]);
 
@@ -169,6 +175,8 @@ function IssueForm() {
         const { version, code } = parseCriteriaKey(key);
         return { version: version as WcagVersion, code };
       }),
+      assessment_id: assessmentId || undefined,
+      wcag_version: wcagVersionForAi,
     }),
     applySuggestions: (json) =>
       applyAiSuggestionsNonDestructive(json, {

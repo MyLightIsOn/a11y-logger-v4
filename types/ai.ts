@@ -14,6 +14,9 @@ export interface GenerateIssueInsightsInput {
   tags?: string[]; // free-text tags as hints
   severity_hint?: SeveritySuggestion;
   criteria_hints?: CriterionRef[]; // preselected hints
+  // Context to restrict suggestions
+  assessment_id?: import("@/types/common").UUID;
+  wcag_version?: import("@/types/issue").WcagVersion; // if provided, restrict criteria to this version
 }
 
 export interface GenerateIssueInsightsOutput {

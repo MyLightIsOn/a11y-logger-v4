@@ -38,13 +38,13 @@ Return only strict JSON matching this TypeScript type (no markdown, no extra tex
   "title": string,                    // short, WCAG-friendly, mention what is wrong in the title. e.g., "Missing alt text"
   "description": string,              // refined interpretation, do not include impact
   "severity_suggestion": "1"|"2"|"3"|"4", // 1=highest impact, 4=lowest
-  "criteria": Array<{ code: string; version: "2.1"|"2.2" }>,
+  "criteria": Array<{ code: string; version: "2.0"|"2.1"|"2.2" }>,
   "suggested_fix": string,            // practical remediation; include code examples if helpful
   "impact": string,                   // up to ~100 words explaining why it matters
   "tag_suggestions"?: string[]        // optional
 }
 Rules:
-- Criteria must be valid WCAG success criteria codes for the specified version.
+- Criteria must be valid WCAG success criteria codes for the Assessment's WCAG version if provided; otherwise, criteria may be from WCAG 2.0/2.1/2.2.
 - Do not include any fields not defined in the schema.
 - Output must be valid JSON (no trailing commas, no comments).
 `;
@@ -66,8 +66,10 @@ function buildUserPrompt(input: GenerateIssueInsightsInput): string {
         .map((c) => `${c.version}|${c.code}`)
         .join(", ")}`,
     );
+  if (input.wcag_version)
+    parts.push(`Assessment WCAG version: ${input.wcag_version}. Only propose criteria from this version.`);
   parts.push(
-    "Return JSON only. Ensure criteria codes are valid for WCAG 2.1/2.2. Keep the impact under ~100 words.",
+    "Return JSON only. Ensure criteria codes are valid for WCAG 2.0/2.1/2.2. Keep the impact under ~100 words.",
   );
   return parts.join("\n");
 }

@@ -18,10 +18,12 @@ const inputSchema = z.object({
     .array(
       z.object({
         code: z.string().regex(/^\d+\.\d+\.\d+$/),
-        version: z.enum(["2.1", "2.2"]),
+        version: z.enum(["2.0", "2.1", "2.2"]),
       }),
     )
     .optional(),
+  assessment_id: z.string().uuid().optional(),
+  wcag_version: z.enum(["2.0", "2.1", "2.2"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -46,6 +48,8 @@ export async function POST(req: NextRequest) {
       tags: input.tags,
       severity_hint: input.severity_hint,
       criteria_hints: input.criteria_hints,
+      assessment_id: input.assessment_id,
+      wcag_version: input.wcag_version,
     });
 
     return NextResponse.json(result, { status: 200 });
