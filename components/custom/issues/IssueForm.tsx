@@ -262,127 +262,136 @@ function IssueForm() {
   };
   return (
     <div>
-      <form id={"create-issue-form"} onSubmit={rhfHandleSubmit(onSubmitRHF)}>
-        {/* Assessment selection */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
-          <h2 className="text-lg font-semibold mb-4">Assessment</h2>
-          {assessments.length === 0 ? (
-            <div className="text-sm text-gray-700">
-              <p className="mb-2">
-                You need to create an Assessment before creating issues.
-              </p>
-              <a href="/assessments" className="text-primary underline">
-                Go to Assessments
-              </a>
-            </div>
-          ) : assessmentIdFromUrl ? (
-            <div className="text-sm">
-              <p>
-                <span className="font-medium">Selected:</span>{" "}
-                {assessment?.name || assessmentIdFromUrl}{" "}
-                <span className="ml-2 text-gray-500">(locked by context)</span>
-              </p>
-            </div>
-          ) : (
-            <div>
-              <label
-                htmlFor="assessment-select"
-                className="block text-sm font-medium mb-1"
-              >
-                Choose an Assessment
-              </label>
-              <select
-                id="assessment-select"
-                className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-                value={selectedAssessmentId}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setSelectedAssessmentId(next);
-                  // reflect in URL for consistency
-                  const params = new URLSearchParams(
-                    Array.from(searchParams?.entries?.() || []),
-                  );
-                  if (next) {
-                    params.set("assessment_id", next);
-                  } else {
-                    params.delete("assessment_id");
-                  }
-                  router.push(
-                    `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
-                  );
-                }}
-                aria-required="true"
-              >
-                <option value="">Select an assessment...</option>
-                {assessments.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </section>
+      <form
+        id={"create-issue-form"}
+        className={"flex flex-wrap"}
+        onSubmit={rhfHandleSubmit(onSubmitRHF)}
+      >
+        <div className="p-6 w-full md:w-2/3">
+          {/* Assessment selection */}
+          <section className="bg-card rounded-lg p-4 border border-border mb-4">
+            <h2 className="text-lg font-semibold mb-4">Assessment</h2>
+            {assessments.length === 0 ? (
+              <div className="text-sm text-gray-700">
+                <p className="mb-2">
+                  You need to create an Assessment before creating issues.
+                </p>
+                <a href="/assessments" className="text-primary underline">
+                  Go to Assessments
+                </a>
+              </div>
+            ) : assessmentIdFromUrl ? (
+              <div className="text-sm">
+                <p>
+                  <span className="font-medium">Selected:</span>{" "}
+                  {assessment?.name || assessmentIdFromUrl}{" "}
+                  <span className="ml-2 text-gray-500">
+                    (locked by context)
+                  </span>
+                </p>
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="assessment-select"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Choose an Assessment
+                </label>
+                <select
+                  id="assessment-select"
+                  className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
+                  value={selectedAssessmentId}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setSelectedAssessmentId(next);
+                    // reflect in URL for consistency
+                    const params = new URLSearchParams(
+                      Array.from(searchParams?.entries?.() || []),
+                    );
+                    if (next) {
+                      params.set("assessment_id", next);
+                    } else {
+                      params.delete("assessment_id");
+                    }
+                    router.push(
+                      `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
+                    );
+                  }}
+                  aria-required="true"
+                >
+                  <option value="">Select an assessment...</option>
+                  {assessments.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </section>
 
-        <AIAssistPanel
-          aiPrompt={aiPrompt}
-          onAiPromptChangeAction={setAiPrompt}
-          aiBusy={aiBusy}
-          onGenerateAction={handleAiAssist}
-        />
+          <AIAssistPanel
+            aiPrompt={aiPrompt}
+            onAiPromptChangeAction={setAiPrompt}
+            aiBusy={aiBusy}
+            onGenerateAction={handleAiAssist}
+          />
 
-        <CoreFields
-          title={title}
-          onTitleChangeAction={setTitle}
-          description={description || ""}
-          onDescriptionChangeAction={setDescription}
-          url={url || ""}
-          onUrlChangeAction={setUrl}
-          severity={severity}
-          onSeverityChangeAction={setSeverityFromString}
-          impact={impact || ""}
-          onImpactChangeAction={setImpact}
-          suggestedFix={suggestedFix || ""}
-          onSuggestedFixChangeAction={setSuggestedFix}
-          errors={errors}
-        />
+          <CoreFields
+            title={title}
+            onTitleChangeAction={setTitle}
+            description={description || ""}
+            onDescriptionChangeAction={setDescription}
+            url={url || ""}
+            onUrlChangeAction={setUrl}
+            severity={severity}
+            onSeverityChangeAction={setSeverityFromString}
+            impact={impact || ""}
+            onImpactChangeAction={setImpact}
+            suggestedFix={suggestedFix || ""}
+            onSuggestedFixChangeAction={setSuggestedFix}
+            errors={errors}
+          />
 
-        <WcagCriteriaSection
-          isLoading={wcagLoading}
-          error={wcagError as Error | undefined}
-          options={wcagOptions}
-          selected={criteriaCodes}
-          onSelectedChangeAction={setCriteriaCodes}
-          disabled={!assessment?.wcag_version}
-          version={assessment?.wcag_version ?? null}
-          errors={errors}
-        />
+          <WcagCriteriaSection
+            isLoading={wcagLoading}
+            error={wcagError as Error | undefined}
+            options={wcagOptions}
+            selected={criteriaCodes}
+            onSelectedChangeAction={setCriteriaCodes}
+            disabled={!assessment?.wcag_version}
+            version={assessment?.wcag_version ?? null}
+            errors={errors}
+          />
 
-        <TagsSection
-          isLoading={tagsLoading}
-          error={tagsError as Error | undefined}
-          options={tagOptions}
-          selected={tagIds}
-          onSelectedChangeAction={(arr) => setTagIds(arr)}
-        />
+          <TagsSection
+            isLoading={tagsLoading}
+            error={tagsError as Error | undefined}
+            options={tagOptions}
+            selected={tagIds}
+            onSelectedChangeAction={(arr) => setTagIds(arr)}
+          />
+        </div>
 
-        <AttachmentsSection
-          filesToUpload={filesToUpload}
-          onFilesChangeAction={setFilesToUpload}
-          uploading={uploading}
-          uploadError={uploadError}
-          onUploadAction={handleUpload}
-          screenshots={screenshots}
-        />
-
-        <FormActions
-          formId="create-issue-form"
-          submitting={createIssue.isPending}
-          error={
-            (localError ?? createIssue.error?.message ?? null) as string | null
-          }
-        />
+        <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
+          <AttachmentsSection
+            filesToUpload={filesToUpload}
+            onFilesChangeAction={setFilesToUpload}
+            uploading={uploading}
+            uploadError={uploadError}
+            onUploadAction={handleUpload}
+            screenshots={screenshots}
+          />
+        </div>
       </form>
+      <FormActions
+        formId="create-issue-form"
+        submitting={createIssue.isPending}
+        error={
+          (localError ?? createIssue.error?.message ?? null) as string | null
+        }
+      />
     </div>
   );
 }
