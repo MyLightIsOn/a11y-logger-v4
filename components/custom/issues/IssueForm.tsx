@@ -22,6 +22,13 @@ import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 import { parseCriteriaKey } from "@/lib/issues/constants";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function IssueForm() {
   const {
@@ -270,7 +277,9 @@ function IssueForm() {
         <div className="p-6 w-full md:w-2/3">
           {/* Assessment selection */}
           <section className="bg-card rounded-lg p-4 border border-border mb-4">
-            <h2 className="text-lg font-semibold mb-4">Assessment</h2>
+            <label htmlFor="severity" className="block text-xl font-bold">
+              Assessment <span className={"text-destructive"}>*</span>
+            </label>
             {assessments.length === 0 ? (
               <div className="text-sm text-gray-700">
                 <p className="mb-2">
@@ -292,18 +301,12 @@ function IssueForm() {
               </div>
             ) : (
               <div>
-                <label
-                  htmlFor="assessment-select"
-                  className="block text-sm font-medium mb-1"
-                >
+                <p id="severity-help" className="text-sm text-gray-500 mb-1">
                   Choose an Assessment
-                </label>
-                <select
-                  id="assessment-select"
-                  className="w-full h-10 rounded-md border border-gray-300 px-3 a11y-focus"
-                  value={selectedAssessmentId}
-                  onChange={(e) => {
-                    const next = e.target.value;
+                </p>
+                <Select
+                  value={selectedAssessmentId || undefined}
+                  onValueChange={(next) => {
                     setSelectedAssessmentId(next);
                     // reflect in URL for consistency
                     const params = new URLSearchParams(
@@ -318,15 +321,22 @@ function IssueForm() {
                       `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
                     );
                   }}
-                  aria-required="true"
                 >
-                  <option value="">Select an assessment...</option>
-                  {assessments.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    id="assessment-select"
+                    className="w-full py-6 text-lg"
+                    aria-required="true"
+                  >
+                    <SelectValue placeholder="Select an assessment..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assessments.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        {a.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </section>
