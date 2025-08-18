@@ -870,6 +870,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                                 "max-w-[120px] truncate",
                               singleLine && "flex-shrink-0 whitespace-nowrap",
                               "[&>svg]:pointer-events-auto",
+                              "bg-gray-200 border border-border p-1.5 px-2",
                             )}
                             style={{
                               ...badgeStyle,
@@ -917,7 +918,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                                 }
                               }}
                               aria-label={`Remove ${option.label} from selection`}
-                              className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-sm p-0.5 -m-0.5 focus:outline-none focus:ring-1 focus:ring-white/50"
+                              className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-sm -mr-0.5 focus:outline-none focus:ring-1 focus:ring-white/50"
                             >
                               <XCircle
                                 className={cn(
@@ -941,6 +942,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             "text-xs px-1.5 py-0.5",
                           singleLine && "flex-shrink-0 whitespace-nowrap",
                           "[&>svg]:pointer-events-auto",
+                          "bg-gray-200 border border-border p-1.5 px-2",
                         )}
                         style={{
                           animationDuration: `${
@@ -1075,7 +1077,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                           selectedValues.length ===
                             getAllOptions().filter((opt) => !opt.disabled)
                               .length
-                            ? "bg-primary text-primary-foreground"
+                            ? "bg-primary text-primary-foreground  dark:text-white"
                             : "opacity-50 [&_svg]:invisible",
                         )}
                         aria-hidden="true"
@@ -1120,7 +1122,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                               className={cn(
                                 "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                                 isSelected
-                                  ? "bg-primary text-primary-foreground"
+                                  ? "bg-primary text-primary-foreground dark:text-white"
                                   : "opacity-50 [&_svg]:invisible",
                               )}
                               aria-hidden="true"
@@ -1163,7 +1165,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                             className={cn(
                               "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                               isSelected
-                                ? "bg-primary text-primary-foreground"
+                                ? "bg-primary text-primary-foreground dark:text-white"
                                 : "opacity-50 [&_svg]:invisible",
                             )}
                             aria-hidden="true"
