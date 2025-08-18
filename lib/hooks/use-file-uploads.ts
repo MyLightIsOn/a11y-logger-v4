@@ -19,8 +19,8 @@ export function useFileUploads(opts: UseFileUploadsOptions = {}) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
-  const upload = useCallback(async () => {
-    if (!filesToUpload || filesToUpload.length === 0) return;
+  const upload = useCallback(async (): Promise<string[] | undefined> => {
+    if (!filesToUpload || filesToUpload.length === 0) return undefined;
     setUploading(true);
     setUploadError(null);
     try {
@@ -40,16 +40,21 @@ export function useFileUploads(opts: UseFileUploadsOptions = {}) {
       const urls = (json?.data ?? [])
         .map((it) => it.url)
         .filter((u): u is string => typeof u === "string" && u.length > 0);
+
+      let mergedOut: string[] = [];
       setUploadedUrls((prev) => {
         const merged = dedupeStrings([...(prev || []), ...urls]);
+        mergedOut = merged;
         onUploaded?.(merged);
         return merged;
       });
       setFilesToUpload(null);
+      return mergedOut;
     } catch (e: unknown) {
       console.error("Upload error", e);
       const message = e instanceof Error ? e.message : "Failed to upload images";
       setUploadError(message);
+      return undefined;
     } finally {
       setUploading(false);
     }

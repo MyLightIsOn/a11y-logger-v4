@@ -232,6 +232,26 @@ function IssueForm() {
       setLocalError(null);
     }
 
+    // If there are files queued, upload them first so screenshots are included in a single action
+    let uploadResult: string[] | undefined = undefined;
+    if (filesToUpload && filesToUpload.length > 0) {
+      uploadResult = await upload();
+      // If upload failed, abort submit and surface error via FormActions
+      if (uploadError) {
+        return;
+      }
+      // Update form state as well for UI consistency
+      if (uploadResult && uploadResult.length) {
+        setScreenshots(uploadResult);
+      }
+    }
+
+    // Prefer immediate result from upload(), then hook state uploadedUrls, then form screenshots
+    const latestScreenshots = (uploadResult && uploadResult.length
+      ? uploadResult
+      : (uploadedUrls && uploadedUrls.length ? uploadedUrls : screenshots)) || [];
+    const screenshotsForPayload = latestScreenshots;
+
     const payload = {
       title: (title || "").trim(),
       description: (description || "").trim() || undefined,
@@ -242,7 +262,7 @@ function IssueForm() {
       url: (url || "").trim() || undefined,
       selector: (selector || "").trim() || undefined,
       code_snippet: codeSnippet || undefined,
-      screenshots: (screenshots || []).length ? screenshots : undefined,
+      screenshots: screenshotsForPayload.length ? screenshotsForPayload : undefined,
       tag_ids: (tagIds || []).length ? tagIds : undefined,
       assessment_id: effectiveAssessmentId,
       criteria:
@@ -263,15 +283,12 @@ function IssueForm() {
   };
 
   // Uploads via hook
-  const { filesToUpload, setFilesToUpload, uploading, uploadError, upload } =
+  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls, upload } =
     useFileUploads({
       folder: "a11y-logger/issues",
       onUploaded: (urls) => setScreenshots(urls),
     });
 
-  const handleUpload = async () => {
-    await upload();
-  };
   return (
     <div>
       <form
@@ -394,7 +411,6 @@ function IssueForm() {
             onFilesChangeAction={setFilesToUpload}
             uploading={uploading}
             uploadError={uploadError}
-            onUploadAction={handleUpload}
             screenshots={screenshots}
           />
         </div>
@@ -427,9 +443,9 @@ function IssueForm() {
       />
       <FormActions
         formId="create-issue-form"
-        submitting={createIssue.isPending}
+        submitting={createIssue.isPending || uploading}
         error={
-          (localError ?? createIssue.error?.message ?? null) as string | null
+          (localError ?? uploadError ?? createIssue.error?.message ?? null) as string | null
         }
       />
     </div>

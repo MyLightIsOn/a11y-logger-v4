@@ -3,7 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import ErrorAlert from "@/components/ui/error-alert";
 import type { AttachmentsSectionProps } from "@/types/uploads";
 
@@ -12,7 +11,6 @@ export function AttachmentsSection({
   onFilesChangeAction,
   uploading,
   uploadError,
-  onUploadAction,
   screenshots,
 }: AttachmentsSectionProps) {
   const [screenshotPreviews, setScreenshotPreviews] = React.useState<string[]>(

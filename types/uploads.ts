@@ -29,6 +29,5 @@ export type AttachmentsSectionProps = {
   onFilesChangeAction: (files: FileList | null) => void;
   uploading: boolean;
   uploadError: string | null;
-  onUploadAction: () => void;
   screenshots: string[];
 };
