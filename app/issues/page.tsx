@@ -11,6 +11,8 @@ import {
   ErrorMessage,
 } from "@/components/custom/issues/common";
 import ViewModeToggle from "@/components/custom/view-mode-toggle";
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -33,7 +35,10 @@ export default function Page() {
 
   // Persist view mode in localStorage
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("issues:viewMode") : null;
+    const saved =
+      typeof window !== "undefined"
+        ? localStorage.getItem("issues:viewMode")
+        : null;
     if (saved === "table" || saved === "card") setViewMode(saved);
   }, []);
   useEffect(() => {
@@ -46,7 +51,10 @@ export default function Page() {
     try {
       setLoading(true);
       setError(null);
-      const response = await issuesApi.getIssues({ sortBy: "created_at", sortOrder: "desc" });
+      const response = await issuesApi.getIssues({
+        sortBy: "created_at",
+        sortOrder: "desc",
+      });
       if (response.success && response.data) {
         setIssues(response.data.data || []);
       } else {
@@ -105,22 +113,30 @@ export default function Page() {
             {issue.severity === "1" ? (
               <p className={"flex items-center text-xs"}>
                 CRITICAL
-                <span className={"block w-3 h-3 rounded-full bg-red-400 ml-2"} />
+                <span
+                  className={"block w-3 h-3 rounded-full bg-red-400 ml-2"}
+                />
               </p>
             ) : issue.severity === "2" ? (
               <p className={"flex items-center text-xs"}>
                 HIGH
-                <span className={"block w-3 h-3 rounded-full bg-orange-400 ml-2"} />
+                <span
+                  className={"block w-3 h-3 rounded-full bg-orange-400 ml-2"}
+                />
               </p>
             ) : issue.severity === "3" ? (
               <p className={"flex items-center text-xs"}>
                 MEDIUM
-                <span className={"block  w-3 h-3 rounded-full bg-yellow-400 ml-2"} />
+                <span
+                  className={"block  w-3 h-3 rounded-full bg-yellow-400 ml-2"}
+                />
               </p>
             ) : (
               <p className={"flex items-center text-xs"}>
                 LOW
-                <span className={"block w-3 h-3 rounded-full bg-blue-400 ml-2"} />
+                <span
+                  className={"block w-3 h-3 rounded-full bg-blue-400 ml-2"}
+                />
               </p>
             )}
           </Badge>
@@ -149,6 +165,11 @@ export default function Page() {
         <h1 className="text-2xl font-bold">Issues</h1>
         <div className="flex items-center gap-2">
           <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+          <Link href={"/issues/new"}>
+            <Button className={"ml-5"}>
+              Create Issue <PlusIcon />
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -175,7 +196,10 @@ export default function Page() {
               className="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-border"
               data-testid={`issue-card-${issue.id}`}
             >
-              <Link href={`/issues/${issue.id}`} className="block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus">
+              <Link
+                href={`/issues/${issue.id}`}
+                className="block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
+              >
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h2 className="text-xl font-semibold mb-2 flex-1 pr-3">
@@ -188,22 +212,38 @@ export default function Page() {
                       {issue.severity === "1" ? (
                         <p className={"flex items-center text-xs"}>
                           CRITICAL
-                          <span className={"block w-3 h-3 rounded-full bg-red-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-red-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : issue.severity === "2" ? (
                         <p className={"flex items-center text-xs"}>
                           HIGH
-                          <span className={"block w-3 h-3 rounded-full bg-orange-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-orange-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : issue.severity === "3" ? (
                         <p className={"flex items-center text-xs"}>
                           MEDIUM
-                          <span className={"block  w-3 h-3 rounded-full bg-yellow-400 ml-2"} />
+                          <span
+                            className={
+                              "block  w-3 h-3 rounded-full bg-yellow-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : (
                         <p className={"flex items-center text-xs"}>
                           LOW
-                          <span className={"block w-3 h-3 rounded-full bg-blue-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-blue-400 ml-2"
+                            }
+                          />
                         </p>
                       )}
                     </Badge>
