@@ -4,7 +4,7 @@ import { wcagVersionEnum } from "@/lib/validation/issues";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -28,8 +28,11 @@ export async function GET(
       .single();
 
     if (error) {
-      if ((error as any).code === "PGRST116") {
-        return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Assessment not found" },
+          { status: 404 },
+        );
       }
       throw error;
     }
@@ -37,13 +40,16 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching assessment:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -68,8 +74,11 @@ export async function PUT(
       .single();
 
     if (fetchErr || !current) {
-      if ((fetchErr as any)?.code === "PGRST116") {
-        return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+      if (fetchErr?.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Assessment not found" },
+          { status: 404 },
+        );
       }
       throw fetchErr;
     }
@@ -77,7 +86,10 @@ export async function PUT(
     const body = await request.json();
 
     const name = typeof body?.name === "string" ? body.name.trim() : undefined;
-    const description = typeof body?.description === "string" ? body.description.trim() : undefined;
+    const description =
+      typeof body?.description === "string"
+        ? body.description.trim()
+        : undefined;
     const wcag_version_raw = body?.wcag_version;
 
     // Determine if wcag_version change is requested
@@ -113,10 +125,14 @@ export async function PUT(
       }
     }
 
-    const updatePayload: Record<string, any> = { updated_at: new Date().toISOString() };
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
     if (typeof name !== "undefined") updatePayload.name = name;
-    if (typeof description !== "undefined") updatePayload.description = description;
-    if (typeof requestedWcagVersion !== "undefined") updatePayload.wcag_version = requestedWcagVersion;
+    if (typeof description !== "undefined")
+      updatePayload.description = description;
+    if (typeof requestedWcagVersion !== "undefined")
+      updatePayload.wcag_version = requestedWcagVersion;
 
     const { data, error } = await supabase
       .from("assessments")
@@ -127,8 +143,11 @@ export async function PUT(
       .single();
 
     if (error) {
-      if ((error as any).code === "PGRST116") {
-        return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Assessment not found" },
+          { status: 404 },
+        );
       }
       throw error;
     }
@@ -136,6 +155,9 @@ export async function PUT(
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error updating assessment:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

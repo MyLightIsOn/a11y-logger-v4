@@ -29,7 +29,6 @@ export function MultiSelect({
   placeholder = "Select items...",
   className,
   id,
-  disabled,
 }: MultiSelectProps) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -107,8 +106,6 @@ export function MultiSelect({
     },
     [options],
   );
-
-  // Debug: console.log('Selected items:', selected);
 
   return (
     <Command

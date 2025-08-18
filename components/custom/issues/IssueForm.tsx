@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 import { useRouter, useSearchParams } from "next/navigation";

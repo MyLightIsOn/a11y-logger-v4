@@ -1,7 +1,14 @@
 import { useCallback, useState } from "react";
-import type { GenerateIssueInsightsOutput, SeveritySuggestion } from "@/types/ai";
+import type {
+  GenerateIssueInsightsOutput,
+  SeveritySuggestion,
+} from "@/types/ai";
 import type { CriterionRef, WcagVersion } from "@/types/issue";
-import { dedupeStrings, makeCriteriaKey, parseCriteriaKey } from "@/lib/issues/constants";
+import {
+  dedupeStrings,
+  makeCriteriaKey,
+  parseCriteriaKey,
+} from "@/lib/issues/constants";
 
 export type AiAssistContextInput = {
   description: string; // required prompt text
@@ -57,8 +64,8 @@ export function useAiAssist(opts: UseAiAssistOptions) {
           tags: ctx.tags,
           severity_hint: ctx.severity_hint,
           criteria_hints: ctx.criteria_hints,
-          assessment_id: (ctx as any).assessment_id,
-          wcag_version: (ctx as any).wcag_version,
+          assessment_id: ctx.assessment_id,
+          wcag_version: ctx.wcag_version,
         }),
       });
       if (!res.ok) {
@@ -134,7 +141,9 @@ export function applyAiSuggestionsNonDestructive(
 
   if (Array.isArray(ai.criteria)) {
     const newKeys = ai.criteria
-      .map((c: CriterionRef) => makeCriteriaKey(c.version as WcagVersion, c.code))
+      .map((c: CriterionRef) =>
+        makeCriteriaKey(c.version as WcagVersion, c.code),
+      )
       .filter((k: string) => typeof k === "string");
     set.setCriteriaKeys((prev) => {
       const deduped = dedupeStrings([...(prev || []), ...newKeys]);

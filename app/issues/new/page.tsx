@@ -1,11 +1,13 @@
-import React from "react";
+import React, { Suspense } from "react";
 import IssueForm from "@/components/custom/issues/IssueForm";
 
 function Page() {
   return (
     <div>
       Create a new issue
-      <IssueForm />
+      <Suspense fallback={<div>Loading form…</div>}>
+        <IssueForm />
+      </Suspense>
     </div>
   );
 }
