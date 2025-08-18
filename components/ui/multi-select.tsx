@@ -805,6 +805,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
               aria-label={`Multi-select: ${selectedValues.length} of ${
                 getAllOptions().length
               } options selected. ${placeholder}`}
+              variant={"ghost"}
               className={cn(
                 "flex p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
                 autoSize ? "w-auto" : "w-full",
@@ -996,7 +997,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                 </div>
               ) : (
                 <div className="flex items-center justify-between w-full mx-auto">
-                  <span className="text-sm text-muted-foreground mx-3">
+                  <span className="text-md py-2 text-muted-foreground mx-3">
                     {placeholder}
                   </span>
                   <ChevronDown className="h-4 cursor-pointer text-muted-foreground mx-2" />

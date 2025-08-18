@@ -30,7 +30,7 @@ export function CoreFields({
 }: CoreFieldsProps) {
   return (
     <>
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="title" className="block text-xl font-bold">
           Title <span className={"text-destructive"}>*</span>
         </label>
@@ -60,9 +60,9 @@ export function CoreFields({
           </p>
         )}
         <div className="mb-6" />
-      </div>
+      </section>
 
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="description" className="block text-xl font-bold">
           Description <span className={"text-destructive"}>*</span>
         </label>
@@ -92,9 +92,9 @@ export function CoreFields({
           </p>
         )}
         <div className="mb-6" />
-      </div>
+      </section>
 
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="url" className="block text-xl font-bold">
           URL
         </label>
@@ -119,9 +119,9 @@ export function CoreFields({
           </p>
         )}
         <div className="mb-6" />
-      </div>
+      </section>
 
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="severity" className="block text-xl font-bold">
           Severity <span className={"text-destructive"}>*</span>
         </label>
@@ -134,7 +134,7 @@ export function CoreFields({
         >
           <SelectTrigger
             id="severity"
-            className="w-full"
+            className="w-full py-6 text-lg"
             aria-invalid={!!errors?.severity}
             aria-describedby={`severity-help${errors?.severity ? " severity-error" : ""}`}
           >
@@ -158,9 +158,9 @@ export function CoreFields({
           </p>
         )}
         <div className="mb-6" />
-      </div>
+      </section>
 
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="impact" className="block text-xl font-bold">
           Impact
         </label>
@@ -178,9 +178,9 @@ export function CoreFields({
           className="mt-1 block w-full mb-8"
           placeholder="Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information."
         />
-      </div>
+      </section>
 
-      <div className="bg-card rounded-lg p-4 border border-border mb-4">
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="suggestedFix" className="block text-xl font-bold">
           Suggested Fix
         </label>
@@ -197,7 +197,7 @@ export function CoreFields({
           className="mt-1 block w-full mb-8"
           placeholder='Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">'
         />
-      </div>
+      </section>
     </>
   );
 }

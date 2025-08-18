@@ -27,11 +27,11 @@ export function WcagCriteriaSection({
   return (
     <section
       aria-labelledby="wcag-heading"
-      className="bg-card rounded-lg p-4 border border-border"
+      className="bg-card rounded-lg p-4 border border-border mb-4"
     >
-      <h2 id="wcag-heading" className="text-lg font-semibold mb-4">
+      <label htmlFor="criteria" className="block text-xl font-bold">
         WCAG Criteria
-      </h2>
+      </label>
 
       {typeof version === "string" && (
         <p className="text-sm text-gray-600 mb-3">
@@ -50,13 +50,10 @@ export function WcagCriteriaSection({
       )}
       {error && <ErrorAlert message={normalizeErrorMessage(error)} />}
 
-      {!isLoading && options.length === 0 && !error && (
-        <p className="text-sm text-gray-600 mb-2">
-          No WCAG criteria available for this version.
-        </p>
-      )}
+      <p className="text-sm text-gray-500 mb-1">
+        Select one or more criteria that apply to this issue.
+      </p>
 
-      <Label htmlFor="criteria">Criteria</Label>
       <MultiSelect
         id="criteria"
         options={options}
@@ -72,9 +69,6 @@ export function WcagCriteriaSection({
         aria-describedby={`criteria-help${errors?.criteria ? " criteria-error" : ""}`}
         disabled={disabled}
       />
-      <p id="criteria-help" className="text-sm text-gray-500 mt-2">
-        Select one or more criteria that apply to this issue.
-      </p>
       {errors?.criteria && (
         <p
           id="criteria-error"
