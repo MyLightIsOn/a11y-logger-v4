@@ -163,14 +163,16 @@ export default function Page() {
     <div className="container mx-auto px-4 py-8 min-h-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Issues</h1>
-        <div className="flex items-center gap-2">
-          <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-          <Link href={"/issues/new"}>
-            <Button className={"ml-5"}>
-              Create Issue <PlusIcon />
-            </Button>
-          </Link>
-        </div>
+        {issues.length > 0 && (
+          <div className="flex items-center gap-2">
+            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+            <Link href={"/issues/new"}>
+              <Button className={"ml-5"}>
+                Create Issue <PlusIcon />
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <ErrorMessage message={error} />
