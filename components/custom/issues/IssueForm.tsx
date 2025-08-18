@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 function IssueForm() {
   const {
@@ -104,6 +105,10 @@ function IssueForm() {
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
+  // Assessment change confirmation modal state
+  const [showAssessmentChangeConfirm, setShowAssessmentChangeConfirm] =
+    useState<boolean>(false);
+  const [pendingAssessmentId, setPendingAssessmentId] = useState<string>("");
 
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
@@ -285,19 +290,6 @@ function IssueForm() {
                 <p className="mb-2">
                   You need to create an Assessment before creating issues.
                 </p>
-                <a href="/assessments" className="text-primary underline">
-                  Go to Assessments
-                </a>
-              </div>
-            ) : assessmentIdFromUrl ? (
-              <div className="text-sm">
-                <p>
-                  <span className="font-medium">Selected:</span>{" "}
-                  {assessment?.name || assessmentIdFromUrl}{" "}
-                  <span className="ml-2 text-gray-500">
-                    (locked by context)
-                  </span>
-                </p>
               </div>
             ) : (
               <div>
@@ -305,21 +297,33 @@ function IssueForm() {
                   Choose an Assessment
                 </p>
                 <Select
-                  value={selectedAssessmentId || undefined}
+                  value={effectiveAssessmentId || undefined}
                   onValueChange={(next) => {
-                    setSelectedAssessmentId(next);
-                    // reflect in URL for consistency
-                    const params = new URLSearchParams(
-                      Array.from(searchParams?.entries?.() || []),
-                    );
-                    if (next) {
-                      params.set("assessment_id", next);
+                    if (next === effectiveAssessmentId) return;
+
+                    const applyAssessment = (value: string) => {
+                      setSelectedAssessmentId(value);
+                      const params = new URLSearchParams(
+                        Array.from(searchParams?.entries?.() || []),
+                      );
+                      if (value) {
+                        params.set("assessment_id", value);
+                      } else {
+                        params.delete("assessment_id");
+                      }
+                      router.push(
+                        `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
+                      );
+                    };
+
+                    if (!effectiveAssessmentId) {
+                      // First selection: no confirmation needed
+                      applyAssessment(next);
                     } else {
-                      params.delete("assessment_id");
+                      // Changing selection: confirm and clear WCAG criteria if continuing
+                      setPendingAssessmentId(next);
+                      setShowAssessmentChangeConfirm(true);
                     }
-                    router.push(
-                      `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
-                    );
                   }}
                 >
                   <SelectTrigger
@@ -395,6 +399,32 @@ function IssueForm() {
           />
         </div>
       </form>
+      <ConfirmationModal
+        isOpen={showAssessmentChangeConfirm}
+        onClose={() => {
+          setShowAssessmentChangeConfirm(false);
+          setPendingAssessmentId("");
+        }}
+        onConfirm={() => {
+          // Clear any selected WCAG criteria and apply the pending assessment
+          setCriteriaCodes([]);
+          if (pendingAssessmentId) {
+            setSelectedAssessmentId(pendingAssessmentId);
+            const params = new URLSearchParams(
+              Array.from(searchParams?.entries?.() || []),
+            );
+            params.set("assessment_id", pendingAssessmentId);
+            router.push(
+              `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
+            );
+          }
+          setPendingAssessmentId("");
+        }}
+        title="Change Assessment?"
+        message="Changing the Assessment will remove any selected WCAG criteria. Do you want to continue?"
+        confirmButtonText="Continue"
+        cancelButtonText="Cancel"
+      />
       <FormActions
         formId="create-issue-form"
         submitting={createIssue.isPending}
