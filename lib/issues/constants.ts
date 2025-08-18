@@ -8,14 +8,20 @@ type SeverityValue = (typeof severityEnum)["_def"]["values"][number];
 type StatusValue = (typeof statusEnum)["_def"]["values"][number];
 
 // Human-readable labels for enums
-const severityLabels: Record<(typeof severityEnum)["_def"]["values"][number], string> = {
+const severityLabels: Record<
+  (typeof severityEnum)["_def"]["values"][number],
+  string
+> = {
   "1": "Critical",
   "2": "High",
   "3": "Medium",
   "4": "Low",
 };
 
-const statusLabels: Record<(typeof statusEnum)["_def"]["values"][number], string> = {
+const statusLabels: Record<
+  (typeof statusEnum)["_def"]["values"][number],
+  string
+> = {
   open: "Open",
   closed: "Closed",
   archive: "Archived",
@@ -48,17 +54,23 @@ export function makeCriteriaKey(version: WcagVersion, code: string): string {
   return `${version}|${code}`;
 }
 
-export function parseCriteriaKey(key: string): { version: WcagVersion; code: string } {
+export function parseCriteriaKey(key: string): {
+  version: WcagVersion;
+  code: string;
+} {
   const [version, code] = key.split("|");
   // Narrow type cautiously; callers should ensure valid keys from trusted sources
   return { version: (version as WcagVersion) || ("2.2" as WcagVersion), code };
 }
 
+// TODO remove this once we're confident in the criteria key format'
 export function isCriteriaKey(key: string): boolean {
   const [version, code] = key.split("|");
   return (
-    version === "2.0" || version === "2.1" || version === "2.2"
-  ) && typeof code === "string" && code.length > 0;
+    (version === "2.0" || version === "2.1" || version === "2.2") &&
+    typeof code === "string" &&
+    code.length > 0
+  );
 }
 
 /** Array dedupers */
@@ -118,8 +130,14 @@ export function normalizeCreateIssuePayload(input: {
     url: emptyToUndef(input.url),
     selector: emptyToUndef(input.selector),
     code_snippet: emptyToUndef(input.code_snippet),
-    screenshots: input.screenshots && input.screenshots.length ? dedupeStrings(input.screenshots) : undefined,
-    tag_ids: input.tag_ids && input.tag_ids.length ? dedupeStrings(input.tag_ids) : undefined,
+    screenshots:
+      input.screenshots && input.screenshots.length
+        ? dedupeStrings(input.screenshots)
+        : undefined,
+    tag_ids:
+      input.tag_ids && input.tag_ids.length
+        ? dedupeStrings(input.tag_ids)
+        : undefined,
     criteria: input.criteria,
     assessment_id: input.assessment_id,
   };

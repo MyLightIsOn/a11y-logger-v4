@@ -1,3 +1,4 @@
+// TODO remove this file after verifying we no longer need it
 import { useMemo, useState } from "react";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 import type { WcagCriterion, WcagVersion } from "@/types/issue";
@@ -33,7 +34,9 @@ export function useWcagFilters() {
       .filter((opt) =>
         versionFilter === "all" ? true : opt.version === versionFilter,
       )
-      .filter((opt) => (levelFilter === "all" ? true : opt.level === levelFilter))
+      .filter((opt) =>
+        levelFilter === "all" ? true : opt.level === levelFilter,
+      )
       .map((opt) => ({ value: opt.value, label: opt.label }));
   }, [allOptions, versionFilter, levelFilter]);
 
