@@ -1,0 +1,3 @@
+Name,Format,Type,Description
+project_id,uuid,string,
+assessment_id,uuid,string,

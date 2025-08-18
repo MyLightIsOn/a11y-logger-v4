@@ -1,0 +1,7 @@
+Name,Format,Type,Description
+id,uuid,string,
+name,text,string,
+description,text,string,
+created_at,timestamp with time zone,string,
+updated_at,timestamp with time zone,string,
+user_id,uuid,string,
