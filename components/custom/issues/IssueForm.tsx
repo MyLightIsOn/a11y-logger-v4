@@ -21,6 +21,7 @@ import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
+import { parseCriteriaKey } from "@/lib/issues/constants";
 
 function IssueForm() {
   const {
@@ -133,7 +134,7 @@ function IssueForm() {
       .filter((c) => c.version === v)
       .sort((c1, c2) => dotAware(c1.code, c2.code))
       .map((c) => ({
-        value: c.code,
+        value: `${c.version}|${c.code}`,
         label: `${c.code} — ${c.name} (${c.level})`,
       }));
   }, [allCriteria, assessment?.wcag_version]);
@@ -234,10 +235,10 @@ function IssueForm() {
       assessment_id: effectiveAssessmentId,
       criteria:
         assessment?.wcag_version && criteriaCodes.length
-          ? criteriaCodes.map((code) => ({
-              code,
-              version: assessment.wcag_version as WcagVersion,
-            }))
+          ? criteriaCodes.map((key) => {
+              const { version, code } = parseCriteriaKey(key);
+              return { code, version };
+            })
           : [],
     } as unknown as CreateIssueRequest;
 

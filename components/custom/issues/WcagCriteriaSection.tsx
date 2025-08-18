@@ -11,6 +11,7 @@ export function WcagCriteriaSection({
   isLoading,
   error,
   options,
+  selected,
   onSelectedChangeAction,
   disabled = false,
   version,
@@ -59,6 +60,7 @@ export function WcagCriteriaSection({
       <MultiSelect
         id="criteria"
         options={options}
+        defaultValue={selected}
         onValueChange={handleSelectedChange}
         placeholder={
           disabled
