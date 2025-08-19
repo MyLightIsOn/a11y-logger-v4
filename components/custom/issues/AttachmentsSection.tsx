@@ -12,6 +12,8 @@ export function AttachmentsSection({
   uploading,
   uploadError,
   screenshots,
+  existingImages = [],
+  onRemoveExistingImage,
 }: AttachmentsSectionProps) {
   const [screenshotPreviews, setScreenshotPreviews] = React.useState<string[]>(
     [],
@@ -52,6 +54,55 @@ export function AttachmentsSection({
         <Label htmlFor="screenshots" className="block text-xl font-bold mb-2">
           Screenshots
         </Label>
+
+        {existingImages.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm mb-2">Existing screenshots</p>
+            <div className="grid grid-cols-2 gap-4">
+              {existingImages.map((url, index) => (
+                <div key={url} className="relative group">
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="relative block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
+                    aria-label={`Open existing screenshot ${index + 1}`}
+                  >
+                    <Image
+                      src={url}
+                      alt={`Existing screenshot ${index + 1}`}
+                      width={300}
+                      height={160}
+                      className="h-40 w-full object-cover rounded-md"
+                      unoptimized
+                    />
+                  </a>
+                  {onRemoveExistingImage && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveExistingImage(url)}
+                      className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label={`Remove existing screenshot ${index + 1}`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {screenshotPreviews.length > 0 && (
           <div className="grid grid-cols-2 gap-4 mb-4">

@@ -29,5 +29,7 @@ export type AttachmentsSectionProps = {
   onFilesChangeAction: (files: FileList | null) => void;
   uploading: boolean;
   uploadError: string | null;
-  screenshots: string[];
+  screenshots: string[]; // For newly uploaded URLs to display
+  existingImages?: string[]; // Existing URLs (e.g., pre-saved) to render separately with remove controls
+  onRemoveExistingImage?: (url: string) => void; // Remove handler for existing images list
 };

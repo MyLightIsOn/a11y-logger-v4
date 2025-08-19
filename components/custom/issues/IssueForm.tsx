@@ -22,7 +22,7 @@ import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
-import { parseCriteriaKey } from "@/lib/issues/constants";
+import { parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
 import {
   Select,
   SelectContent,
@@ -112,6 +112,9 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
+  // Enhanced image management state (Step 4)
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
   // Assessment change confirmation modal state
   const [showAssessmentChangeConfirm, setShowAssessmentChangeConfirm] =
     useState<boolean>(false);
@@ -181,11 +184,25 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
     setValue("code_snippet", initialData.code_snippet ?? "", {
       shouldValidate: false,
     });
-    setValue(
-      "screenshots",
-      Array.isArray(initialData.screenshots) ? initialData.screenshots : [],
-      { shouldValidate: false },
-    );
+
+    if (mode === "edit") {
+      // In edit mode, store existing images separately for enhanced image management
+      const existing = Array.isArray(initialData.screenshots)
+        ? initialData.screenshots
+        : [];
+      setExistingImages(existing);
+      setImagesToRemove([]);
+      // Do not populate form screenshots with existing; new uploads will appear there
+      setValue("screenshots", [], { shouldValidate: false });
+    } else {
+      // In create mode (or fallback), keep previous behavior
+      setValue(
+        "screenshots",
+        Array.isArray(initialData.screenshots) ? initialData.screenshots : [],
+        { shouldValidate: false },
+      );
+    }
+
     // Tags -> tag_ids
     const tagIdsInit = Array.isArray(initialData.tags)
       ? initialData.tags.map((t) => t.id)
@@ -198,7 +215,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
         ? initialData.criteria_codes
         : [];
     setCriteriaCodes(codes);
-  }, [initialData, setValue]);
+  }, [initialData, mode, setValue]);
 
   const setTitle = (v: string) =>
     setValue("title", v, { shouldValidate: false });
@@ -298,6 +315,22 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
         setLocalError("Missing issue ID for edit mode.");
         return;
       }
+
+      // Enhanced Image Management: combine kept existing + newly uploaded
+      const keptExisting = existingImages.filter(
+        (u) => !imagesToRemove.includes(u),
+      );
+      const newUploaded =
+        (uploadResult && uploadResult.length
+          ? uploadResult
+          : uploadedUrls && uploadedUrls.length
+            ? uploadedUrls
+            : screenshots) || [];
+      const combinedScreenshots = dedupeStrings([
+        ...keptExisting,
+        ...newUploaded,
+      ]);
+
       // Build Update payload: only include fields we currently edit
       const updatePayload = {
         title: (title || "").trim() || undefined,
@@ -309,7 +342,8 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
         url: (url || "").trim() || undefined,
         selector: (selector || "").trim() || undefined,
         code_snippet: codeSnippet || undefined,
-        screenshots: latestScreenshots.length ? latestScreenshots : undefined,
+        screenshots:
+          combinedScreenshots.length ? combinedScreenshots : undefined,
         tag_ids: (tagIds || []).length ? tagIds : undefined,
         criteria:
           assessment?.wcag_version && criteriaCodes.length
@@ -508,7 +542,13 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
             onFilesChangeAction={setFilesToUpload}
             uploading={uploading}
             uploadError={uploadError}
-            screenshots={screenshots}
+            // Show newly uploaded URLs in the "Uploaded" section
+            screenshots={uploadedUrls}
+            // Show existing images (edit mode) with ability to remove
+            existingImages={existingImages.filter((u) => !imagesToRemove.includes(u))}
+            onRemoveExistingImage={(url) =>
+              setImagesToRemove((prev) => dedupeStrings([...(prev || []), url]))
+            }
           />
         </div>
       </form>

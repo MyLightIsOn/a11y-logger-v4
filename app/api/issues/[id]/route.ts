@@ -6,7 +6,9 @@ import type {
   IssueRead,
   IssueCriteriaItem,
   WcagCriterion,
+  UpdateIssueRequest,
 } from "@/types/issue";
+import { updateIssueSchema } from "@/lib/validation/issues";
 
 /**
  * GET /api/issues/[id]
@@ -126,6 +128,252 @@ export async function GET(
     return NextResponse.json(responseIssue);
   } catch (error) {
     console.error("Unhandled error in GET /api/issues/[id]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * PATCH /api/issues/[id]
+ * Updates an existing issue with partial data.
+ * Returns the updated IssueRead.
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const id = await params?.id;
+    if (!id) {
+      return NextResponse.json({ error: "Missing issue id" }, { status: 400 });
+    }
+
+    // Parse and validate request body
+    let body: UpdateIssueRequest;
+    try {
+      const rawBody = await request.json();
+      body = updateIssueSchema.parse(rawBody);
+    } catch (parseError) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: parseError },
+        { status: 400 },
+      );
+    }
+
+    // Verify issue exists and belongs to user
+    const { data: existingIssue, error: existingErr } = await supabase
+      .from("issues")
+      .select("id, user_id")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (existingErr || !existingIssue) {
+      return NextResponse.json({ error: "Issue not found" }, { status: 404 });
+    }
+
+    // Extract criteria from body for separate handling
+    const { criteria, tag_ids, ...issueUpdate } = body;
+
+    // Update the main issue record
+    const { data: updatedIssue, error: updateErr } = await supabase
+      .from("issues")
+      .update({
+        ...issueUpdate,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select()
+      .single();
+
+    if (updateErr) {
+      console.error("Error updating issue:", updateErr);
+      return NextResponse.json(
+        { error: "Failed to update issue" },
+        { status: 500 },
+      );
+    }
+
+    // Handle criteria updates if provided
+    if (criteria) {
+      // Remove existing criteria associations
+      const { error: deleteErr } = await supabase
+        .from("issue_criteria")
+        .delete()
+        .eq("issue_id", id);
+
+      if (deleteErr) {
+        console.error("Error removing existing criteria:", deleteErr);
+        return NextResponse.json(
+          { error: "Failed to update criteria" },
+          { status: 500 },
+        );
+      }
+
+      // Add new criteria associations if any
+      if (criteria.length > 0) {
+        // Get WCAG criteria IDs for the provided codes
+        const { data: wcagCriteria, error: wcagErr } = await supabase
+          .from("wcag_criteria")
+          .select("id, code")
+          .in("code", criteria);
+
+        if (wcagErr) {
+          console.error("Error fetching WCAG criteria:", wcagErr);
+          return NextResponse.json(
+            { error: "Failed to lookup criteria" },
+            { status: 500 },
+          );
+        }
+
+        // Create new associations
+        const criteriaInserts = wcagCriteria.map((criterion) => ({
+          issue_id: id,
+          criteria_id: criterion.id,
+        }));
+
+        const { error: insertErr } = await supabase
+          .from("issue_criteria")
+          .insert(criteriaInserts);
+
+        if (insertErr) {
+          console.error("Error inserting criteria:", insertErr);
+          return NextResponse.json(
+            { error: "Failed to update criteria" },
+            { status: 500 },
+          );
+        }
+      }
+    }
+
+    // Handle tag updates if provided
+    if (tag_ids) {
+      // Remove existing tag associations
+      const { error: deleteTagsErr } = await supabase
+        .from("issues_tags")
+        .delete()
+        .eq("issue_id", id);
+
+      if (deleteTagsErr) {
+        console.error("Error removing existing tags:", deleteTagsErr);
+        return NextResponse.json(
+          { error: "Failed to update tags" },
+          { status: 500 },
+        );
+      }
+
+      // Add new tag associations if any
+      if (tag_ids.length > 0) {
+        const tagInserts = tag_ids.map((tagId) => ({
+          issue_id: id,
+          tag_id: tagId,
+        }));
+
+        const { error: insertTagsErr } = await supabase
+          .from("issues_tags")
+          .insert(tagInserts);
+
+        if (insertTagsErr) {
+          console.error("Error inserting tags:", insertTagsErr);
+          return NextResponse.json(
+            { error: "Failed to update tags" },
+            { status: 500 },
+          );
+        }
+      }
+    }
+
+    // Fetch the updated issue with all relationships (reusing GET logic)
+    const { data: issueRow, error: issueErr } = await supabase
+      .from("issues")
+      .select(
+        `
+        *,
+        issues_tags(
+          tags(*)
+        )
+      `,
+      )
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (issueErr) {
+      console.error("Error fetching updated issue:", issueErr);
+      return NextResponse.json(
+        { error: "Failed to fetch updated issue" },
+        { status: 500 },
+      );
+    }
+
+    type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
+    const row = issueRow as IssueRowWithJoin;
+
+    const { issues_tags, ...rest } = row;
+    const baseIssue: Issue = {
+      ...(rest as Issue),
+    };
+
+    const tags: Tag[] = (issues_tags ?? []).map((it) => it.tags);
+
+    // Fetch updated criteria
+    let criteriaItems: IssueCriteriaItem[] = [];
+    const { data: joinedCriteria, error: critErr } = await supabase
+      .from("issue_criteria")
+      .select(
+        `
+        wcag_criteria(id, code, name, version, level)
+      `,
+      )
+      .eq("issue_id", id);
+
+    if (critErr) {
+      console.error("Error fetching updated criteria:", critErr);
+    } else {
+      type CriteriaJoinRow = {
+        wcag_criteria: (WcagCriterion & { id: string }) | null;
+      };
+      const critRows = (joinedCriteria as unknown as CriteriaJoinRow[]) ?? [];
+      criteriaItems = critRows
+        .map((row) => row.wcag_criteria)
+        .filter((c): c is WcagCriterion & { id: string } => Boolean(c))
+        .map((c) => ({
+          code: c.code,
+          name: c.name,
+          version: c.version,
+          level: c.level,
+        }));
+    }
+
+    const criteria_codes = Array.from(
+      new Set(criteriaItems.map((c) => c.code)),
+    );
+
+    const responseIssue: IssueRead = {
+      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes">),
+      tags,
+      criteria: criteriaItems,
+      criteria_codes,
+    };
+
+    return NextResponse.json(responseIssue);
+  } catch (error) {
+    console.error("Unhandled error in PATCH /api/issues/[id]:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
