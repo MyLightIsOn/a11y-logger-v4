@@ -178,7 +178,6 @@ export const updateIssueSchema = z
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
     tag_ids: z.array(z.string()).optional(),
     criteria: z.array(criterionRefSchema).optional(),
-    assessment_id: z.string().uuid().optional(),
   })
   .strict();
 

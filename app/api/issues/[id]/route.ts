@@ -83,6 +83,31 @@ export async function GET(
 
     const tags: Tag[] = (issues_tags ?? []).map((it) => it.tags);
 
+    // Fetch linked assessment via join table assessments_issues
+    let assessmentRef: { id: string; name: string; wcag_version: string } | undefined = undefined;
+    try {
+      const { data: assessJoins, error: assessErr } = await supabase
+        .from("assessments_issues")
+        .select(
+          `assessments(id, name, wcag_version)`
+        )
+        .eq("issue_id", id)
+        .limit(1);
+      if (assessErr) {
+        console.error("Error fetching assessment join:", assessErr);
+      } else if (Array.isArray(assessJoins) && assessJoins.length > 0) {
+        const rel = (assessJoins[0] as unknown as { assessments: unknown }).assessments as unknown;
+        const a = Array.isArray(rel)
+          ? (rel[0] as { id: string; name: string; wcag_version: string } | undefined)
+          : ((rel as { id: string; name: string; wcag_version: string } | null));
+        if (a) {
+          assessmentRef = { id: a.id, name: a.name, wcag_version: a.wcag_version };
+        }
+      }
+    } catch (e) {
+      console.error("Unhandled error fetching assessment join:", e);
+    }
+
     let criteriaItems: IssueCriteriaItem[] = [];
     if (includeCriteria) {
       // Fetch linked WCAG criteria via join table issue_criteria
@@ -119,10 +144,11 @@ export async function GET(
     );
 
     const responseIssue: IssueRead = {
-      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes">),
+      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes" | "assessment">),
       tags,
       criteria: includeCriteria ? criteriaItems : undefined,
       criteria_codes: includeCriteria ? criteria_codes : undefined,
+      assessment: assessmentRef ? (assessmentRef as unknown as IssueRead["assessment"]) : undefined,
     };
 
     return NextResponse.json(responseIssue);

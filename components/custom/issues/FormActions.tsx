@@ -17,11 +17,31 @@ export function FormActions({ formId, submitting, error }: FormActionsProps) {
       {error ? (
         <ErrorAlert variant="banner" message={normalizeErrorMessage(error)} />
       ) : null}
-      <Button form={formId} type="submit" disabled={submitting} aria-describedby="submit-status">
-        {submitting ? "Creating..." : "Create Issue"}
+      <Button
+        form={formId}
+        type="submit"
+        disabled={submitting}
+        aria-describedby="submit-status"
+      >
+        {formId === "edit-issue-form"
+          ? submitting
+            ? "Saving..."
+            : "Update Issue"
+          : submitting
+            ? "Creating..."
+            : "Create Issue"}
       </Button>
-      <span id="submit-status" role="status" aria-live="polite" className="sr-only">
-        {submitting ? "Creating issue..." : ""}
+      <span
+        id="submit-status"
+        role="status"
+        aria-live="polite"
+        className="sr-only"
+      >
+        {submitting
+          ? formId === "edit-issue-form"
+            ? "Saving issue..."
+            : "Creating issue..."
+          : ""}
       </span>
     </div>
   );

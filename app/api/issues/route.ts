@@ -314,6 +314,29 @@ export async function POST(request: NextRequest) {
       new Set(criteriaItems.map((c) => c.code)),
     );
 
+    // Fetch joined assessment for the created issue
+    let assessmentRef: { id: string; name: string; wcag_version: string } | undefined = undefined;
+    try {
+      const { data: assessJoins, error: assessErr } = await supabase
+        .from("assessments_issues")
+        .select(`assessments(id, name, wcag_version)`)
+        .eq("issue_id", issueId)
+        .limit(1);
+      if (assessErr) {
+        console.error("Fetching linked assessment failed:", assessErr);
+      } else if (Array.isArray(assessJoins) && assessJoins.length > 0) {
+        const rel = (assessJoins[0] as unknown as { assessments: unknown }).assessments as unknown;
+        const a = Array.isArray(rel)
+          ? (rel[0] as { id: string; name: string; wcag_version: string } | undefined)
+          : ((rel as { id: string; name: string; wcag_version: string } | null));
+        if (a) {
+          assessmentRef = { id: a.id, name: a.name, wcag_version: a.wcag_version };
+        }
+      }
+    } catch (e) {
+      console.error("Unhandled error fetching linked assessment:", e);
+    }
+
     // Construct response object similar to Issue but with criteria arrays and flattened tags
     let baseIssue: Issue;
     if (issueWithTags) {
@@ -327,10 +350,11 @@ export async function POST(request: NextRequest) {
     }
 
     const responseIssue: IssueRead = {
-      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes">),
+      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes" | "assessment">),
       tags,
       criteria: criteriaItems,
       criteria_codes,
+      assessment: assessmentRef ? (assessmentRef as unknown as IssueRead["assessment"]) : undefined,
     };
 
     return NextResponse.json(responseIssue, { status: 201 });

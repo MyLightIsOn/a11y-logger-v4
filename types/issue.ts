@@ -56,6 +56,12 @@ export interface IssueCriteriaItem {
  * criteria_codes is a convenience list (e.g., ["1.4.3", "2.4.7"]).
  * criteria is the rich set with version/level/name for rendering.
  */
+export interface IssueAssessmentRef {
+  id: UUID;
+  name: string;
+  wcag_version: WcagVersion;
+}
+
 export interface IssueRead {
   id: UUID;
   title: string;
@@ -73,6 +79,8 @@ export interface IssueRead {
   tags?: Tag[];
   criteria_codes?: string[];
   criteria?: IssueCriteriaItem[];
+  // Linked assessment (via join table). Optional if not associated.
+  assessment?: IssueAssessmentRef;
 }
 
 /** Create request type for Issues (normalized criteria and optional tag IDs). */
@@ -110,6 +118,4 @@ export interface UpdateIssueRequest {
    * (bulk add/remove). It will be validated and de-duplicated by the API.
    */
   criteria?: CriterionRef[];
-  /** Optional for reassociation flows; API must enforce single-assessment-per-issue. */
-  assessment_id?: UUID;
 }
