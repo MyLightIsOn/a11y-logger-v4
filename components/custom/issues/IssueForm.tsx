@@ -139,9 +139,26 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
     error: wcagError,
   } = useWcagCriteriaQuery();
 
+  // Determine an effective WCAG version to power the criteria selector:
+  // - Prefer the selected Assessment's version
+  // - Fallback to the version from existing criteria (edit mode)
+  const inferredVersionFromCriteria: WcagVersion | undefined = useMemo(() => {
+    // Try initialData.criteria first
+    const v1 = initialData?.criteria?.[0]?.version as WcagVersion | undefined;
+    if (v1) return v1;
+    // Then try currently selected criteria codes (version|code)
+    if (criteriaCodes && criteriaCodes.length > 0) {
+      const { version } = parseCriteriaKey(criteriaCodes[0]);
+      return version as WcagVersion;
+    }
+    return undefined;
+  }, [initialData?.criteria, criteriaCodes]);
+
+  const effectiveWcagVersion = (assessment?.wcag_version as WcagVersion | undefined) || inferredVersionFromCriteria;
+
   const wcagOptions = useMemo(() => {
-    if (!assessment?.wcag_version) return [];
-    const v = assessment.wcag_version as WcagVersion;
+    if (!effectiveWcagVersion) return [];
+    const v = effectiveWcagVersion as WcagVersion;
     const dotAware = (a: string, b: string) => {
       const pa = a.split(".").map(Number);
       const pb = b.split(".").map(Number);
@@ -159,7 +176,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
         value: `${c.version}|${c.code}`,
         label: `${c.code} — ${c.name} (${c.level})`,
       }));
-  }, [allCriteria, assessment?.wcag_version]);
+  }, [allCriteria, effectiveWcagVersion]);
 
   const createIssue = useCreateIssueMutation();
   const updateIssue = useUpdateIssueMutation();
@@ -353,7 +370,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
           : undefined,
         tag_ids: (tagIds || []).length ? tagIds : undefined,
         criteria:
-          assessment?.wcag_version && criteriaCodes.length
+          criteriaCodes.length
             ? criteriaCodes.map((key) => {
                 const { version, code } = parseCriteriaKey(key);
                 return { code, version };
@@ -411,7 +428,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
       },
     });
   };
-
+  console.log(initialData);
   // Uploads via hook
   const {
     filesToUpload,
@@ -528,8 +545,8 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
             options={wcagOptions}
             selected={criteriaCodes}
             onSelectedChangeAction={setCriteriaCodes}
-            disabled={!assessment?.wcag_version}
-            version={assessment?.wcag_version ?? null}
+            disabled={!effectiveWcagVersion}
+            version={effectiveWcagVersion ?? null}
             errors={errors}
           />
 
