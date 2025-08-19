@@ -17,7 +17,7 @@ import { updateIssueSchema } from "@/lib/validation/issues";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -32,8 +32,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // This await is necessary to ensure the params are resolved before proceeding. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
-    const id = await params?.id;
+    // Await params per Next.js dynamic API requirement. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: "Missing issue id" }, { status: 400 });
     }
@@ -142,7 +142,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -157,7 +157,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = await params?.id;
+    const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: "Missing issue id" }, { status: 400 });
     }
@@ -190,7 +190,7 @@ export async function PATCH(
     const { criteria, tag_ids, ...issueUpdate } = body;
 
     // Update the main issue record
-    const { data: updatedIssue, error: updateErr } = await supabase
+    const { error: updateErr } = await supabase
       .from("issues")
       .update({
         ...issueUpdate,
