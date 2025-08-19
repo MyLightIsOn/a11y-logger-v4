@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import IssueForm from "@/components/custom/issues/IssueForm";
+import { IssueForm } from "@/components/custom/issues/IssueForm";
 import { useIssueQuery } from "@/lib/query/use-issue-query";
 import type { IssueRead } from "@/types/issue";
 

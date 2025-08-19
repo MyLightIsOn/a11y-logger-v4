@@ -38,7 +38,7 @@ export interface IssueFormProps {
   initialData?: IssueRead; // optional pre-population data in edit mode
 }
 
-function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
+export function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
   const {
     handleSubmit: rhfHandleSubmit,
     formState: { errors },
@@ -123,9 +123,14 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
 
-  // Current effective assessment context: URL param wins (locked), otherwise local selection
+  // Current effective assessment context:
+  // - In edit mode, use the issue's existing linked assessment (read-only, from join)
+  // - In create mode, URL param wins (locked), otherwise local selection
+  const assessmentIdFromInitial = initialData?.assessment?.id || "";
   const effectiveAssessmentId =
-    assessmentIdFromUrl || selectedAssessmentId || "";
+    mode === "edit"
+      ? assessmentIdFromInitial
+      : assessmentIdFromUrl || selectedAssessmentId || "";
   const assessment = useMemo(
     () => assessments.find((a) => a.id === effectiveAssessmentId),
     [assessments, effectiveAssessmentId],
@@ -154,7 +159,10 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
     return undefined;
   }, [initialData?.criteria, criteriaCodes]);
 
-  const effectiveWcagVersion = (assessment?.wcag_version as WcagVersion | undefined) || inferredVersionFromCriteria;
+  const effectiveWcagVersion =
+    (assessment?.wcag_version as WcagVersion | undefined) ||
+    (initialData?.assessment?.wcag_version as WcagVersion | undefined) ||
+    inferredVersionFromCriteria;
 
   const wcagOptions = useMemo(() => {
     if (!effectiveWcagVersion) return [];
@@ -369,13 +377,12 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
           ? combinedScreenshots
           : undefined,
         tag_ids: (tagIds || []).length ? tagIds : undefined,
-        criteria:
-          criteriaCodes.length
-            ? criteriaCodes.map((key) => {
-                const { version, code } = parseCriteriaKey(key);
-                return { code, version };
-              })
-            : undefined,
+        criteria: criteriaCodes.length
+          ? criteriaCodes.map((key) => {
+              const { version, code } = parseCriteriaKey(key);
+              return { code, version };
+            })
+          : undefined,
       } as const;
 
       updateIssue.mutate(
@@ -428,7 +435,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
       },
     });
   };
-  console.log(initialData);
+
   // Uploads via hook
   const {
     filesToUpload,
@@ -454,14 +461,32 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
             <label htmlFor="severity" className="block text-xl font-bold">
               Assessment <span className={"text-destructive"}>*</span>
             </label>
-            {assessments.length === 0 ? (
+            {mode === "edit" ? (
+              <div className="py-2">
+                <p id="severity-help" className="text-sm text-gray-500 mb-1">
+                  Assessment for this issue
+                </p>
+                <div
+                  aria-describedby="severity-help"
+                  className="w-full py-3 px-3 text-lg bg-muted rounded border border-border"
+                >
+                  {
+                    // Prefer the server-provided assessment name; fallback to lookup
+                    initialData?.assessment?.name ||
+                      assessments.find((a) => a.id === effectiveAssessmentId)
+                        ?.name ||
+                      "(Unknown assessment)"
+                  }
+                </div>
+              </div>
+            ) : assessments.length === 0 ? (
               <div className="text-sm text-gray-700">
                 <p className="mb-2">
                   You need to create an Assessment before creating issues.
                 </p>
               </div>
             ) : (
-              <div>
+              <>
                 <p id="severity-help" className="text-sm text-gray-500 mb-1">
                   Choose an Assessment
                 </p>
@@ -510,7 +535,7 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </>
             )}
           </section>
 
@@ -577,32 +602,34 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
           />
         </div>
       </form>
-      <ConfirmationModal
-        isOpen={showAssessmentChangeConfirm}
-        onClose={() => {
-          setShowAssessmentChangeConfirm(false);
-          setPendingAssessmentId("");
-        }}
-        onConfirm={() => {
-          // Clear any selected WCAG criteria and apply the pending assessment
-          setCriteriaCodes([]);
-          if (pendingAssessmentId) {
-            setSelectedAssessmentId(pendingAssessmentId);
-            const params = new URLSearchParams(
-              Array.from(searchParams?.entries?.() || []),
-            );
-            params.set("assessment_id", pendingAssessmentId);
-            router.push(
-              `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
-            );
-          }
-          setPendingAssessmentId("");
-        }}
-        title="Change Assessment?"
-        message="Changing the Assessment will remove any selected WCAG criteria. Do you want to continue?"
-        confirmButtonText="Continue"
-        cancelButtonText="Cancel"
-      />
+      {mode === "create" && (
+        <ConfirmationModal
+          isOpen={showAssessmentChangeConfirm}
+          onClose={() => {
+            setShowAssessmentChangeConfirm(false);
+            setPendingAssessmentId("");
+          }}
+          onConfirm={() => {
+            // Clear any selected WCAG criteria and apply the pending assessment
+            setCriteriaCodes([]);
+            if (pendingAssessmentId) {
+              setSelectedAssessmentId(pendingAssessmentId);
+              const params = new URLSearchParams(
+                Array.from(searchParams?.entries?.() || []),
+              );
+              params.set("assessment_id", pendingAssessmentId);
+              router.push(
+                `/issues/new${params.toString() ? `?${params.toString()}` : ""}`,
+              );
+            }
+            setPendingAssessmentId("");
+          }}
+          title="Change Assessment?"
+          message="Changing the Assessment will remove any selected WCAG criteria. Do you want to continue?"
+          confirmButtonText="Continue"
+          cancelButtonText="Cancel"
+        />
+      )}
       <FormActions
         formId={mode === "edit" ? "edit-issue-form" : "create-issue-form"}
         submitting={
@@ -622,4 +649,3 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
   );
 }
 
-export default IssueForm;
