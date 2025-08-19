@@ -223,7 +223,13 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
     setValue("description", v, { shouldValidate: false });
   const setSeverity = (v: Severity) =>
     setValue("severity", v, { shouldValidate: false });
-  const setSeverityFromString = (v: string) => setSeverity(v as Severity);
+  const setSeverityFromString = (v: string) => {
+    // Guard against invalid/falsy values that could clear the Select inadvertently
+    if (v === "1" || v === "2" || v === "3" || v === "4") {
+      setSeverity(v as Severity);
+    }
+    // Ignore anything else (keeps current severity stable)
+  };
   // Note: status is not currently user-editable in this form; no setter needed
   const setSuggestedFix = (v: string) =>
     setValue("suggested_fix", v, { shouldValidate: false });
@@ -342,8 +348,9 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
         url: (url || "").trim() || undefined,
         selector: (selector || "").trim() || undefined,
         code_snippet: codeSnippet || undefined,
-        screenshots:
-          combinedScreenshots.length ? combinedScreenshots : undefined,
+        screenshots: combinedScreenshots.length
+          ? combinedScreenshots
+          : undefined,
         tag_ids: (tagIds || []).length ? tagIds : undefined,
         criteria:
           assessment?.wcag_version && criteriaCodes.length
@@ -417,7 +424,6 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
     folder: "a11y-logger/issues",
     onUploaded: (urls) => setScreenshots(urls),
   });
-  console.log(title);
   return (
     <div>
       <form
@@ -545,7 +551,9 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
             // Show newly uploaded URLs in the "Uploaded" section
             screenshots={uploadedUrls}
             // Show existing images (edit mode) with ability to remove
-            existingImages={existingImages.filter((u) => !imagesToRemove.includes(u))}
+            existingImages={existingImages.filter(
+              (u) => !imagesToRemove.includes(u),
+            )}
             onRemoveExistingImage={(url) =>
               setImagesToRemove((prev) => dedupeStrings([...(prev || []), url]))
             }

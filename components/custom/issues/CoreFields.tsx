@@ -128,10 +128,7 @@ export function CoreFields({
         <p id="severity-help" className="text-sm text-gray-500 mb-1">
           Choose the severity of the issue.
         </p>
-        <Select
-          value={severity || "low"}
-          onValueChange={onSeverityChangeAction}
-        >
+        <Select value={severity || "3"} onValueChange={onSeverityChangeAction}>
           <SelectTrigger
             id="severity"
             className="w-full py-6 text-lg"
