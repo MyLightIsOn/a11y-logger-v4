@@ -5,6 +5,7 @@ import { Issue } from "@/types/issue";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   LoadingIndicator,
   EmptyState,
@@ -28,6 +29,7 @@ function severityBadgeClasses(severity?: string) {
 }
 
 export default function Page() {
+  const router = useRouter();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -185,6 +187,7 @@ export default function Page() {
         <DataTable<Issue>
           data={issues}
           columns={columns}
+          onRowClick={(issue) => router.push(`/issues/${issue.id}`)}
           data-testid="issues-table"
         />
       ) : (

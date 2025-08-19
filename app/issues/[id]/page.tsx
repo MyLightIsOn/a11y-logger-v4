@@ -1,13 +1,10 @@
 import IssueDetailPage from "@/components/custom/issues/IssueDetailPage";
 
-export type IssueDetailRouteParams = {
-  readonly id: string;
-};
-
-export interface IssueDetailPageProps {
-  readonly params: IssueDetailRouteParams;
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default function Page({ params }: IssueDetailPageProps) {
-  return <IssueDetailPage issueId={params.id} />;
+export default async function Page({ params }: PageProps) {
+  const { id } = await params;
+  return <IssueDetailPage issueId={id ?? ""} />;
 }
