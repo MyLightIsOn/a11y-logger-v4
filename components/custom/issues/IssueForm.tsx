@@ -457,12 +457,14 @@ function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
             )}
           </section>
 
-          <AIAssistPanel
-            aiPrompt={aiPrompt}
-            onAiPromptChangeAction={setAiPrompt}
-            aiBusy={aiBusy}
-            onGenerateAction={handleAiAssist}
-          />
+          {mode === "create" && (
+            <AIAssistPanel
+              aiPrompt={aiPrompt}
+              onAiPromptChangeAction={setAiPrompt}
+              aiBusy={aiBusy}
+              onGenerateAction={handleAiAssist}
+            />
+          )}
 
           <CoreFields
             title={title}

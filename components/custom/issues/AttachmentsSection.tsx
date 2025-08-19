@@ -133,20 +133,27 @@ export function AttachmentsSection({
       {screenshots.length > 0 && (
         <div className="mt-3">
           <p className="text-sm mb-2">Uploaded:</p>
-          <ul className="list-disc pl-5 text-sm">
-            {screenshots.map((u) => (
-              <li key={u} className="break-all">
-                <a
-                  href={u}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline"
-                >
-                  {u}
-                </a>
-              </li>
+          <div className="grid grid-cols-2 gap-4">
+            {screenshots.map((url, index) => (
+              <a
+                key={url}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="relative group block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
+                aria-label={`Open screenshot ${index + 1}`}
+              >
+                <Image
+                  src={url}
+                  alt={`Screenshot ${index + 1}`}
+                  width={300}
+                  height={160}
+                  className="h-40 w-full object-cover rounded-md"
+                  unoptimized
+                />
+              </a>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </section>
