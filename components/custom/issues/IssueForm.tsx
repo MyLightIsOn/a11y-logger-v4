@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 import { useRouter, useSearchParams } from "next/navigation";
-import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
+import type { CreateIssueRequest, IssueRead, WcagVersion } from "@/types/issue";
 import type { IssueStatus, Severity } from "@/types/common";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
+import { useUpdateIssueMutation } from "@/lib/query/use-update-issue-mutation";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import CoreFields from "@/components/custom/issues/CoreFields";
 import TagsSection from "@/components/custom/issues/TagsSection";
@@ -31,7 +32,13 @@ import {
 } from "@/components/ui/select";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
-function IssueForm() {
+export interface IssueFormProps {
+  mode?: "create" | "edit";
+  issueId?: string; // required when mode = "edit"
+  initialData?: IssueRead; // optional pre-population data in edit mode
+}
+
+function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
   const {
     handleSubmit: rhfHandleSubmit,
     formState: { errors },
@@ -152,6 +159,46 @@ function IssueForm() {
   }, [allCriteria, assessment?.wcag_version]);
 
   const createIssue = useCreateIssueMutation();
+  const updateIssue = useUpdateIssueMutation();
+
+  // Pre-populate when in edit mode and initialData is provided
+  useEffect(() => {
+    if (!initialData) return;
+    // Core fields
+    setValue("title", initialData.title ?? "", { shouldValidate: false });
+    setValue("description", initialData.description ?? "", {
+      shouldValidate: false,
+    });
+    setValue("severity", initialData.severity as Severity, {
+      shouldValidate: false,
+    });
+    setValue("suggested_fix", initialData.suggested_fix ?? "", {
+      shouldValidate: false,
+    });
+    setValue("impact", initialData.impact ?? "", { shouldValidate: false });
+    setValue("url", initialData.url ?? "", { shouldValidate: false });
+    setValue("selector", initialData.selector ?? "", { shouldValidate: false });
+    setValue("code_snippet", initialData.code_snippet ?? "", {
+      shouldValidate: false,
+    });
+    setValue(
+      "screenshots",
+      Array.isArray(initialData.screenshots) ? initialData.screenshots : [],
+      { shouldValidate: false },
+    );
+    // Tags -> tag_ids
+    const tagIdsInit = Array.isArray(initialData.tags)
+      ? initialData.tags.map((t) => t.id)
+      : [];
+    setValue("tag_ids", tagIdsInit, { shouldValidate: false });
+    // Criteria codes state
+    const codes = Array.isArray(initialData.criteria)
+      ? initialData.criteria.map((c) => `${c.version}|${c.code}`)
+      : Array.isArray(initialData.criteria_codes)
+        ? initialData.criteria_codes
+        : [];
+    setCriteriaCodes(codes);
+  }, [initialData, setValue]);
 
   const setTitle = (v: string) =>
     setValue("title", v, { shouldValidate: false });
@@ -223,14 +270,6 @@ function IssueForm() {
 
   const onSubmitRHF = async () => {
     clearErrors();
-    if (!effectiveAssessmentId) {
-      setLocalError(
-        "Assessment is required. Please select an Assessment before creating an issue.",
-      );
-      return;
-    } else {
-      setLocalError(null);
-    }
 
     // If there are files queued, upload them first so screenshots are included in a single action
     let uploadResult: string[] | undefined = undefined;
@@ -247,12 +286,62 @@ function IssueForm() {
     }
 
     // Prefer immediate result from upload(), then hook state uploadedUrls, then form screenshots
-    const latestScreenshots = (uploadResult && uploadResult.length
-      ? uploadResult
-      : (uploadedUrls && uploadedUrls.length ? uploadedUrls : screenshots)) || [];
-    const screenshotsForPayload = latestScreenshots;
+    const latestScreenshots =
+      (uploadResult && uploadResult.length
+        ? uploadResult
+        : uploadedUrls && uploadedUrls.length
+          ? uploadedUrls
+          : screenshots) || [];
 
-    const payload = {
+    if (mode === "edit") {
+      if (!issueId) {
+        setLocalError("Missing issue ID for edit mode.");
+        return;
+      }
+      // Build Update payload: only include fields we currently edit
+      const updatePayload = {
+        title: (title || "").trim() || undefined,
+        description: (description || "").trim() || undefined,
+        severity: severity || undefined,
+        status: status || undefined,
+        suggested_fix: (suggestedFix || "").trim() || undefined,
+        impact: (impact || "").trim() || undefined,
+        url: (url || "").trim() || undefined,
+        selector: (selector || "").trim() || undefined,
+        code_snippet: codeSnippet || undefined,
+        screenshots: latestScreenshots.length ? latestScreenshots : undefined,
+        tag_ids: (tagIds || []).length ? tagIds : undefined,
+        criteria:
+          assessment?.wcag_version && criteriaCodes.length
+            ? criteriaCodes.map((key) => {
+                const { version, code } = parseCriteriaKey(key);
+                return { code, version };
+              })
+            : undefined,
+      } as const;
+
+      updateIssue.mutate(
+        { id: issueId, payload: updatePayload },
+        {
+          onSuccess: (res) => {
+            router.push(`/issues/${res.id}`);
+          },
+        },
+      );
+      return;
+    }
+
+    // Create mode requires an assessment
+    if (!effectiveAssessmentId) {
+      setLocalError(
+        "Assessment is required. Please select an Assessment before creating an issue.",
+      );
+      return;
+    } else {
+      setLocalError(null);
+    }
+
+    const createPayload = {
       title: (title || "").trim(),
       description: (description || "").trim() || undefined,
       severity: severity,
@@ -262,7 +351,7 @@ function IssueForm() {
       url: (url || "").trim() || undefined,
       selector: (selector || "").trim() || undefined,
       code_snippet: codeSnippet || undefined,
-      screenshots: screenshotsForPayload.length ? screenshotsForPayload : undefined,
+      screenshots: latestScreenshots.length ? latestScreenshots : undefined,
       tag_ids: (tagIds || []).length ? tagIds : undefined,
       assessment_id: effectiveAssessmentId,
       criteria:
@@ -274,7 +363,7 @@ function IssueForm() {
           : [],
     } as unknown as CreateIssueRequest;
 
-    createIssue.mutate(payload, {
+    createIssue.mutate(createPayload, {
       onSuccess: () => {
         reset();
         router.push("/issues");
@@ -283,16 +372,22 @@ function IssueForm() {
   };
 
   // Uploads via hook
-  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls, upload } =
-    useFileUploads({
-      folder: "a11y-logger/issues",
-      onUploaded: (urls) => setScreenshots(urls),
-    });
-
+  const {
+    filesToUpload,
+    setFilesToUpload,
+    uploading,
+    uploadError,
+    uploadedUrls,
+    upload,
+  } = useFileUploads({
+    folder: "a11y-logger/issues",
+    onUploaded: (urls) => setScreenshots(urls),
+  });
+  console.log(title);
   return (
     <div>
       <form
-        id={"create-issue-form"}
+        id={mode === "edit" ? "edit-issue-form" : "create-issue-form"}
         className={"flex flex-wrap"}
         onSubmit={rhfHandleSubmit(onSubmitRHF)}
       >
@@ -442,10 +537,18 @@ function IssueForm() {
         cancelButtonText="Cancel"
       />
       <FormActions
-        formId="create-issue-form"
-        submitting={createIssue.isPending || uploading}
+        formId={mode === "edit" ? "edit-issue-form" : "create-issue-form"}
+        submitting={
+          (mode === "edit" ? updateIssue.isPending : createIssue.isPending) ||
+          uploading
+        }
         error={
-          (localError ?? uploadError ?? createIssue.error?.message ?? null) as string | null
+          (localError ??
+            uploadError ??
+            (mode === "edit"
+              ? updateIssue.error?.message
+              : createIssue.error?.message) ??
+            null) as string | null
         }
       />
     </div>

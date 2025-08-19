@@ -1,4 +1,5 @@
 import React from "react";
+import EditIssueFormContainer from "@/components/custom/issues/EditIssueFormContainer";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -10,8 +11,7 @@ export default async function Page({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold mb-4">Edit Issue</h1>
-      <p className="text-sm text-muted-foreground">Issue ID: {id}</p>
-      {/* Step 3 will render the actual EditIssueForm here */}
+      <EditIssueFormContainer issueId={id} />
     </div>
   );
 }
