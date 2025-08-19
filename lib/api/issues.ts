@@ -30,6 +30,17 @@ export class IssuesApiService extends BaseApiService {
   }
 
   /**
+   * Get a single issue by ID
+   * Optionally include criteria enrichment
+   */
+  async getIssue(
+    id: string,
+    params?: { includeCriteria?: boolean }
+  ): Promise<ApiResponse<IssueRead>> {
+    return this.get<IssueRead>(`${this.basePath}/${id}`, params);
+  }
+
+  /**
    * Create a new issue
    * Returns the created issue enriched with criteria arrays as IssueRead
    */
