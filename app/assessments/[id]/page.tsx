@@ -16,11 +16,11 @@ import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function AssessmentDetailPage({ params }: PageProps) {
-  const { id } = params;
+  const { id } = React.use(params);
   const router = useRouter();
   const { assessment, stats, issues, deleteAssessment, isLoading, error } = useAssessmentDetails(id);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
