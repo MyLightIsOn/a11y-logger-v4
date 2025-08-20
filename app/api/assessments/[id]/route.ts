@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { wcagVersionEnum } from "@/lib/validation/issues";
+import type { Tag } from "@/types/tag";
+import type { Assessment } from "@/types/assessment";
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +24,12 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("assessments")
-      .select("*")
+      .select(`
+        *,
+        assessments_tags(
+          tags(*)
+        )
+      `)
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -37,7 +44,16 @@ export async function GET(
       throw error;
     }
 
-    return NextResponse.json(data);
+    type AssessmentRowWithJoin = Assessment & { assessments_tags?: { tags: Tag }[] };
+    const row = data as AssessmentRowWithJoin | null;
+    const transformed = row
+      ? {
+          ...row,
+          tags: row.assessments_tags?.map((at: { tags: Tag }) => at.tags) || [],
+        }
+      : null;
+
+    return NextResponse.json(transformed);
   } catch (error) {
     console.error("Error fetching assessment:", error);
     return NextResponse.json(

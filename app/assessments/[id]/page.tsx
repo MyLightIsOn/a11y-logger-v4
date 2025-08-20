@@ -22,7 +22,8 @@ interface PageProps {
 export default function AssessmentDetailPage({ params }: PageProps) {
   const { id } = React.use(params);
   const router = useRouter();
-  const { assessment, stats, issues, deleteAssessment, isLoading, error } = useAssessmentDetails(id);
+  const { assessment, stats, issues, deleteAssessment, isLoading, error } =
+    useAssessmentDetails(id);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const critical = stats?.critical ?? 0;
@@ -139,7 +140,9 @@ export default function AssessmentDetailPage({ params }: PageProps) {
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
         <div className="mt-4">
-          <Button onClick={() => router.push("/assessments")}>Back to Assessments</Button>
+          <Button onClick={() => router.push("/assessments")}>
+            Back to Assessments
+          </Button>
         </div>
       </div>
     );
@@ -157,7 +160,9 @@ export default function AssessmentDetailPage({ params }: PageProps) {
           </AlertDescription>
         </Alert>
         <div className="mt-4">
-          <Button onClick={() => router.push("/assessments")}>Back to Assessments</Button>
+          <Button onClick={() => router.push("/assessments")}>
+            Back to Assessments
+          </Button>
         </div>
       </div>
     );
@@ -216,7 +221,7 @@ export default function AssessmentDetailPage({ params }: PageProps) {
             </div>
 
             {/* Issues Datatable */}
-            <div className="mb-8">
+            <div className="mb-8 w-full">
               <h2 className="text-lg font-semibold mb-4">Issues</h2>
               <DataTable<Issue>
                 data={issues}
@@ -263,9 +268,13 @@ export default function AssessmentDetailPage({ params }: PageProps) {
             </div>
             <div className={"flex mb-2 pt-4 mx-auto"}>
               <p className={"font-bold mr-4"}>Tags:</p>
-              <p className={"gap-2 flex"}>
+              <p className={"gap-2 flex flex-wrap"}>
                 {assessment?.tags?.map((tag) => (
-                  <Badge className={"text-md"} key={tag.id}>
+                  <Badge
+                    key={tag.id}
+                    variant="outline"
+                    className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full"
+                  >
                     {tag.label}
                   </Badge>
                 ))}
