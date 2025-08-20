@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import type React from "react";
 
-export async function AuthButton() {
+// Keep async server component behavior but present a React component type to TS.
+const AuthButtonImpl = async () => {
   const supabase = await createClient();
 
   // You can also use getUser() which will be slower.
@@ -26,4 +28,6 @@ export async function AuthButton() {
       </Button>
     </div>
   );
-}
+};
+
+export const AuthButton = AuthButtonImpl as unknown as React.FC;

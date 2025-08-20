@@ -4,7 +4,7 @@ import type { WcagCriterion } from "@/types/issue";
 
 export function useWcagCriteriaQuery() {
   return useQuery<WcagCriterion[], Error, WcagCriterion[], ["wcagCriteria"]>({
-    queryKey: ["wcagCriteria"] as const,
+    queryKey: ["wcagCriteria"],
     queryFn: async (): Promise<WcagCriterion[]> => {
       const res = await criteriaApi.getCriteria();
       if (!res.success) {

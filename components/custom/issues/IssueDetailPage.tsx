@@ -170,7 +170,7 @@ interface IssueHeaderProps {
   severity: string;
 }
 
-export function IssueHeader({ title, status, severity }: IssueHeaderProps) {
+export function IssueHeader({ title, severity }: IssueHeaderProps) {
   return (
     <header className="flex items-start gap-3 w-full">
       <h1 className="text-2xl font-bold flex-1 pr-2">{title}</h1>

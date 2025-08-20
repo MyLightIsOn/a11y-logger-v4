@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Label } from "@/components/ui/label";
 import { MultiSelect } from "@/components/ui/multi-select";
 import ErrorAlert from "@/components/ui/error-alert";
 import { normalizeErrorMessage } from "@/lib/errors";
