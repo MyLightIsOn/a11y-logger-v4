@@ -1,5 +1,10 @@
 import { BaseApiService, ApiResponse } from "./base";
-import { Issue, CreateIssueRequest, IssueRead, UpdateIssueRequest } from "@/types/issue";
+import {
+  Issue,
+  CreateIssueRequest,
+  IssueRead,
+  UpdateIssueRequest,
+} from "@/types/issue";
 import { QueryParams } from "@/types/api";
 
 /**
@@ -24,7 +29,9 @@ export class IssuesApiService extends BaseApiService {
    * Note: includeCriteria is accepted for forward-compatibility; server may ignore it until wired.
    */
   async getIssues(
-    params?: Pick<QueryParams, "sortBy" | "sortOrder"> & { includeCriteria?: boolean }
+    params?: Pick<QueryParams, "sortBy" | "sortOrder"> & {
+      includeCriteria?: boolean;
+    },
   ): Promise<ApiResponse<IssuesResponse>> {
     return this.get<IssuesResponse>(this.basePath, params);
   }
@@ -35,7 +42,7 @@ export class IssuesApiService extends BaseApiService {
    */
   async getIssue(
     id: string,
-    params?: { includeCriteria?: boolean }
+    params?: { includeCriteria?: boolean },
   ): Promise<ApiResponse<IssueRead>> {
     return this.get<IssueRead>(`${this.basePath}/${id}`, params);
   }
@@ -44,7 +51,9 @@ export class IssuesApiService extends BaseApiService {
    * Create a new issue
    * Returns the created issue enriched with criteria arrays as IssueRead
    */
-  async createIssue(payload: CreateIssueRequest): Promise<ApiResponse<IssueRead>> {
+  async createIssue(
+    payload: CreateIssueRequest,
+  ): Promise<ApiResponse<IssueRead>> {
     return this.post<IssueRead>(this.basePath, payload);
   }
 
@@ -52,8 +61,16 @@ export class IssuesApiService extends BaseApiService {
    * Update an existing issue by ID (PATCH semantics)
    * Accepts partial payload; when criteria is provided, it represents the full desired set.
    */
-  async updateIssue(id: string, payload: UpdateIssueRequest): Promise<ApiResponse<IssueRead>> {
+  async updateIssue(
+    id: string,
+    payload: UpdateIssueRequest,
+  ): Promise<ApiResponse<IssueRead>> {
     return this.patch<IssueRead>(`${this.basePath}/${id}`, payload);
+  }
+
+  /** Delete an issue by ID */
+  async deleteIssue(id: string): Promise<ApiResponse<null>> {
+    return this.delete<null>(`${this.basePath}/${id}`);
   }
 }
 

@@ -84,24 +84,31 @@ export async function GET(
     const tags: Tag[] = (issues_tags ?? []).map((it) => it.tags);
 
     // Fetch linked assessment via join table assessments_issues
-    let assessmentRef: { id: string; name: string; wcag_version: string } | undefined = undefined;
+    let assessmentRef:
+      | { id: string; name: string; wcag_version: string }
+      | undefined = undefined;
     try {
       const { data: assessJoins, error: assessErr } = await supabase
         .from("assessments_issues")
-        .select(
-          `assessments(id, name, wcag_version)`
-        )
+        .select(`assessments(id, name, wcag_version)`)
         .eq("issue_id", id)
         .limit(1);
       if (assessErr) {
         console.error("Error fetching assessment join:", assessErr);
       } else if (Array.isArray(assessJoins) && assessJoins.length > 0) {
-        const rel = (assessJoins[0] as unknown as { assessments: unknown }).assessments as unknown;
+        const rel = (assessJoins[0] as unknown as { assessments: unknown })
+          .assessments as unknown;
         const a = Array.isArray(rel)
-          ? (rel[0] as { id: string; name: string; wcag_version: string } | undefined)
-          : ((rel as { id: string; name: string; wcag_version: string } | null));
+          ? (rel[0] as
+              | { id: string; name: string; wcag_version: string }
+              | undefined)
+          : (rel as { id: string; name: string; wcag_version: string } | null);
         if (a) {
-          assessmentRef = { id: a.id, name: a.name, wcag_version: a.wcag_version };
+          assessmentRef = {
+            id: a.id,
+            name: a.name,
+            wcag_version: a.wcag_version,
+          };
         }
       }
     } catch (e) {
@@ -144,11 +151,16 @@ export async function GET(
     );
 
     const responseIssue: IssueRead = {
-      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes" | "assessment">),
+      ...(baseIssue as Omit<
+        IssueRead,
+        "tags" | "criteria" | "criteria_codes" | "assessment"
+      >),
       tags,
       criteria: includeCriteria ? criteriaItems : undefined,
       criteria_codes: includeCriteria ? criteria_codes : undefined,
-      assessment: assessmentRef ? (assessmentRef as unknown as IssueRead["assessment"]) : undefined,
+      assessment: assessmentRef
+        ? (assessmentRef as unknown as IssueRead["assessment"])
+        : undefined,
     };
 
     return NextResponse.json(responseIssue);
@@ -400,6 +412,61 @@ export async function PATCH(
     return NextResponse.json(responseIssue);
   } catch (error) {
     console.error("Unhandled error in PATCH /api/issues/[id]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    if (!id) {
+      return NextResponse.json({ error: "Missing issue id" }, { status: 400 });
+    }
+
+    // Ensure issue belongs to user
+    const { data: issueRow, error: issueErr } = await supabase
+      .from("issues")
+      .select("id, user_id")
+      .eq("id", id)
+      .single();
+
+    if (issueErr || !issueRow || (issueRow as { user_id?: string }).user_id !== user.id) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Delete joins first to satisfy FK constraints
+    await supabase.from("issues_tags").delete().eq("issue_id", id);
+    await supabase.from("issue_criteria").delete().eq("issue_id", id);
+    await supabase.from("assessments_issues").delete().eq("issue_id", id);
+
+    const { error: delErr } = await supabase.from("issues").delete().eq("id", id);
+    if (delErr) {
+      console.error("Error deleting issue:", delErr);
+      return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Unhandled error in DELETE /api/issues/[id]:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
