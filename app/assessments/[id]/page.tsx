@@ -168,6 +168,13 @@ export default function AssessmentDetailPage({ params }: PageProps) {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"
+          onClick={(e) => {
+            // Prefer real browser back when history exists to maintain user context (filters, page, etc.)
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              e.preventDefault();
+              router.back();
+            }
+          }}
           className="dark:text-white hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessments
