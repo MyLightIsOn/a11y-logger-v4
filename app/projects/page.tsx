@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { projectsApi } from "@/lib/api";
 import { Project } from "@/types/project";
 import {
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 
 function Page() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +54,7 @@ function Page() {
         <div className="flex gap-2">
           {
             <Button
-              onClick={() => console.log("add project")}
+              onClick={() => router.push("/projects/new")}
               className="px-4 py-2 bg-success dark:bg-success"
               data-testid="create-project-button"
             >

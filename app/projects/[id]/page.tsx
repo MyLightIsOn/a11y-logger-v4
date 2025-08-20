@@ -3,8 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useProjectDetails } from "@/lib/query/use-project-details-query";
+import { useDeleteProjectMutation } from "@/lib/query/use-delete-project-mutation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,6 +20,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const { id } = React.use(params);
   const router = useRouter();
   const { data: project, isLoading, error } = useProjectDetails({ id });
+  const deleteProject = useDeleteProjectMutation();
 
   if (isLoading) {
     return (
@@ -96,6 +98,23 @@ export default function ProjectDetailPage({ params }: PageProps) {
             onClick={() => router.push(`/projects/${id}/edit`)}
           >
             Edit <Edit />
+          </Button>
+          <Button
+            className={"min-w-[120px]"}
+            variant="destructive"
+            disabled={deleteProject.isPending}
+            onClick={() => {
+              const confirmed = window.confirm("Are you sure you want to delete this project? This action cannot be undone.");
+              if (!confirmed) return;
+              deleteProject.mutate(id, {
+                onSuccess: () => {
+                  router.push("/projects");
+                },
+              });
+            }}
+            data-testid="delete-project-button"
+          >
+            {deleteProject.isPending ? "Deleting..." : "Delete"} <Trash2 className="ml-2" />
           </Button>
         </div>
       </div>
