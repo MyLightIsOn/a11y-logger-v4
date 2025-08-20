@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash } from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
@@ -18,7 +20,8 @@ interface PageProps {
 export default function AssessmentDetailPage({ params }: PageProps) {
   const { id } = params;
   const router = useRouter();
-  const { assessment, stats, issues } = useAssessmentDetails(id);
+  const { assessment, stats, issues, deleteAssessment } = useAssessmentDetails(id);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const critical = stats?.critical ?? 0;
   const high = stats?.high ?? 0;
@@ -102,6 +105,13 @@ export default function AssessmentDetailPage({ params }: PageProps) {
     [],
   );
 
+  const showDeleteConfirmation = () => setIsDeleteModalOpen(true);
+  const handleDelete = () => {
+    // Trigger delete and navigate back to list (optimistic)
+    deleteAssessment.mutate();
+    router.push("/assessments");
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
@@ -111,6 +121,24 @@ export default function AssessmentDetailPage({ params }: PageProps) {
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessments
         </Link>
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-2">
+          <Button
+            className={"min-w-[100px]"}
+            variant="outline"
+            onClick={() => router.push(`/assessments/${id}/edit`)}
+          >
+            Edit <Edit />
+          </Button>
+          <Button
+            className={"min-w-[100px]"}
+            variant="destructive"
+            onClick={showDeleteConfirmation}
+            disabled={deleteAssessment.isPending}
+          >
+            {deleteAssessment.isPending ? "Deleting..." : "Delete"} <Trash />
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden flex">
@@ -181,6 +209,17 @@ export default function AssessmentDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this assessment? This action cannot be undone."
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 }
