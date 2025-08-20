@@ -1,35 +1,47 @@
 import { BaseApiService, ApiResponse } from "./base";
 import { Project } from "@/types/project";
-import {
-  QueryParams,
-  CreateRequestWithTags,
-  UpdateRequestWithTags,
-} from "@/types/api";
-import { UUID } from "@/types/common";
+import { Assessment } from "@/types/assessment";
+import { QueryParams } from "@/types/api";
 
 /**
- * Simple response format that matches the current API route
+ * Simple response format for projects list
  */
-interface ProjectsResponse {
+export interface ProjectsResponse {
   data: Project[];
   count: number;
 }
 
-// Accept name, optional description, and tag IDs
-export type CreateProjectRequest = CreateRequestWithTags<Project, "tags">;
+/** Project details with related assessments flattened */
+export type ProjectWithRelations = Project & {
+  assessments?: Assessment[];
+};
 
-// Allow partial updates to name, description, and tag IDs
-export type UpdateProjectRequest = UpdateRequestWithTags<Project, "tags">;
+/** Lightweight request type for creating a Project */
+export type CreateProjectRequest = {
+  name: string;
+  description?: string;
+  /** Optional tag IDs to associate via join table */
+  tag_ids?: string[];
+  /** Optional assessment IDs to associate via join table */
+  assessment_ids?: string[];
+};
 
-/**
- * Projects API service
- */
+/** Lightweight request type for updating a Project */
+export type UpdateProjectRequest = {
+  name?: string;
+  description?: string;
+  /** Optional tag IDs to replace the full set for the project */
+  tag_ids?: string[];
+  /** Optional assessment IDs to replace the full set for the project */
+  assessment_ids?: string[];
+};
+
 export class ProjectsApiService extends BaseApiService {
   private readonly basePath = "/projects";
 
   /**
-   * Get all projects with optional query parameters
-   * Includes associated tags via many-to-many relationship
+   * Get all projects with optional sort params
+   * Server flattens tags; response includes count similar to assessments API
    */
   async getProjects(
     params?: Pick<QueryParams, "sortBy" | "sortOrder">,
@@ -37,37 +49,29 @@ export class ProjectsApiService extends BaseApiService {
     return this.get<ProjectsResponse>(this.basePath, params);
   }
 
-  /**
-   * Get a single project by ID
-   */
-  async getProject(id: UUID): Promise<ApiResponse<Project>> {
-    return this.get<Project>(`${this.basePath}/${id}`);
+  /** Get a single project by ID (includes tags and assessments on server) */
+  async getProject(id: string): Promise<ApiResponse<ProjectWithRelations>> {
+    return this.get<ProjectWithRelations>(`${this.basePath}/${id}`);
   }
 
-  /**
-   * Create a new project
-   */
+  /** Create a new project */
   async createProject(
-    project: CreateProjectRequest,
+    payload: CreateProjectRequest,
   ): Promise<ApiResponse<Project>> {
-    return this.post<Project>(this.basePath, project);
+    return this.post<Project>(this.basePath, payload);
   }
 
-  /**
-   * Update an existing project
-   */
+  /** Update a project by ID */
   async updateProject(
-    id: UUID,
-    updates: UpdateProjectRequest,
+    id: string,
+    payload: UpdateProjectRequest,
   ): Promise<ApiResponse<Project>> {
-    return this.put<Project>(`${this.basePath}/${id}`, updates);
+    return this.put<Project>(`${this.basePath}/${id}`, payload);
   }
 
-  /**
-   * Delete a project
-   */
-  async deleteProject(id: UUID): Promise<ApiResponse<void>> {
-    return this.delete<void>(`${this.basePath}/${id}`);
+  /** Delete a project by ID */
+  async deleteProject(id: string): Promise<ApiResponse<null>> {
+    return this.delete<null>(`${this.basePath}/${id}`);
   }
 }
 
