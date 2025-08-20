@@ -81,11 +81,18 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const name = (body?.name ?? "").toString().trim();
-    const description = typeof body?.description === "string" ? body.description.trim() : undefined;
+    const description =
+      typeof body?.description === "string"
+        ? body.description.trim()
+        : undefined;
     const wcag_version_raw = body?.wcag_version;
+    const tag_ids_raw = Array.isArray(body?.tag_ids) ? body.tag_ids : undefined;
 
     if (!name) {
-      return NextResponse.json({ error: "Assessment name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Assessment name is required" },
+        { status: 400 },
+      );
     }
 
     // Validate wcag_version explicitly using existing enum
@@ -94,12 +101,16 @@ export async function POST(request: NextRequest) {
       wcag_version = wcagVersionEnum.parse(wcag_version_raw);
     } catch {
       return NextResponse.json(
-        { error: "wcag_version is required and must be one of '2.0' | '2.1' | '2.2'" },
+        {
+          error:
+            "wcag_version is required and must be one of '2.0' | '2.1' | '2.2'",
+        },
         { status: 400 },
       );
     }
 
-    const { data, error } = await supabase
+    // Create assessment row first
+    const { data: created, error: createErr } = await supabase
       .from("assessments")
       .insert({
         name,
@@ -110,11 +121,32 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (createErr) {
+      throw createErr;
     }
 
-    return NextResponse.json(data, { status: 201 });
+    // If tag_ids are provided, insert into join table
+    const tag_ids: string[] | undefined = tag_ids_raw
+      ?.map((t: unknown) => (typeof t === "string" ? t : undefined))
+      .filter((t: string | undefined): t is string => Boolean(t));
+
+    if (created?.id && tag_ids && tag_ids.length > 0) {
+      const joinRows = tag_ids.map((tag_id) => ({
+        assessment_id: created.id,
+        tag_id,
+      }));
+
+      const { error: joinErr } = await supabase
+        .from("assessments_tags")
+        .insert(joinRows);
+
+      if (joinErr) {
+        console.error("Failed to insert assessment tags:", joinErr);
+        // Non-fatal: we still return the created assessment row
+      }
+    }
+
+    return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error("Error creating assessment:", error);
     return NextResponse.json(
