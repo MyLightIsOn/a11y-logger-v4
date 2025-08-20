@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,9 +51,8 @@ export function AssessmentForm({
 }: AssessmentFormProps) {
   const formId =
     mode === "edit" ? "edit-assessment-form" : "create-assessment-form";
-  // State for WCAG version change confirmation
-  const [showVersionConfirm, setShowVersionConfirm] = useState(false);
-  const [pendingVersion, setPendingVersion] = useState<WcagVersion | "">("");
+  // State for WCAG version change confirmation (reserved for future modal)
+  // Note: Confirmation UI not implemented; setValue is applied directly.
   const wcagTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const {
@@ -85,6 +84,16 @@ export function AssessmentForm({
       tag_ids: (initialData.tags ?? []).map((t) => t.id),
     });
   }, [initialData, reset]);
+
+  // Ensure wcag_version is set in form state when editing (prefill)
+  useEffect(() => {
+    if (initialData?.wcag_version) {
+      setValue("wcag_version", initialData.wcag_version as WcagVersion, {
+        shouldValidate: false,
+        shouldDirty: false,
+      });
+    }
+  }, [initialData?.wcag_version, setValue]);
 
   // Warn on unload when there are unsaved changes (dirty form)
   useEffect(() => {
@@ -213,21 +222,11 @@ export function AssessmentForm({
             Select the WCAG version this assessment targets.
           </p>
           <Select
-            value={currentVersion || ""}
+            value={(currentVersion || (initialData?.wcag_version as WcagVersion | undefined) || "")}
             onValueChange={(v) => {
-              if (
-                mode === "edit" &&
-                (issueCount ?? 0) > 0 &&
-                initialData?.wcag_version &&
-                v !== (initialData.wcag_version as string)
-              ) {
-                setPendingVersion(v as WcagVersion);
-                setShowVersionConfirm(true);
-              } else {
-                setValue("wcag_version", v as WcagVersion, {
-                  shouldValidate: true,
-                });
-              }
+              setValue("wcag_version", v as WcagVersion, {
+                shouldValidate: true,
+              });
             }}
           >
             <SelectTrigger
