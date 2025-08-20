@@ -10,6 +10,7 @@ export function TagsSection({
   isLoading,
   error,
   options,
+  selected,
   onSelectedChangeAction,
 }: TagsSectionProps) {
   const handleSelectedChange = React.useCallback(
@@ -43,6 +44,7 @@ export function TagsSection({
       <MultiSelect
         id="tags"
         options={options}
+        defaultValue={selected}
         onValueChange={handleSelectedChange}
         placeholder="Select tags..."
         className="w-full"

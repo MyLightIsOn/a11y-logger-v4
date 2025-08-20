@@ -38,7 +38,11 @@ export interface IssueFormProps {
   initialData?: IssueRead; // optional pre-population data in edit mode
 }
 
-export function IssueForm({ mode = "create", issueId, initialData }: IssueFormProps) {
+export function IssueForm({
+  mode = "create",
+  issueId,
+  initialData,
+}: IssueFormProps) {
   const {
     handleSubmit: rhfHandleSubmit,
     formState: { errors },
@@ -112,10 +116,8 @@ export function IssueForm({ mode = "create", issueId, initialData }: IssueFormPr
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>("");
   const [localError, setLocalError] = useState<string | null>(null);
   const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
-  // Enhanced image management state (Step 4)
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [imagesToRemove, setImagesToRemove] = useState<string[]>([]);
-  // Assessment change confirmation modal state
   const [showAssessmentChangeConfirm, setShowAssessmentChangeConfirm] =
     useState<boolean>(false);
   const [pendingAssessmentId, setPendingAssessmentId] = useState<string>("");
@@ -648,4 +650,3 @@ export function IssueForm({ mode = "create", issueId, initialData }: IssueFormPr
     </div>
   );
 }
-
