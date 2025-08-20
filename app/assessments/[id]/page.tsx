@@ -3,13 +3,15 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash } from "lucide-react";
+import { AlertCircle, ArrowLeft, Edit, Trash } from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
@@ -20,7 +22,7 @@ interface PageProps {
 export default function AssessmentDetailPage({ params }: PageProps) {
   const { id } = params;
   const router = useRouter();
-  const { assessment, stats, issues, deleteAssessment } = useAssessmentDetails(id);
+  const { assessment, stats, issues, deleteAssessment, isLoading, error } = useAssessmentDetails(id);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const critical = stats?.critical ?? 0;
@@ -112,6 +114,55 @@ export default function AssessmentDetailPage({ params }: PageProps) {
     router.push("/assessments");
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-6">
+        <Skeleton className="h-12 w-3/4 mb-4" />
+        <Skeleton className="h-6 w-1/2 mb-2" />
+        <Skeleton className="h-24 w-full mb-4" />
+        <div className="flex gap-2 mt-4">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto py-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={() => router.push("/assessments")}>Back to Assessments</Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Not Found state
+  if (!assessment) {
+    return (
+      <div className="container mx-auto py-6">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Not Found</AlertTitle>
+          <AlertDescription>
+            The requested assessment could not be found.
+          </AlertDescription>
+        </Alert>
+        <div className="mt-4">
+          <Button onClick={() => router.push("/assessments")}>Back to Assessments</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
@@ -148,6 +199,13 @@ export default function AssessmentDetailPage({ params }: PageProps) {
               <h1 className="text-2xl font-bold mb-2">
                 {assessment?.name ?? ""}
               </h1>
+              {assessment?.description && (
+                <div className="mb-4">
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {assessment.description}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Issues Datatable */}
