@@ -8,6 +8,7 @@ import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
 interface PageProps {
@@ -142,6 +143,42 @@ export default function AssessmentDetailPage({ params }: PageProps) {
             lowCount={low}
             totalCount={total}
           />
+          <div className={"flex flex-col mt-4"}>
+            <div className={"flex justify-between mb-2 gap-10"}>
+              <p className={"font-bold text-right w-1/2"}>Created:</p>
+              <p className={"w-1/2"}>
+                {assessment?.created_at && formatDate(assessment.created_at)}
+              </p>
+            </div>
+            <div className={"flex justify-between mb-2 gap-10"}>
+              <p className={"font-bold text-right w-1/2"}>Updated:</p>
+              <p className={"w-1/2"}>
+                {assessment?.updated_at && formatDate(assessment.updated_at)}
+              </p>
+            </div>
+            <div
+              className={
+                "flex justify-between mb-2 gap-10 border-b border-border pb-8"
+              }
+            >
+              <p className={"font-bold text-right w-1/2"}>Guidelines:</p>
+              <p className={"w-1/2"}>
+                {assessment?.wcag_version
+                  ? String(assessment.wcag_version).toUpperCase()
+                  : "Not specified"}
+              </p>
+            </div>
+            <div className={"flex mb-2 pt-4 mx-auto"}>
+              <p className={"font-bold mr-4"}>Tags:</p>
+              <p className={"gap-2 flex"}>
+                {assessment?.tags?.map((tag) => (
+                  <Badge className={"text-md"} key={tag.id}>
+                    {tag.label}
+                  </Badge>
+                ))}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
