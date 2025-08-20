@@ -24,12 +24,14 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("assessments")
-      .select(`
+      .select(
+        `
         *,
         assessments_tags(
           tags(*)
         )
-      `)
+      `,
+      )
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -44,7 +46,9 @@ export async function GET(
       throw error;
     }
 
-    type AssessmentRowWithJoin = Assessment & { assessments_tags?: { tags: Tag }[] };
+    type AssessmentRowWithJoin = Assessment & {
+      assessments_tags?: { tags: Tag }[];
+    };
     const row = data as AssessmentRowWithJoin | null;
     const transformed = row
       ? {
@@ -168,6 +172,64 @@ export async function PUT(
       throw error;
     }
 
+    // Handle tag updates if tag_ids is provided in payload
+    const tag_ids_raw = Array.isArray(body?.tag_ids) ? body.tag_ids : undefined;
+    if (tag_ids_raw) {
+      // Normalize to string IDs and filter out invalid entries
+      const newTagIds: string[] = tag_ids_raw
+        .map((t: unknown) => (typeof t === "string" ? t : undefined))
+        .filter((t: string | undefined): t is string => Boolean(t));
+
+      try {
+        // Fetch current tag ids for this assessment
+        const { data: existingRows, error: existingErr } = await supabase
+          .from("assessments_tags")
+          .select("tag_id")
+          .eq("assessment_id", id);
+        if (existingErr) throw existingErr;
+
+        const existingTagIds = new Set(
+          (existingRows || []).map((r: { tag_id: string }) => r.tag_id),
+        );
+        const newSet = new Set(newTagIds);
+
+        // Determine which to insert and which to delete
+        const toInsert: string[] = [...newSet].filter(
+          (tid) => !existingTagIds.has(tid),
+        );
+        const toDelete: string[] = [...existingTagIds].filter(
+          (tid) => !newSet.has(tid),
+        );
+
+        if (toDelete.length > 0) {
+          const { error: delErr } = await supabase
+            .from("assessments_tags")
+            .delete()
+            .eq("assessment_id", id)
+            .in("tag_id", toDelete);
+          if (delErr) {
+            console.error("Failed to delete assessment tags:", delErr);
+          }
+        }
+
+        if (toInsert.length > 0) {
+          const joinRows = toInsert.map((tag_id) => ({
+            assessment_id: id,
+            tag_id,
+          }));
+          const { error: insErr } = await supabase
+            .from("assessments_tags")
+            .insert(joinRows);
+          if (insErr) {
+            console.error("Failed to insert assessment tags:", insErr);
+          }
+        }
+      } catch (e) {
+        // Non-fatal: log the error but still return the updated assessment row
+        console.error("Error updating assessment tags:", e);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error updating assessment:", error);
@@ -197,7 +259,10 @@ export async function DELETE(
 
     const { id } = await params;
     if (!id) {
-      return NextResponse.json({ error: "Missing assessment id" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing assessment id" },
+        { status: 400 },
+      );
     }
 
     // Ensure assessment belongs to user
@@ -215,7 +280,10 @@ export async function DELETE(
     await supabase.from("assessments_tags").delete().eq("assessment_id", id);
     await supabase.from("assessments_issues").delete().eq("assessment_id", id);
 
-    const { error: delErr } = await supabase.from("assessments").delete().eq("id", id);
+    const { error: delErr } = await supabase
+      .from("assessments")
+      .delete()
+      .eq("id", id);
     if (delErr) {
       console.error("Error deleting assessment:", delErr);
       return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
