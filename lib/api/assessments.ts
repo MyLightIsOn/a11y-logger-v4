@@ -2,6 +2,7 @@ import { BaseApiService, ApiResponse } from "./base";
 import { Assessment } from "@/types/assessment";
 import { QueryParams } from "@/types/api";
 import type { WcagVersion } from "@/types/issue";
+import type { Issue } from "@/types/issue";
 
 /**
  * Simple response format that matches the planned/Projects pattern
@@ -21,6 +22,19 @@ export type UpdateAssessmentRequest = {
 /**
  * Assessments API service
  */
+export interface AssessmentIssuesStats {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+export interface AssessmentIssuesResponse {
+  data: Issue[];
+  count: number;
+  stats: AssessmentIssuesStats;
+}
+
 export class AssessmentsApiService extends BaseApiService {
   private readonly basePath = "/assessments";
 
@@ -50,6 +64,13 @@ export class AssessmentsApiService extends BaseApiService {
   /** Delete an assessment by ID */
   async deleteAssessment(id: string): Promise<ApiResponse<null>> {
     return this.delete<null>(`${this.basePath}/${id}`);
+  }
+
+  /** Get issues and severity stats for a specific assessment */
+  async getAssessmentIssues(
+    id: string,
+  ): Promise<ApiResponse<AssessmentIssuesResponse>> {
+    return this.get<AssessmentIssuesResponse>(`${this.basePath}/${id}/issues`);
   }
 }
 
