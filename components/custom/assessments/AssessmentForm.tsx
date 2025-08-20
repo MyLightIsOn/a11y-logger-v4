@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import TagsSection from "@/components/custom/issues/TagsSection";
+import ErrorAlert from "@/components/ui/error-alert";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import type { Assessment } from "@/types/assessment";
 import type { WcagVersion } from "@/types/issue";
 import type { Option } from "@/types/options";
@@ -29,6 +31,8 @@ export interface AssessmentFormProps {
   mode?: "create" | "edit";
   initialData?: Assessment; // optional pre-population
   submitting?: boolean; // external submitting state if parent controls submission
+  error?: unknown | null; // error to display consistently
+  issueCount?: number; // number of existing issues linked to this assessment (for WCAG change warning)
   onSubmit?: (values: AssessmentFormValues) => void | Promise<void>;
 }
 
@@ -42,15 +46,21 @@ export function AssessmentForm({
   mode = "create",
   initialData,
   submitting = false,
+  error = null,
+  issueCount = 0,
   onSubmit,
 }: AssessmentFormProps) {
   const formId = mode === "edit" ? "edit-assessment-form" : "create-assessment-form";
+  // State for WCAG version change confirmation
+  const [showVersionConfirm, setShowVersionConfirm] = useState(false);
+  const [pendingVersion, setPendingVersion] = useState<WcagVersion | "">("");
+  const wcagTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset,
     watch,
   } = useForm<AssessmentFormValues>({
@@ -76,6 +86,18 @@ export function AssessmentForm({
     });
   }, [initialData, reset]);
 
+  // Warn on unload when there are unsaved changes (dirty form)
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty && !submitting) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty, submitting]);
+
   // Tags data and options
   const { data: tags = [], isLoading: tagsLoading, error: tagsError } = useTagsQuery();
   const tagOptions: Option[] = useMemo(
@@ -84,6 +106,10 @@ export function AssessmentForm({
   );
 
   const selectedTagIds = watch("tag_ids") ?? [];
+  const currentVersion = (watch("wcag_version") || "") as WcagVersion | "";
+  const initialVersion = (initialData?.wcag_version as WcagVersion | undefined) || undefined;
+  const showVersionWarning =
+    mode === "edit" && (issueCount ?? 0) > 0 && initialVersion && currentVersion && currentVersion !== initialVersion;
 
   const internalSubmit = async (values: AssessmentFormValues) => {
     // naive required checks (Zod schema will be added in a later step per plan)
@@ -103,8 +129,14 @@ export function AssessmentForm({
   };
 
   return (
-    <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
-      {/* Name */}
+    <>
+      {error ? (
+        <div className="mb-4">
+          <ErrorAlert variant="banner" message={String((error as Error)?.message ?? error)} />
+        </div>
+      ) : null}
+      <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
+        {/* Name */}
       <section className="bg-card rounded-lg p-4 border border-border mb-4">
         <label htmlFor="name" className="block text-xl font-bold">
           Name <span className="text-destructive">*</span>
@@ -160,10 +192,23 @@ export function AssessmentForm({
           Select the WCAG version this assessment targets.
         </p>
         <Select
-          value={watch("wcag_version") || ""}
-          onValueChange={(v) => setValue("wcag_version", v as WcagVersion, { shouldValidate: true })}
+          value={currentVersion || ""}
+          onValueChange={(v) => {
+            if (
+              mode === "edit" &&
+              (issueCount ?? 0) > 0 &&
+              initialData?.wcag_version &&
+              v !== (initialData.wcag_version as string)
+            ) {
+              setPendingVersion(v as WcagVersion);
+              setShowVersionConfirm(true);
+            } else {
+              setValue("wcag_version", v as WcagVersion, { shouldValidate: true });
+            }
+          }}
         >
           <SelectTrigger
+            ref={wcagTriggerRef as unknown as React.Ref<HTMLButtonElement>}
             id="wcag_version"
             className="w-full py-6 text-lg"
             aria-invalid={!!errors.wcag_version}
@@ -177,6 +222,11 @@ export function AssessmentForm({
             <SelectItem value="2.2">WCAG 2.2</SelectItem>
           </SelectContent>
         </Select>
+        {showVersionWarning && (
+          <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+            Changing WCAG version may affect existing issues linked to this assessment.
+          </div>
+        )}
         {errors.wcag_version && (
           <p id="wcag-version-error" className="text-sm text-red-600 mt-1" role="alert">
             WCAG Version is required
@@ -202,7 +252,30 @@ export function AssessmentForm({
           {submitting ? (mode === "edit" ? "Saving assessment..." : "Creating assessment...") : ""}
         </span>
       </div>
+      {isDirty && !submitting ? (
+        <div className="mt-3 text-sm text-muted-foreground">You have unsaved changes.</div>
+      ) : null}
     </form>
+
+    <ConfirmationModal
+      isOpen={showVersionConfirm}
+      onClose={() => {
+        setShowVersionConfirm(false);
+        setPendingVersion("");
+      }}
+      onConfirm={() => {
+        if (pendingVersion) {
+          setValue("wcag_version", pendingVersion as WcagVersion, { shouldValidate: true });
+        }
+        setPendingVersion("");
+      }}
+      title="Change WCAG Version?"
+      message="Changing the WCAG version for an assessment that already has issues may cause mismatches with existing issue criteria. Do you want to continue?"
+      confirmButtonText="Continue"
+      cancelButtonText="Cancel"
+      triggerRef={wcagTriggerRef}
+    />
+    </>
   );
 }
 
