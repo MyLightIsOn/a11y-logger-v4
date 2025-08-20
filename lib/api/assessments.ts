@@ -12,11 +12,22 @@ export interface AssessmentsResponse {
   count: number;
 }
 
+/** Lightweight request type for creating an Assessment */
+export type CreateAssessmentRequest = {
+  name: string;
+  description?: string;
+  wcag_version: WcagVersion;
+  /** Optional tag IDs to associate via join table */
+  tag_ids?: string[];
+};
+
 /** Lightweight request type for updating an Assessment */
 export type UpdateAssessmentRequest = {
   name?: string;
   description?: string;
   wcag_version?: WcagVersion;
+  /** Optional tag IDs to replace the full set for the assessment */
+  tag_ids?: string[];
 };
 
 /**
@@ -51,6 +62,13 @@ export class AssessmentsApiService extends BaseApiService {
   /** Get a single assessment by ID */
   async getAssessment(id: string): Promise<ApiResponse<Assessment>> {
     return this.get<Assessment>(`${this.basePath}/${id}`);
+  }
+
+  /** Create a new assessment */
+  async createAssessment(
+    payload: CreateAssessmentRequest,
+  ): Promise<ApiResponse<Assessment>> {
+    return this.post<Assessment>(this.basePath, payload);
   }
 
   /** Update an assessment by ID */
