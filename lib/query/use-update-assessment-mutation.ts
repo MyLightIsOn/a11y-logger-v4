@@ -1,7 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { assessmentsApi } from "@/lib/api";
 import type { Assessment } from "@/types/assessment";
 import type { UpdateAssessmentRequest } from "@/lib/api/assessments";
+import { assessmentQueryKey } from "@/lib/query/use-assessment-details-query";
 
 export interface UpdateAssessmentVariables {
   id: string;
@@ -15,6 +16,7 @@ export interface UpdateAssessmentVariables {
  * - On error, throws an Error with a user-friendly message.
  */
 export function useUpdateAssessmentMutation() {
+  const queryClient = useQueryClient();
   return useMutation<Assessment, Error, UpdateAssessmentVariables>({
     mutationKey: ["assessments", "update"],
     mutationFn: async ({ id, payload }: UpdateAssessmentVariables) => {
@@ -23,6 +25,13 @@ export function useUpdateAssessmentMutation() {
         throw new Error(res.error || "Failed to update assessment");
       }
       return res.data as Assessment;
+    },
+    onSuccess: async (_data, variables) => {
+      // Ensure detail page and list reflect the latest updates immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: assessmentQueryKey(variables.id) }),
+        queryClient.invalidateQueries({ queryKey: ["assessments"] }),
+      ]);
     },
   });
 }
