@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DataTable, DataTableColumn } from "@/components/ui/data-table";
+import { formatDate } from "@/lib/utils";
+import type { Assessment } from "@/types/assessment";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -75,6 +78,37 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const assessments = project.assessments ?? [];
   const tags = project.tags ?? [];
 
+  const columns: DataTableColumn<Assessment>[] = [
+    {
+      header: "Name",
+      accessorKey: "name",
+      sortable: true,
+      cell: (a) => (
+        <Link href={`/assessments/${a.id}`} className="font-bold hover:underline">
+          {a.name}
+        </Link>
+      ),
+    },
+    {
+      header: "Description",
+      accessorKey: "description",
+      sortable: true,
+      cell: (a) => <span className="line-clamp-2">{a.description}</span>,
+    },
+    {
+      header: "Created",
+      accessorKey: "created_at",
+      sortable: true,
+      cell: (a) => <span>{a.created_at ? formatDate(a.created_at) : ""}</span>,
+    },
+    {
+      header: "Updated",
+      accessorKey: "updated_at",
+      sortable: true,
+      cell: (a) => <span>{a.updated_at ? formatDate(a.updated_at) : ""}</span>,
+    },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
@@ -135,31 +169,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
             {/* Assessments section */}
             <div className="mb-8 w-full">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold">Linked Assessments</h2>
-                {/* Management hint/button */}
-                <Button
-                  variant="ghost"
-                  className="text-sm"
-                  onClick={() => router.push(`/projects/${id}/edit`)}
-                >
-                  Manage Assessments
-                </Button>
-              </div>
+              <h2 className="text-lg font-semibold mb-4">Linked Assessments</h2>
               {assessments.length === 0 ? (
-                <p className="text-sm text-gray-600">
-                  No assessments linked. Use &quot;Manage Assessments&quot; to add.
-                </p>
+                <p className="text-sm text-gray-600">No assessments linked.</p>
               ) : (
-                <ul className="list-disc pl-5 space-y-2">
-                  {assessments.map((a) => (
-                    <li key={a.id}>
-                      <Link href={`/assessments/${a.id}`} className="font-medium hover:underline">
-                        {a.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <DataTable<Assessment>
+                  data={assessments}
+                  columns={columns}
+                  onRowClick={(a) => router.push(`/assessments/${a.id}`)}
+                  data-testid="project-assessments-table"
+                />
               )}
             </div>
           </div>
