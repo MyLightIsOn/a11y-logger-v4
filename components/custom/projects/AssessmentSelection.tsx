@@ -34,8 +34,11 @@ export function AssessmentSelection({
   errors = null,
   id = "assessments",
 }: AssessmentSelectionProps) {
-  const { data: assessments = [], isLoading, error } =
-    useAssessmentsForProjectQuery();
+  const {
+    data: assessments = [],
+    isLoading,
+    error,
+  } = useAssessmentsForProjectQuery();
 
   const options: Option[] = React.useMemo(
     () => assessments.map((a) => ({ value: a.id, label: a.name })),
@@ -50,10 +53,7 @@ export function AssessmentSelection({
   );
 
   return (
-    <section
-      aria-labelledby="assessments-heading"
-      className="bg-card rounded-lg p-4 border border-border"
-    >
+    <>
       <div className="mb-2">
         <h2 id="assessments-heading" className="text-lg font-semibold">
           Assessments
@@ -64,7 +64,11 @@ export function AssessmentSelection({
       </div>
 
       {isLoading && (
-        <p role="status" aria-live="polite" className="text-sm text-gray-600 mb-2">
+        <p
+          role="status"
+          aria-live="polite"
+          className="text-sm text-gray-600 mb-2"
+        >
           Loading assessments...
         </p>
       )}
@@ -88,11 +92,15 @@ export function AssessmentSelection({
         deduplicateOptions
       />
       {errors?.assessment_ids && (
-        <p id="assessments-error" className="text-sm text-red-600 mt-1" role="alert">
+        <p
+          id="assessments-error"
+          className="text-sm text-red-600 mt-1"
+          role="alert"
+        >
           {String((errors.assessment_ids as { message?: unknown })?.message)}
         </p>
       )}
-    </section>
+    </>
   );
 }
 

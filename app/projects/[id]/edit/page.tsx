@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ProjectForm, ProjectFormValues } from "@/components/custom/projects/ProjectForm";
+import AssessmentSelection from "@/components/custom/projects/AssessmentSelection";
 import { useProjectDetails } from "@/lib/query/use-project-details-query";
 import { useUpdateProjectMutation } from "@/lib/query/use-update-project-mutation";
 import type { UpdateProjectRequest } from "@/lib/api/projects";
@@ -81,6 +82,12 @@ export default function EditProjectPage({ params }: PageProps) {
               submitting={updateProject.isPending}
               error={updateProject.error}
               onSubmit={handleSubmit}
+              renderAssessmentSelection={({ selectedIds, onChange }) => (
+                <AssessmentSelection
+                  selected={selectedIds}
+                  onSelectedChangeAction={onChange}
+                />
+              )}
             />
           )}
         </div>

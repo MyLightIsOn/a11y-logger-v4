@@ -78,9 +78,11 @@ export function ProjectForm({
     reset({
       name: initialData.name ?? "",
       description: (initialData as ProjectWithRelations)?.description ?? "",
-      tag_ids: (initialData as ProjectWithRelations)?.tags?.map((t) => t.id) ?? [],
+      tag_ids:
+        (initialData as ProjectWithRelations)?.tags?.map((t) => t.id) ?? [],
       assessment_ids:
-        (initialData as ProjectWithRelations)?.assessments?.map((a) => a.id) ?? [],
+        (initialData as ProjectWithRelations)?.assessments?.map((a) => a.id) ??
+        [],
     });
   }, [initialData, reset]);
 
@@ -89,7 +91,8 @@ export function ProjectForm({
     const handler = (e: BeforeUnloadEvent) => {
       if (isDirty && !submitting) {
         e.preventDefault();
-        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        e.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
       }
     };
     window.addEventListener("beforeunload", handler);
@@ -148,7 +151,11 @@ export function ProjectForm({
             {...register("name", { required: true })}
           />
           {errors.name && (
-            <p id="name-error" className="text-sm text-red-600 mt-1" role="alert">
+            <p
+              id="name-error"
+              className="text-sm text-red-600 mt-1"
+              role="alert"
+            >
               Name is required
             </p>
           )}
@@ -159,7 +166,10 @@ export function ProjectForm({
           <label htmlFor="description" className="block text-xl font-bold">
             Description
           </label>
-          <p id="project-description-help" className="text-sm text-gray-500 mb-1">
+          <p
+            id="project-description-help"
+            className="text-sm text-gray-500 mb-1"
+          >
             Optionally describe the scope and goals of this project.
           </p>
           <Textarea
@@ -171,7 +181,11 @@ export function ProjectForm({
             {...register("description")}
           />
           {errors.description && (
-            <p id="description-error" className="text-sm text-red-600 mt-1" role="alert">
+            <p
+              id="description-error"
+              className="text-sm text-red-600 mt-1"
+              role="alert"
+            >
               {String(errors.description.message)}
             </p>
           )}
@@ -180,12 +194,6 @@ export function ProjectForm({
         {/* Assessment selection slot (multi-select) */}
         {typeof renderAssessmentSelection === "function" ? (
           <section className="bg-card rounded-lg p-4 border border-border mb-4">
-            <div className="mb-2">
-              <div className="text-xl font-bold">Assessments</div>
-              <p id="assessments-help" className="text-sm text-gray-500">
-                Select one or more assessments to associate with this project.
-              </p>
-            </div>
             {renderAssessmentSelection({
               selectedIds: selectedAssessmentIds,
               onChange: (ids: string[]) =>
@@ -207,7 +215,11 @@ export function ProjectForm({
 
         {/* Actions */}
         <div className="mt-6 flex items-center gap-3">
-          <Button type="submit" disabled={submitting} aria-describedby="submit-status">
+          <Button
+            type="submit"
+            disabled={submitting}
+            aria-describedby="submit-status"
+          >
             {mode === "edit"
               ? submitting
                 ? "Saving..."
@@ -216,8 +228,17 @@ export function ProjectForm({
                 ? "Creating..."
                 : "Create Project"}
           </Button>
-          <span id="submit-status" role="status" aria-live="polite" className="sr-only">
-            {submitting ? (mode === "edit" ? "Saving project..." : "Creating project...") : ""}
+          <span
+            id="submit-status"
+            role="status"
+            aria-live="polite"
+            className="sr-only"
+          >
+            {submitting
+              ? mode === "edit"
+                ? "Saving project..."
+                : "Creating project..."
+              : ""}
           </span>
         </div>
       </form>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProjectForm, ProjectFormValues } from "@/components/custom/projects/ProjectForm";
+import AssessmentSelection from "@/components/custom/projects/AssessmentSelection";
 import { useCreateProjectMutation } from "@/lib/query/use-create-project-mutation";
 import type { CreateProjectRequest } from "@/lib/api/projects";
 
@@ -55,6 +56,12 @@ export default function NewProjectPage() {
             submitting={createProject.isPending}
             error={createProject.error}
             onSubmit={handleSubmit}
+            renderAssessmentSelection={({ selectedIds, onChange }) => (
+              <AssessmentSelection
+                selected={selectedIds}
+                onSelectedChangeAction={onChange}
+              />
+            )}
           />
         </div>
       </div>
