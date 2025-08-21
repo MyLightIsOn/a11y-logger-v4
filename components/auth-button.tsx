@@ -2,13 +2,13 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
+import { DisabledSignupButton } from "./disabled-signup-button";
 import type React from "react";
 
 // Keep async server component behavior but present a React component type to TS.
 const AuthButtonImpl = async () => {
   const supabase = await createClient();
 
-  // You can also use getUser() which will be slower.
   const { data } = await supabase.auth.getClaims();
 
   const user = data?.claims;
@@ -23,9 +23,7 @@ const AuthButtonImpl = async () => {
       <Button asChild size="sm" variant={"outline"}>
         <Link href="/auth/login">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/auth/sign-up">Sign up</Link>
-      </Button>
+      <DisabledSignupButton />
     </div>
   );
 };

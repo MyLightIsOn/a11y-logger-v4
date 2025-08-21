@@ -24,6 +24,18 @@ export function Hero() {
         Prototype for an <span className={"font-bold"}>AI driven</span>{" "}
         accessibility bug logger.
       </p>
+      <p className="text-lg lg:text-xl !leading-tight mx-auto max-w-xl text-center">
+        This tool uses Generative AI to speed up logging issues and creating
+        reports. Credentials are on the login page. <br />
+        <br />
+        <a
+          className={"underline cursor-pointer"}
+          href={"https://thelawrencemoore.com/a11y-logger.html"}
+        >
+          Read Case Study
+        </a>
+      </p>
+      <p>⚠️ Pardon the mess, this is a work in progress.</p>
       <AuthButton />
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
     </div>

@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DisabledSignupLink } from "./disabled-signup-link";
 
 export function LoginForm({
   className,
@@ -57,6 +58,12 @@ export function LoginForm({
           </CardTitle>
           <CardDescription>
             Enter your email below to login to your account
+            <p className={"text-center mt-5"}>
+              <span className={"font-bold text-md"}>Email:</span> test@test.com
+            </p>
+            <p className={"text-center"}>
+              <span className={"font-bold text-md"}>Password:</span> Test123!
+            </p>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,13 +108,7 @@ export function LoginForm({
               />
             </div>
             <div className="mt-4 text-center te:wqxt-sm">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/auth/sign-up"
-                className="underline underline-offset-4"
-              >
-                Sign up
-              </Link>
+              Don&apos;t have an account? <DisabledSignupLink />
             </div>
           </form>
         </CardContent>
