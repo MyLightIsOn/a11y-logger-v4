@@ -29,10 +29,9 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const deleteProject = useDeleteProjectMutation();
 
   // Prepare aggregated issue stats across all linked assessments.
-  const assessmentsForStats = project?.assessments ?? [];
   const assessmentIds = React.useMemo(
-    () => assessmentsForStats.map((a) => a.id),
-    [assessmentsForStats],
+    () => (project?.assessments ?? []).map((a) => a.id),
+    [project?.assessments],
   );
 
   const statsQueries = useQueries({
