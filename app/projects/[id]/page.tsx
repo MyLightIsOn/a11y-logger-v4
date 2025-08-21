@@ -14,6 +14,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { formatDate } from "@/lib/utils";
 import type { Assessment } from "@/types/assessment";
+import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
+import { useQueries } from "@tanstack/react-query";
+import { assessmentsApi } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -24,6 +27,45 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { data: project, isLoading, error } = useProjectDetails({ id });
   const deleteProject = useDeleteProjectMutation();
+
+  // Prepare aggregated issue stats across all linked assessments.
+  const assessmentsForStats = project?.assessments ?? [];
+  const assessmentIds = React.useMemo(
+    () => assessmentsForStats.map((a) => a.id),
+    [assessmentsForStats],
+  );
+
+  const statsQueries = useQueries({
+    queries: assessmentIds.map((aid) => ({
+      queryKey: ["assessments", { id: aid }, "issues"] as const,
+      queryFn: async () => {
+        const res = await assessmentsApi.getAssessmentIssues(aid);
+        if (!res.success || !res.data) {
+          throw new Error(res.error || "Failed to load assessment issues");
+        }
+        return res.data.stats;
+      },
+      enabled: Boolean(aid) && !isLoading,
+      staleTime: 1000 * 60 * 5,
+    })),
+  });
+
+  const aggregatedStats = React.useMemo(() => {
+    const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    for (const q of statsQueries) {
+      const s = q.data as
+        | { critical: number; high: number; medium: number; low: number }
+        | undefined;
+      if (s) {
+        counts.critical += s.critical;
+        counts.high += s.high;
+        counts.medium += s.medium;
+        counts.low += s.low;
+      }
+    }
+    const total = counts.critical + counts.high + counts.medium + counts.low;
+    return { ...counts, total };
+  }, [statsQueries]);
 
   if (isLoading) {
     return (
@@ -185,8 +227,23 @@ export default function ProjectDetailPage({ params }: PageProps) {
         </div>
 
         <div className="p-6 w-1/3 dark:bg-border-border border-l border-border">
+          <IssueStatisticsChart
+            criticalCount={aggregatedStats.critical}
+            highCount={aggregatedStats.high}
+            mediumCount={aggregatedStats.medium}
+            lowCount={aggregatedStats.low}
+            totalCount={aggregatedStats.total}
+          />
           <div className={"flex flex-col mt-4"}>
-            <div className={"flex mb-2"}>
+            <div className={"flex justify-between mb-2 gap-10"}>
+              <p className={"font-bold text-right w-1/2"}>Created:</p>
+              <p className={"w-1/2"}>{project.created_at && formatDate(project.created_at)}</p>
+            </div>
+            <div className={"flex justify-between mb-2 gap-10 border-b border-border pb-8"}>
+              <p className={"font-bold text-right w-1/2"}>Updated:</p>
+              <p className={"w-1/2"}>{project.updated_at && formatDate(project.updated_at)}</p>
+            </div>
+            <div className={"flex mb-2 pt-4 mx-auto"}>
               <p className={"font-bold mr-4"}>Tags:</p>
               <div className={"gap-2 flex flex-wrap"}>
                 {tags.map((tag) => (
