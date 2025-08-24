@@ -72,6 +72,22 @@ export class IssuesApiService extends BaseApiService {
   async deleteIssue(id: string): Promise<ApiResponse<null>> {
     return this.delete<null>(`${this.basePath}/${id}`);
   }
+
+  /**
+   * Get aggregated WCAG criteria summary for current user
+   * Returns counts of issues per WCAG criteria code
+   */
+  async getCriteriaSummary(): Promise<
+    ApiResponse<{
+      data: Array<{ code: string; count: number }>;
+      total: number;
+    }>
+  > {
+    return this.get<{
+      data: Array<{ code: string; count: number }>;
+      total: number;
+    }>(`${this.basePath}/criteria-summary`);
+  }
 }
 
 // Export a singleton instance
