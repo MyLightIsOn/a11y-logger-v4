@@ -53,7 +53,7 @@ export function DashboardBarChart() {
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[500px] w-full">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <BarChart
             accessibilityLayer
             data={chartData}

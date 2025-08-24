@@ -44,7 +44,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function DashBoardLineChart() {
+export function DashboardLineChart() {
   return (
     <Card>
       <CardHeader>

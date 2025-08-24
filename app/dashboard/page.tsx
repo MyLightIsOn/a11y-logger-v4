@@ -1,7 +1,7 @@
 import { SectionCards } from "@/components/section-cards";
 import DashboardIssueStatistics from "@/components/dashboard-issue-statistics";
 import { DashboardBarChart } from "@/components/dashboard-bar-chart";
-import { DashBoardLineChart } from "@/components/dashboard-line-chart";
+import { DashboardLineChart } from "@/components/dashboard-line-chart";
 
 export default function Page() {
   return (
@@ -11,7 +11,7 @@ export default function Page() {
           <div className="pb-4">
             <SectionCards />
           </div>
-          <DashBoardLineChart />
+          <DashboardLineChart />
         </div>
         <div className="w-1/4 flex flex-1 pl-4">
           <DashboardIssueStatistics />
