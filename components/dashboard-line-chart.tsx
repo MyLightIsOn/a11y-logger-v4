@@ -14,6 +14,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from "@/components/ui/chart";
 
 export const description = "A multiple line chart";
@@ -29,16 +31,16 @@ const chartData = [
 
 const chartConfig = {
   projects: {
-    label: "Desktop",
-    color: "#8eb0ee",
+    label: "Projects",
+    color: "#6762bf",
   },
   assessments: {
-    label: "Mobile",
-    color: "#24c840",
+    label: "Assessments",
+    color: "#90b1ee",
   },
   issues: {
-    label: "Mobile",
-    color: "#9124c8",
+    label: "Issues",
+    color: "#f67e7e",
   },
 } satisfies ChartConfig;
 
@@ -46,7 +48,7 @@ export function DashBoardLineChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Line Chart - Multiple</CardTitle>
+        <CardTitle>Projects, Assessments, and Issues</CardTitle>
         <CardDescription>January - June 2024</CardDescription>
       </CardHeader>
       <CardContent>
@@ -89,6 +91,7 @@ export function DashBoardLineChart() {
               strokeWidth={5}
               dot
             />
+            <ChartLegend content={<ChartLegendContent />} />
           </LineChart>
         </ChartContainer>
       </CardContent>
