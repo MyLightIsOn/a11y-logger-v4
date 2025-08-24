@@ -1,5 +1,5 @@
 import { SectionCards } from "@/components/section-cards";
-import { DemoPieChart } from "@/components/demo-pie-chart";
+import DashboardIssueStatistics from "@/components/dashboard-issue-statistics";
 import { DashboardBarChart } from "@/components/dashboard-bar-chart";
 import { DashBoardLineChart } from "@/components/dashboard-line-chart";
 
@@ -14,7 +14,7 @@ export default function Page() {
           <DashBoardLineChart />
         </div>
         <div className="w-1/4 flex flex-1 pl-4">
-          <DemoPieChart />
+          <DashboardIssueStatistics />
         </div>
       </div>
       <div>
