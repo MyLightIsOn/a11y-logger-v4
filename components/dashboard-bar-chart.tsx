@@ -49,8 +49,8 @@ export function DashboardBarChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bar Chart - Horizontal</CardTitle>
-        <CardDescription>January - June 2024</CardDescription>
+        <CardTitle>WCAG Criteria</CardTitle>
+        <CardDescription>Categorized By Principal</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
