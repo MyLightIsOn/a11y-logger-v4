@@ -137,7 +137,7 @@ export function DashboardBarChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
+        <ChartContainer config={chartConfig} className="min-h-[1000px] w-full">
           <BarChart
             accessibilityLayer
             data={chartData}
