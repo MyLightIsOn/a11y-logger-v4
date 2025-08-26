@@ -140,7 +140,6 @@ export function DashboardBarChart() {
         return compareCodes(a.code, b.code);
       });
   }, [criteriaSummary, principle]);
-  console.log(chartData);
   return (
     <Card>
       <CardHeader className="gap-2">

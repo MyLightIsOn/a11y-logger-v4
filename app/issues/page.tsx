@@ -5,6 +5,7 @@ import { Issue } from "@/types/issue";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import Link from "next/link";
+import wcagCriteria from "@/data/wcag-criteria.json" assert { type: "json" };
 import { useRouter } from "next/navigation";
 import {
   LoadingIndicator,
@@ -49,6 +50,18 @@ export default function Page() {
     }
   }, [viewMode]);
 
+  // Build a lookup map for WCAG criteria by code for quick rendering
+  const wcagByCode = useMemo(() => {
+    const map = new Map<string, { name: string; level: string }>();
+    // wcagCriteria is an array of { code, name, level, versions, principle }
+    (
+      wcagCriteria as Array<{ code: string; name: string; level: string }>
+    ).forEach((c) => {
+      if (c && c.code) map.set(c.code, { name: c.name, level: c.level });
+    });
+    return map;
+  }, []);
+
   const fetchIssues = async () => {
     try {
       setLoading(true);
@@ -90,28 +103,58 @@ export default function Page() {
         accessorKey: "title",
         sortable: false,
         cell: (issue: Issue) => {
-          const codes = ((issue as Issue & { criteria_codes?: string[] }).criteria_codes) || [];
+          // Prefer rich criteria from response if available; fallback to codes
+          const rich = (
+            issue as Issue & {
+              criteria?: Array<{ code: string; name: string; level: string }>;
+              criteria_codes?: string[];
+            }
+          ).criteria;
+          const codes =
+            (issue as Issue & { criteria_codes?: string[] }).criteria_codes ||
+            [];
+          const items =
+            rich && rich.length > 0
+              ? rich.map(({ code, name, level }) => ({ code, name, level }))
+              : codes.map((code) => {
+                  const found = wcagByCode.get(code);
+                  return {
+                    code,
+                    name: found?.name || "",
+                    level: found?.level || "",
+                  };
+                });
+
           return (
             <div className="flex flex-wrap gap-1">
-              {codes.length > 0 ? (
-                codes.slice(0, 3).map((code: string) => (
+              {items.length > 0 ? (
+                items.slice(0, 3).map((it) => (
                   <Badge
-                    key={code}
+                    key={it.code}
                     variant="outline"
                     className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                    title={
+                      it.name
+                        ? `${it.code} - ${it.name} (${it.level})`
+                        : it.code
+                    }
                   >
-                    {code}
+                    {it.name ? (
+                      <span>{`${it.code} - ${it.name} (${it.level})`}</span>
+                    ) : (
+                      <span>{it.code}</span>
+                    )}
                   </Badge>
                 ))
               ) : (
                 <span className="text-gray-500 text-xs">No criteria</span>
               )}
-              {codes.length > 3 && (
+              {items.length > 3 && (
                 <Badge
                   variant="outline"
                   className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
                 >
-                  +{codes.length - 3}
+                  +{items.length - 3}
                 </Badge>
               )}
             </div>
