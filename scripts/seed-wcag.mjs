@@ -56,22 +56,18 @@ async function main() {
 
   // Upsert in batches to be safe
   const chunkSize = 200;
-  let totalUpserted = 0;
   for (let i = 0; i < rows.length; i += chunkSize) {
     const chunk = rows.slice(i, i + chunkSize);
-    const { error, count } = await supabase
-      .from("wcag_criteria")
-      .upsert(chunk, {
-        onConflict: "version,code",
-        ignoreDuplicates: false,
-        count: "estimated",
-      });
+    const { error } = await supabase.from("wcag_criteria").upsert(chunk, {
+      onConflict: "version,code",
+      ignoreDuplicates: false,
+      count: "estimated",
+    });
 
     if (error) {
       console.error("Upsert error:", error);
       process.exit(1);
     }
-    totalUpserted += chunk.length;
   }
 
   console.log(`Seed completed. Processed ${rows.length} rows from JSON.`);

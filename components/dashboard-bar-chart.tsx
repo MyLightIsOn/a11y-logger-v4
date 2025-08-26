@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  LabelList,
+} from "recharts";
 
 import {
   Card,
@@ -71,7 +78,6 @@ export function DashboardBarChart() {
         if (!response.success || !response.data) {
           throw new Error(response.error || "Failed to fetch criteria summary");
         }
-        console.log(response.data.data);
         setCriteriaSummary(response.data.data);
       } catch (e) {
         if (!active) return;
@@ -134,7 +140,7 @@ export function DashboardBarChart() {
         return compareCodes(a.code, b.code);
       });
   }, [criteriaSummary, principle]);
-
+  console.log(chartData);
   return (
     <Card>
       <CardHeader className="gap-2">
@@ -159,7 +165,7 @@ export function DashboardBarChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[1000px] w-full">
+        <ChartContainer config={chartConfig} className="min-h-[1000px] w-full">
           <BarChart
             accessibilityLayer
             data={chartData}
@@ -179,13 +185,22 @@ export function DashboardBarChart() {
               tickFormatter={(value) =>
                 typeof value === "string" ? value.slice(0, 6) : value
               }
-              tick={{ fontSize: 14 }}
+              tick={{ fontSize: 16 }}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
-            <Bar dataKey="count" fill="var(--color-count)" radius={5} />
+
+            <Bar dataKey="count" fill="var(--color-count)" radius={5}>
+              <LabelList
+                dataKey="count"
+                position="right"
+                offset={8}
+                className="fill-foreground"
+                fontSize={14}
+              />
+            </Bar>
           </BarChart>
         </ChartContainer>
         {loading && (
