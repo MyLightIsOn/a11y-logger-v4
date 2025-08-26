@@ -13,14 +13,13 @@ import { validateCreateIssue } from "@/lib/validation/issues";
 
 /**
  * Issues collection route
- * GET /api/issues?sortBy=created_at&sortOrder=asc|desc
+ * GET /api/issues?sortBy=created_at&sortOrder=asc|desc&includeCriteria=true
  * Response: { data: Issue[]; count: number }
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Get the current user
     const {
       data: { user },
       error: authError,
@@ -30,44 +29,66 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get query parameters (support only sortBy/sortOrder consistent with patterns)
+    // Get query parameters for sorting
     const { searchParams } = new URL(request.url);
     const sortBy = searchParams.get("sortBy") || "created_at";
-    const sortOrderAsc = searchParams.get("sortOrder") === "asc"; // default desc if omitted
+    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const includeCriteria = searchParams.get("includeCriteria") === "true";
 
-    // Fetch issues for the current user including tags when available
-    // Assumes a join table `issues_tags` analogous to `projects_tags`
-    const { data, error } = await supabase
-      .from("issues")
-      .select(
-        `
-        *,
-        issues_tags(
-          tags(*)
-        )
-      `,
+    // Build query based on whether criteria is needed
+    let selectClause = `
+      *,
+      issues_tags!left(
+        tags(*)
       )
-      .eq("user_id", user.id)
-      .order(sortBy, { ascending: sortOrderAsc });
+    `;
 
-    if (error) {
-      throw error;
+    if (includeCriteria) {
+      selectClause = `
+        *,
+        issues_tags!left(
+          tags(*)
+        ),
+        issue_criteria_agg!left(
+          criteria_codes,
+          criteria
+        )
+      `;
     }
 
-    // Flatten tags from the join table if present
-    // Define the shape returned by Supabase for issues with joined tags
-    type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
+    const { data, error } = await supabase
+      .from("issues")
+      .select(selectClause)
+      .eq("user_id", user.id)
+      .order(sortBy as any, { ascending: sortOrder === "asc" });
 
-    const transformedData: Issue[] = (
-      (data as IssueRowWithJoin[] | null) || []
-    ).map((issue) => {
-      const { issues_tags, ...rest } = issue as IssueRowWithJoin & {
-        issues_tags?: { tags: Tag }[];
+    if (error) {
+      console.error("Error fetching issues:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch issues" },
+        { status: 500 },
+      );
+    }
+
+    // Transform the data to match expected format
+    const transformedData = (data || []).map((row: any) => {
+      const transformed = {
+        ...row,
+        tags: row.issues_tags?.map((it: any) => it.tags) || [],
       };
-      return {
-        ...(rest as Issue),
-        tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
-      };
+
+      // Include criteria information if requested and available
+      if (includeCriteria && row.issue_criteria_agg[0]) {
+        transformed.criteria_codes =
+          row.issue_criteria_agg[0].criteria_codes || [];
+        transformed.criteria = row.issue_criteria_agg[0].criteria || [];
+      }
+
+      // Clean up the join fields
+      delete transformed.issues_tags;
+      delete transformed.issue_criteria_agg[0];
+
+      return transformed;
     });
 
     return NextResponse.json({
@@ -75,7 +96,7 @@ export async function GET(request: NextRequest) {
       count: transformedData.length,
     });
   } catch (error) {
-    console.error("Error fetching issues:", error);
+    console.error("Error in issues endpoint:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -255,7 +276,6 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-
     // 4) Build enriched response: include joined tags and aggregated criteria arrays
     // Fetch tags via join like GET
     const { data: issueWithTags, error: fetchIssueErr } = await supabase
@@ -315,7 +335,9 @@ export async function POST(request: NextRequest) {
     );
 
     // Fetch joined assessment for the created issue
-    let assessmentRef: { id: string; name: string; wcag_version: string } | undefined = undefined;
+    let assessmentRef:
+      | { id: string; name: string; wcag_version: string }
+      | undefined = undefined;
     try {
       const { data: assessJoins, error: assessErr } = await supabase
         .from("assessments_issues")
@@ -325,12 +347,19 @@ export async function POST(request: NextRequest) {
       if (assessErr) {
         console.error("Fetching linked assessment failed:", assessErr);
       } else if (Array.isArray(assessJoins) && assessJoins.length > 0) {
-        const rel = (assessJoins[0] as unknown as { assessments: unknown }).assessments as unknown;
+        const rel = (assessJoins[0] as unknown as { assessments: unknown })
+          .assessments as unknown;
         const a = Array.isArray(rel)
-          ? (rel[0] as { id: string; name: string; wcag_version: string } | undefined)
-          : ((rel as { id: string; name: string; wcag_version: string } | null));
+          ? (rel[0] as
+              | { id: string; name: string; wcag_version: string }
+              | undefined)
+          : (rel as { id: string; name: string; wcag_version: string } | null);
         if (a) {
-          assessmentRef = { id: a.id, name: a.name, wcag_version: a.wcag_version };
+          assessmentRef = {
+            id: a.id,
+            name: a.name,
+            wcag_version: a.wcag_version,
+          };
         }
       }
     } catch (e) {
@@ -350,11 +379,16 @@ export async function POST(request: NextRequest) {
     }
 
     const responseIssue: IssueRead = {
-      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes" | "assessment">),
+      ...(baseIssue as Omit<
+        IssueRead,
+        "tags" | "criteria" | "criteria_codes" | "assessment"
+      >),
       tags,
       criteria: criteriaItems,
       criteria_codes,
-      assessment: assessmentRef ? (assessmentRef as unknown as IssueRead["assessment"]) : undefined,
+      assessment: assessmentRef
+        ? (assessmentRef as unknown as IssueRead["assessment"])
+        : undefined,
     };
 
     return NextResponse.json(responseIssue, { status: 201 });

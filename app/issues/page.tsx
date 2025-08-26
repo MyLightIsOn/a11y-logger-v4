@@ -56,6 +56,7 @@ export default function Page() {
       const response = await issuesApi.getIssues({
         sortBy: "created_at",
         sortOrder: "desc",
+        includeCriteria: true,
       });
       if (response.success && response.data) {
         setIssues(response.data.data || []);
@@ -86,22 +87,36 @@ export default function Page() {
       },
       {
         header: "Criteria",
-        accessorKey: "criteria",
+        accessorKey: "criteria_codes",
         sortable: true,
-        cell: (issue: Issue) => (
-          <div className="flex flex-wrap gap-1">
-            {issue.criteria && issue.criteria.trim().length > 0 ? (
-              <Badge
-                variant="outline"
-                className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
-              >
-                {issue.criteria}
-              </Badge>
-            ) : (
-              <span className="text-gray-500 text-xs">No criteria</span>
-            )}
-          </div>
-        ),
+        cell: (issue: Issue) => {
+          const codes = (issue as any).criteria_codes || [];
+          return (
+            <div className="flex flex-wrap gap-1">
+              {codes.length > 0 ? (
+                codes.slice(0, 3).map((code: string) => (
+                  <Badge
+                    key={code}
+                    variant="outline"
+                    className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                  >
+                    {code}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-gray-500 text-xs">No criteria</span>
+              )}
+              {codes.length > 3 && (
+                <Badge
+                  variant="outline"
+                  className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                >
+                  +{codes.length - 3}
+                </Badge>
+              )}
+            </div>
+          );
+        },
       },
       {
         header: "Severity",

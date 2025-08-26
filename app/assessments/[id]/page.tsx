@@ -48,6 +48,39 @@ export default function AssessmentDetailPage({ params }: PageProps) {
         ),
       },
       {
+        header: "Criteria",
+        accessorKey: "criteria_codes",
+        sortable: true,
+        cell: (issue) => {
+          const codes = (issue as any).criteria_codes || [];
+          return (
+            <div className="flex flex-wrap gap-1">
+              {codes.length > 0 ? (
+                codes.slice(0, 2).map((code: string) => (
+                  <Badge
+                    key={code}
+                    variant="outline"
+                    className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                  >
+                    {code}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-gray-500 text-xs">No criteria</span>
+              )}
+              {codes.length > 2 && (
+                <Badge
+                  variant="outline"
+                  className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full"
+                >
+                  +{codes.length - 2}
+                </Badge>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         header: "Severity",
         accessorKey: "severity",
         sortable: true,
