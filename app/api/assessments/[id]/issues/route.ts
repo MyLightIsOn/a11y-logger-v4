@@ -34,13 +34,18 @@ export async function GET(
 
     // Query issues joined to this assessment via the join table.
     // Start from issues and inner-join assessments_issues to filter by assessment_id.
+    // Include criteria information from issue_criteria_agg
     const { data, error } = await supabase
       .from("issues")
       .select(
         `
         *,
         issues_tags(tags(*)),
-        assessments_issues!inner(assessment_id)
+        assessments_issues!inner(assessment_id),
+        issue_criteria_agg!left(
+          criteria_codes,
+          criteria
+        )
       `,
       )
       .eq("assessments_issues.assessment_id", id)
@@ -50,19 +55,33 @@ export async function GET(
       throw error;
     }
 
-    // Flatten tags from the join table if present
+    // Flatten tags from the join table if present and include criteria
     type IssueRowWithJoin = Issue & {
       issues_tags?: { tags: Tag }[];
       assessments_issues?: { assessment_id: string }[];
+      issue_criteria_agg?: {
+        criteria_codes?: string[];
+        criteria?: any;
+      };
     };
 
     const issues: Issue[] = ((data as IssueRowWithJoin[] | null) || []).map(
       (row) => {
-        const { issues_tags, ...rest } = row;
-        return {
+        const { issues_tags, assessments_issues, issue_criteria_agg, ...rest } =
+          row;
+        const transformed: any = {
           ...(rest as Issue),
           tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
         };
+
+        // Include criteria information if available
+        if (issue_criteria_agg[0]) {
+          transformed.criteria_codes =
+            issue_criteria_agg[0].criteria_codes || [];
+          transformed.criteria = issue_criteria_agg[0].criteria || [];
+        }
+
+        return transformed;
       },
     );
 
@@ -75,8 +94,12 @@ export async function GET(
       low: 0,
     } as const;
     // Create a mutable copy to accumulate
-    const counts: { critical: number; high: number; medium: number; low: number } =
-      { ...stats };
+    const counts: {
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+    } = { ...stats };
 
     for (const issue of issues) {
       switch (issue.severity) {
@@ -98,7 +121,11 @@ export async function GET(
       }
     }
 
-    return NextResponse.json({ data: issues, count: issues.length, stats: counts });
+    return NextResponse.json({
+      data: issues,
+      count: issues.length,
+      stats: counts,
+    });
   } catch (error) {
     console.error("Error fetching assessment issues:", error);
     return NextResponse.json(

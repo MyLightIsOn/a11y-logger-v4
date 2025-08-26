@@ -129,14 +129,6 @@ export default function AssessmentDetailPage({ params }: PageProps) {
           </Badge>
         ),
       },
-      {
-        header: "Description",
-        accessorKey: "description",
-        sortable: true,
-        cell: (issue) => (
-          <span className="line-clamp-2">{issue.description}</span>
-        ),
-      },
     ],
     [],
   );

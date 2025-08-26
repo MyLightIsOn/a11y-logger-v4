@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 
       // Clean up the join fields
       delete transformed.issues_tags;
-      delete transformed.issue_criteria_agg[0];
+      delete transformed.issue_criteria_agg;
 
       return transformed;
     });
