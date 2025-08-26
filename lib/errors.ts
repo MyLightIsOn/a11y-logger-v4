@@ -15,10 +15,11 @@ export function normalizeErrorMessage(
   if (typeof err === "string") return err || fallback;
   try {
     // Some APIs return { error: string }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const anyErr = err as any;
-    if (typeof anyErr?.error === "string") return anyErr.error || fallback;
-    if (typeof anyErr?.message === "string") return anyErr.message || fallback;
+    type ErrorLike = { error?: unknown; message?: unknown };
+    const obj = err as ErrorLike;
+    if (typeof obj?.error === "string") return (obj.error as string) || fallback;
+    if (typeof obj?.message === "string")
+      return (obj.message as string) || fallback;
   } catch {
     // ignore
   }

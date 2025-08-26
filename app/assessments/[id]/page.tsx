@@ -48,13 +48,15 @@ export default function AssessmentDetailPage() {
         accessorKey: "title",
         sortable: false,
         cell: (issue) => {
-          const codes = ((issue as Issue & { criteria_codes?: string[] }).criteria_codes) || [];
+          const codes =
+            (issue as Issue & { criteria_codes?: string[] }).criteria_codes ||
+            [];
           return (
             <div className="flex flex-wrap gap-1">
               {codes.length > 0 ? (
-                codes.slice(0, 2).map((code: string) => (
+                codes.slice(0, 2).map((code: string, index: number) => (
                   <Badge
-                    key={code}
+                    key={code + "-" + index}
                     variant="outline"
                     className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
                   >
@@ -290,9 +292,9 @@ export default function AssessmentDetailPage() {
             <div className={"flex mb-2 pt-4 mx-auto"}>
               <p className={"font-bold mr-4"}>Tags:</p>
               <p className={"gap-2 flex flex-wrap"}>
-                {assessment?.tags?.map((tag) => (
+                {assessment?.tags?.map((tag, index) => (
                   <Badge
-                    key={tag.id}
+                    key={tag.id + "-" + index}
                     variant="outline"
                     className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full"
                   >

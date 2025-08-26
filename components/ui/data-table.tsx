@@ -250,14 +250,14 @@ export function DataTable<T>({
               )}
               {columns
                 .filter((column) => !column.hidden)
-                .map((column) => (
+                .map((column, index) => (
                   <TableHead
                     className={`text-primary-foreground font-bold dark:text-white ${
                       centeredColumns.includes(String(column.accessorKey))
                         ? "text-center"
                         : ""
                     } ${column.sortable ? "cursor-pointer select-none" : ""}`}
-                    key={String(column.accessorKey)}
+                    key={String(column.accessorKey) + index}
                     onClick={() => column.sortable && handleSort(column)}
                   >
                     <div
@@ -324,8 +324,8 @@ export function DataTable<T>({
                   )}
                   {columns
                     .filter((column) => !column.hidden)
-                    .map((column) => (
-                      <TableCell key={String(column.accessorKey)}>
+                    .map((column, index) => (
+                      <TableCell key={String(column.accessorKey) + "-" + index}>
                         {column.cell
                           ? column.cell(item)
                           : String(item[column.accessorKey] || "")}

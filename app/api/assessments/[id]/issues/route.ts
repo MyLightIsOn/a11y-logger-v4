@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { Tag } from "@/types/tag";
-import type { Issue } from "@/types/issue";
+import type { Issue, IssueRead, IssueCriteriaItem } from "@/types/issue";
 
 /**
  * GET /api/assessments/:id/issues
@@ -61,27 +61,25 @@ export async function GET(
       assessments_issues?: { assessment_id: string }[];
       issue_criteria_agg?: Array<{
         criteria_codes?: string[];
-        criteria?: unknown;
+        criteria?: IssueCriteriaItem[];
       }>;
     };
 
-    const issues: Issue[] = ((data as IssueRowWithJoin[] | null) || []).map(
+    const issues: IssueRead[] = ((data as unknown as IssueRowWithJoin[] | null) || []).map(
       (row) => {
         const { issues_tags, issue_criteria_agg, ...rest } = row;
-        const transformed: any = {
-          ...(rest as Issue),
+        const base: IssueRead = {
+          ...(rest as IssueRead),
           tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
         };
 
         // Include criteria information if available
         if (issue_criteria_agg?.[0]) {
-          transformed.criteria_codes =
-            issue_criteria_agg[0].criteria_codes || [];
-          transformed.criteria =
-            (issue_criteria_agg[0] as { criteria?: unknown }).criteria || [];
+          base.criteria_codes = issue_criteria_agg[0].criteria_codes || [];
+          base.criteria = issue_criteria_agg[0].criteria || [];
         }
 
-        return transformed;
+        return base;
       },
     );
 

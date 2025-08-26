@@ -56,11 +56,26 @@ export async function GET(request: NextRequest) {
       `;
     }
 
+    // Validate sortable column to avoid unsafe casts
+    const sortableColumns = new Set<keyof Issue | "updated_at" | "created_at">([
+      "created_at",
+      "updated_at",
+      "title",
+      "severity",
+      "status",
+      "id",
+    ]);
+    const sortColumn: string = sortableColumns.has(
+      sortBy as unknown as keyof Issue | "updated_at" | "created_at",
+    )
+      ? sortBy
+      : "created_at";
+
     const { data, error } = await supabase
       .from("issues")
       .select(selectClause)
       .eq("user_id", user.id)
-      .order(sortBy as any, { ascending: sortOrder === "asc" });
+      .order(sortColumn as string, { ascending: sortOrder === "asc" });
 
     if (error) {
       console.error("Error fetching issues:", error);
@@ -71,25 +86,32 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to match expected format
-    const transformedData = (data || []).map((row: any) => {
-      const transformed = {
-        ...row,
-        tags: row.issues_tags?.map((it: any) => it.tags) || [],
-      };
+    type IssueRowWithJoin = Issue & {
+      issues_tags?: { tags: Tag }[];
+      issue_criteria_agg?: Array<{
+        criteria_codes?: string[];
+        criteria?: IssueCriteriaItem[];
+      }>;
+    };
 
-      // Include criteria information if requested and available
-      if (includeCriteria && row.issue_criteria_agg[0]) {
-        transformed.criteria_codes =
-          row.issue_criteria_agg[0].criteria_codes || [];
-        transformed.criteria = row.issue_criteria_agg[0].criteria || [];
-      }
+    const transformedData: IssueRead[] = ((data as unknown as IssueRowWithJoin[] | null) || []).map(
+      (row) => {
+        const { issues_tags, issue_criteria_agg, ...rest } = row;
+        const transformed: IssueRead = {
+          ...(rest as IssueRead),
+          tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
+        };
 
-      // Clean up the join fields
-      delete transformed.issues_tags;
-      delete transformed.issue_criteria_agg;
+        // Include criteria information if requested and available
+        if (includeCriteria && issue_criteria_agg?.[0]) {
+          transformed.criteria_codes =
+            issue_criteria_agg[0].criteria_codes || [];
+          transformed.criteria = issue_criteria_agg[0].criteria || [];
+        }
 
-      return transformed;
-    });
+        return transformed;
+      },
+    );
 
     return NextResponse.json({
       data: transformedData,
