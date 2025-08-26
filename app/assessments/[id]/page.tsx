@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft, Edit, Trash } from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
@@ -15,12 +15,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function AssessmentDetailPage({ params }: PageProps) {
-  const { id } = React.use(params);
+export default function AssessmentDetailPage() {
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { assessment, stats, issues, deleteAssessment, isLoading, error } =
     useAssessmentDetails(id);
@@ -49,10 +45,10 @@ export default function AssessmentDetailPage({ params }: PageProps) {
       },
       {
         header: "Criteria",
-        accessorKey: "criteria_codes",
-        sortable: true,
+        accessorKey: "title",
+        sortable: false,
         cell: (issue) => {
-          const codes = (issue as any).criteria_codes || [];
+          const codes = ((issue as Issue & { criteria_codes?: string[] }).criteria_codes) || [];
           return (
             <div className="flex flex-wrap gap-1">
               {codes.length > 0 ? (

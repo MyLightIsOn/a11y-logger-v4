@@ -67,7 +67,7 @@ export default function DashboardIssueStatistics() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="flex flex-col min-w-[300px]">
         <CardHeader>
           <CardTitle>Issue Statistics</CardTitle>
         </CardHeader>
@@ -90,7 +90,7 @@ export default function DashboardIssueStatistics() {
 
   return (
     <Card className="flex flex-col min-w-[300px]">
-      <CardContent className="flex-1 pb-0 min-w-[300px]">
+      <CardContent className="flex-1 pb-0">
         <IssueStatisticsChart
           criticalCount={stats.critical}
           highCount={stats.high}

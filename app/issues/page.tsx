@@ -87,10 +87,10 @@ export default function Page() {
       },
       {
         header: "Criteria",
-        accessorKey: "criteria_codes",
-        sortable: true,
+        accessorKey: "title",
+        sortable: false,
         cell: (issue: Issue) => {
-          const codes = (issue as any).criteria_codes || [];
+          const codes = ((issue as Issue & { criteria_codes?: string[] }).criteria_codes) || [];
           return (
             <div className="flex flex-wrap gap-1">
               {codes.length > 0 ? (

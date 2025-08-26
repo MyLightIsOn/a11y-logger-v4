@@ -59,26 +59,26 @@ export async function GET(
     type IssueRowWithJoin = Issue & {
       issues_tags?: { tags: Tag }[];
       assessments_issues?: { assessment_id: string }[];
-      issue_criteria_agg?: {
+      issue_criteria_agg?: Array<{
         criteria_codes?: string[];
-        criteria?: any;
-      };
+        criteria?: unknown;
+      }>;
     };
 
     const issues: Issue[] = ((data as IssueRowWithJoin[] | null) || []).map(
       (row) => {
-        const { issues_tags, assessments_issues, issue_criteria_agg, ...rest } =
-          row;
+        const { issues_tags, issue_criteria_agg, ...rest } = row;
         const transformed: any = {
           ...(rest as Issue),
           tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
         };
 
         // Include criteria information if available
-        if (issue_criteria_agg[0]) {
+        if (issue_criteria_agg?.[0]) {
           transformed.criteria_codes =
             issue_criteria_agg[0].criteria_codes || [];
-          transformed.criteria = issue_criteria_agg[0].criteria || [];
+          transformed.criteria =
+            (issue_criteria_agg[0] as { criteria?: unknown }).criteria || [];
         }
 
         return transformed;
