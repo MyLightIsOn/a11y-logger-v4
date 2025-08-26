@@ -94,8 +94,12 @@ export function DashboardBarChart() {
     if (!criteriaSummary) return [] as Array<{ wcag: string; count: number }>;
 
     // Convert to array with names and filter by selected principle
-    const rows: Array<{ wcag: string; count: number; principle: Principle }> =
-      [];
+    const rows: Array<{
+      wcag: string;
+      code: string;
+      count: number;
+      principle: Principle;
+    }> = [];
 
     for (const { code, count } of criteriaSummary) {
       const meta = wcagMap[code];
@@ -103,14 +107,34 @@ export function DashboardBarChart() {
 
       rows.push({
         wcag: `${code} - ${meta.name}`,
+        code,
         count,
         principle: meta.principle,
       });
     }
 
+    // Sort rows by principle order first, then by WCAG code (numeric segments), not by count
+    const principleOrder = new Map(PRINCIPLES.map((p, i) => [p, i] as const));
+    const compareCodes = (a: string, b: string) => {
+      const as = a.split(".").map((n) => parseInt(n, 10));
+      const bs = b.split(".").map((n) => parseInt(n, 10));
+      const len = Math.max(as.length, bs.length);
+      for (let i = 0; i < len; i++) {
+        const ai = as[i] ?? 0;
+        const bi = bs[i] ?? 0;
+        if (ai !== bi) return ai - bi;
+      }
+      return 0;
+    };
+
     return rows
       .filter((r) => r.principle === principle)
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => {
+        const pa = principleOrder.get(a.principle) ?? 0;
+        const pb = principleOrder.get(b.principle) ?? 0;
+        if (pa !== pb) return pa - pb;
+        return compareCodes(a.code, b.code);
+      });
   }, [criteriaSummary, principle]);
 
   return (
