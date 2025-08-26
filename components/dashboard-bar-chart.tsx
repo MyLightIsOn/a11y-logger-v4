@@ -20,8 +20,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { issuesApi } from "@/lib/api";
 import wcagWithPrinciples from "@/data/wcag-criteria.json";
 
-export const description = "WCAG criteria distribution by principle";
-
 // Principle keys
 const PRINCIPLES = [
   "Perceivable",
@@ -161,18 +159,20 @@ export function DashboardBarChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="min-h-[1000px] w-full">
+        <ChartContainer config={chartConfig} className="h-[1000px] w-full">
           <BarChart
             accessibilityLayer
             data={chartData}
             layout="vertical"
             margin={{ left: 4, right: 12 }}
           >
-            <CartesianGrid />
+            <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" dataKey="count" />
             <YAxis
               dataKey="wcag"
               type="category"
+              interval={0}
+              textAnchor="end" // Align the text to the end of the tick
               tickLine={false}
               tickMargin={10}
               axisLine={false}
