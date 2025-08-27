@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
   Card,
@@ -273,6 +273,14 @@ export function DashboardLineChart() {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value: string) => value}
+            />
+            <YAxis
+              allowDecimals={false}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              width={32}
+              domain={[0, 'dataMax + 1']}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Line

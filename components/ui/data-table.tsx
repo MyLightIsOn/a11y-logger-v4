@@ -61,11 +61,6 @@ export function DataTable<T>({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
   const itemsPerPage = 10;
 
-  // Reset to page 1 when search term changes
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
-
   // Handle column sort
   const handleSort = (column: DataTableColumn<T>) => {
     if (!column.sortable) return;
