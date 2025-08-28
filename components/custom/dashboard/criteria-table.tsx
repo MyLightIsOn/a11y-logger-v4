@@ -203,7 +203,7 @@ export function CriteriaTable() {
                             {" "}
                             <span
                               className={
-                                "absolute right-1.5 top-1.5 text-lg bg-white rounded-full w-7 text-center text-black"
+                                "absolute left-1.5 top-1.5 text-lg bg-white rounded-full w-7 text-center text-black"
                               }
                             >
                               {count}
