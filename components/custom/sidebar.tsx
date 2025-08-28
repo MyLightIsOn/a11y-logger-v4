@@ -8,7 +8,7 @@ import {
   Folder,
   AlertTriangle,
 } from "lucide-react";
-import { LogoutButton } from "@/components/logout-button";
+import { LogoutButton } from "@/components/custom/logout-button";
 
 export default function SideBar({
   children,

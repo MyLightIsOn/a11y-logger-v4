@@ -1,6 +1,6 @@
 import { NextLogo } from "./next-logo";
 import { SupabaseLogo } from "./supabase-logo";
-import { AuthButton } from "@/components/auth-button";
+import { AuthButton } from "@/components/custom/auth-button";
 import React from "react";
 
 export function Hero() {

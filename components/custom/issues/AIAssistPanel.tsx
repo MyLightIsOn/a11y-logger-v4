@@ -4,9 +4,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
-import AiIcon from "@/components/AiIcon";
+import AiIcon from "@/components/custom/AiIcon";
 import type { AIAssistPanelProps } from "@/types/ai";
-
 
 export function AIAssistPanel({
   aiPrompt,

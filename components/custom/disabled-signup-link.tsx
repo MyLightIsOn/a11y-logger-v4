@@ -1,23 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "./ui/button";
-import { ConfirmationModal } from "./ui/confirmation-modal";
+import { ConfirmationModal } from "../ui/confirmation-modal";
 
-export function DisabledSignupButton() {
+export function DisabledSignupLink() {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   return (
     <>
-      <Button
+      <button
         ref={triggerRef}
-        size="sm"
-        variant="default"
+        type="button"
         onClick={() => setOpen(true)}
+        className="underline underline-offset-4 text-primary hover:underline"
       >
         Sign up
-      </Button>
+      </button>
       <ConfirmationModal
         isOpen={open}
         onClose={() => setOpen(false)}

@@ -1,7 +1,7 @@
-import { SectionCards } from "@/components/section-cards";
-import DashboardIssueStatistics from "@/components/dashboard-issue-statistics";
-import { DashboardBarChart } from "@/components/dashboard-bar-chart";
-import { DashboardLineChart } from "@/components/dashboard-line-chart";
+import { SectionCards } from "@/components/custom/section-cards";
+import DashboardIssueStatistics from "@/components/custom/dashboard-issue-statistics";
+import { DashboardBarChart } from "@/components/custom/dashboard-bar-chart";
+import { DashboardLineChart } from "@/components/custom/dashboard-line-chart";
 
 export default function Page() {
   return (
