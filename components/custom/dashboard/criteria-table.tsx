@@ -197,7 +197,7 @@ export function CriteriaTable() {
                         <div className="h-full dark:bg-primary bg-button-background/5" />
                         <div className="absolute inset-0 flex items-center">
                           <span
-                            className={`leading-none bg-[#8eb0ee] px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
+                            className={`leading-none bg-[#8eb0ee] dark:bg-button-background/70 px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
                             style={{ width: animateBars ? `${pct}%` : "0%" }}
                           >
                             {" "}
