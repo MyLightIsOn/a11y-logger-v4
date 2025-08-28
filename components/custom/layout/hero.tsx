@@ -1,5 +1,5 @@
-import { NextLogo } from "./next-logo";
-import { SupabaseLogo } from "./supabase-logo";
+import { NextLogo } from "../next-logo";
+import { SupabaseLogo } from "../supabase-logo";
 import { AuthButton } from "@/components/custom/auth-button";
 import React from "react";
 

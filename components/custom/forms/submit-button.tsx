@@ -1,7 +1,7 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/custom/loader";
+import Loader from "@/components/custom/layout/loader";
 import React from "react";
 
 interface SubmitButtonProps {

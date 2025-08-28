@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import Loader from "@/components/custom/loader";
+import Loader from "@/components/custom/layout/loader";
 import type { User } from "@supabase/supabase-js";
 
 export function UserProfileLink() {

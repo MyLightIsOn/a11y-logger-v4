@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import QueryClientContainer from "@/components/custom/query-client-container";
-import Header from "@/components/custom/header";
-import Footer from "@/components/custom/footer";
+import Header from "@/components/custom/layout/header";
+import Footer from "@/components/custom/layout/footer";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL

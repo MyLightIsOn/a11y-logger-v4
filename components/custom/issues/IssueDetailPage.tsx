@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ImageModal } from "@/components/custom/image-modal";
+import { ImageModal } from "@/components/custom/layout/image-modal";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { useIssueQuery } from "@/lib/query/use-issue-query";
 import { issuesApi } from "@/lib/api";

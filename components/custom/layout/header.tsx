@@ -1,5 +1,5 @@
 import React from "react";
-import { Logo } from "@/components/custom/logo";
+import { Logo } from "@/components/custom/layout/logo";
 import { LightDarkToggle } from "@/components/custom/light-dark-toggle";
 import { UserProfileLink } from "@/components/custom/user-profile-link";
 

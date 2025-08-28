@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import Image from "next/image";
 
 interface ImageModalProps {

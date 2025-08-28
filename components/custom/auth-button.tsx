@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./logout-button";
-import { DisabledSignupButton } from "./disabled-signup-button";
+import { DisabledSignupButton } from "./forms/disabled-signup-button";
 import type React from "react";
 
 // Keep async server component behavior but present a React component type to TS.

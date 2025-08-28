@@ -1,6 +1,6 @@
 "use client";
 
-import SideBar from "@/components/custom/sidebar";
+import SideBar from "@/components/custom/layout/sidebar";
 
 export default function IssuesLayout({
   children,
