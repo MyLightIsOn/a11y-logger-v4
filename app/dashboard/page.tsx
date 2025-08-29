@@ -1,7 +1,7 @@
 import { SectionCards } from "@/components/custom/layout/section-cards";
 import DashboardIssueStatistics from "@/components/custom/dashboard/dashboard-issue-statistics";
-import { DashboardLineChart } from "@/components/custom/dashboard/dashboard-line-chart";
 import { CriteriaTable } from "@/components/custom/dashboard/criteria-table";
+import DashboardAreaChart from "@/components/custom/dashboard/dashboard-area-chart";
 
 export default function Page() {
   return (
@@ -11,7 +11,7 @@ export default function Page() {
           <div className="pb-4">
             <SectionCards />
           </div>
-          <DashboardLineChart />
+          <DashboardAreaChart />
         </div>
         <div className="w-1/4 flex flex-1 pl-4">
           <DashboardIssueStatistics />

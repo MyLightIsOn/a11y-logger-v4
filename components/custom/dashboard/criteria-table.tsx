@@ -169,7 +169,9 @@ export function CriteriaTable() {
           </div>
         )}
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading…</div>
+          <div className="text-sm text-muted-foreground min-h-[500px]">
+            Loading…
+          </div>
         ) : chartData.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             No data to display
@@ -187,9 +189,12 @@ export function CriteriaTable() {
                       {code}
                     </td>
                     <td className="py-1 pr-2 text-sm h-10 p-5">{wcag}</td>
+                    <td>
+                      <div className="px-5">{count}</div>
+                    </td>
                     <td className="py-1 pr-2 w-[70%]">
                       <div
-                        className="h-10 w-full bg-muted rounded-full relative overflow-hidden"
+                        className="h-3 w-full bg-muted rounded-full relative"
                         role="img"
                         aria-label={`${wcag}: ${pctLabel} of ${principle} max`}
                         title={`${pctLabel} (${count} vs max ${maxCount} in ${principle})`}
@@ -197,18 +202,9 @@ export function CriteriaTable() {
                         <div className="h-full dark:bg-primary bg-button-background/5" />
                         <div className="absolute inset-0 flex items-center">
                           <span
-                            className={`leading-none bg-[#8eb0ee] dark:bg-button-background/70 px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
+                            className={`leading-none bg-button-background/50 dark:bg-button-background/70 px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
                             style={{ width: animateBars ? `${pct}%` : "0%" }}
-                          >
-                            {" "}
-                            <span
-                              className={
-                                "absolute left-1.5 top-1.5 text-lg bg-white rounded-full w-7 text-center text-black"
-                              }
-                            >
-                              {count}
-                            </span>
-                          </span>
+                          ></span>
                         </div>
                       </div>
                     </td>

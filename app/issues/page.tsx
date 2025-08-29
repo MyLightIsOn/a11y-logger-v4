@@ -216,7 +216,7 @@ export default function Page() {
         ),
       },
     ],
-    [],
+    [wcagByCode],
   );
 
   return (
