@@ -2,7 +2,6 @@ import { z } from "zod";
 import { wcagVersionEnum } from "@/lib/validation/issues";
 
 /**
- * Phase 0 — Foundations and Types: Report generation schemas and types
  *
  * This module defines Zod schemas (and inferred TypeScript types) for:
  *  - AssessmentInput: input payload sent to the model
@@ -48,7 +47,9 @@ const yyyyMmDd = z
 const criterionCode = z
   .string()
   .min(3)
-  .regex(/^\d+\.\d+\.\d+$/u, { message: "Criterion must be d.d.d (e.g., 1.4.3)" });
+  .regex(/^\d+\.\d+\.\d+$/u, {
+    message: "Criterion must be d.d.d (e.g., 1.4.3)",
+  });
 
 const urlSchema = z
   .string()
@@ -140,9 +141,12 @@ const wordsAtMost = (maxWords: number) =>
   z
     .string()
     .transform((s) => (typeof s === "string" ? s.trim() : s))
-    .refine((s) => (s ? s.split(/\s+/u).filter(Boolean).length <= maxWords : true), {
-      message: `Must be at most ${maxWords} words`,
-    });
+    .refine(
+      (s) => (s ? s.split(/\s+/u).filter(Boolean).length <= maxWords : true),
+      {
+        message: `Must be at most ${maxWords} words`,
+      },
+    );
 
 export const executiveSummarySchema = z
   .object({
@@ -181,6 +185,9 @@ export type PersonaSummary = z.infer<typeof personaSummarySchema>;
 export type Report = z.infer<typeof reportSchema>;
 
 // Convenience lists (may be centralized in a constants module in Phase 0 Step 2)
-export const PERSONAS: readonly Persona[] = personaEnum.options as unknown as readonly Persona[];
-export const PRINCIPLES: readonly Principle[] = principleEnum.options as unknown as readonly Principle[];
-export const SEVERITY_BUCKETS: readonly SeverityBucket[] = severityBucketEnum.options as unknown as readonly SeverityBucket[];
+export const PERSONAS: readonly Persona[] =
+  personaEnum.options as unknown as readonly Persona[];
+export const PRINCIPLES: readonly Principle[] =
+  principleEnum.options as unknown as readonly Principle[];
+export const SEVERITY_BUCKETS: readonly SeverityBucket[] =
+  severityBucketEnum.options as unknown as readonly SeverityBucket[];

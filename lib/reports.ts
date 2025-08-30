@@ -4,7 +4,7 @@ import type { IssueRead, Issue, IssueCriteriaItem } from "@/types/issue";
 import type { Tag } from "@/types/tag";
 
 /**
- * Phase 1 — Step 4: Supabase data fetch: assessments and issues (join)
+ *
  *
  * Fetches a single assessment and its issues joined via assessments_issues.
  * Left-joins issue_criteria_agg when available to include criteria_codes and criteria[].
@@ -105,7 +105,10 @@ export async function fetchAssessmentIssuesRaw(assessmentId: string): Promise<{
       }
 
       // Defensive defaults for nullable text fields
-      if (mapped.description != null && typeof mapped.description !== "string") {
+      if (
+        mapped.description != null &&
+        typeof mapped.description !== "string"
+      ) {
         mapped.description = undefined;
       }
       if (mapped.impact != null && typeof mapped.impact !== "string") {
@@ -129,4 +132,126 @@ export async function fetchAssessmentIssuesRaw(assessmentId: string): Promise<{
     assessment: assessmentRow as Assessment,
     issues: Array.from(byId.values()),
   };
+}
+
+/**
+ *
+ *
+ * Constructs the AssessmentInput payload for the model from an assessment id.
+ * - Reuses fetchAssessmentIssuesRaw to get assessment + issues
+ * - Normalizes issue severities to buckets and WCAG entries via wcag/reference
+ * - Computes stats: by_severity, by_principle, by_wcag (unique issue counts)
+ * - Validates final structure with assessmentInputSchema
+ */
+import { assessmentInputSchema } from "@/lib/validation/report";
+import type { AssessmentInput, AssessmentIssueInput } from "@/types/report";
+import {
+  mapSeverityToBucket,
+  EMPTY_SEVERITY_COUNTS,
+} from "@/lib/issues/constants";
+import { getWcagByCode, normalizeCriteria } from "@/lib/wcag/reference";
+
+export async function buildAssessmentReportInput(
+  assessmentId: string,
+): Promise<AssessmentInput> {
+  const { assessment, issues } = await fetchAssessmentIssuesRaw(assessmentId);
+  if (!assessment) {
+    throw new Error("Assessment not found or access denied");
+  }
+
+  // Assessment meta
+  const date = (() => {
+    const d = new Date(assessment.created_at);
+    if (isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  // Normalize issues into AssessmentIssueInput[]
+  const issuesOut: AssessmentIssueInput[] = (issues || []).map((issue) => {
+    // Build wcag entries combining aggregated criteria and code list
+    const wcag = normalizeCriteria({
+      fromAgg: (issue.criteria || []).map((c) => ({
+        code: c.code,
+        level: c.level,
+        versions: c.version ? [c.version] : undefined,
+      })),
+      fromCodes: issue.criteria_codes || [],
+    });
+
+    return {
+      id: issue.id,
+      title: issue.title,
+      description: issue.description || undefined,
+      severity: mapSeverityToBucket(issue.severity),
+      wcag: wcag,
+      component: undefined, // no component field in Issue; reserved for future use
+      url: issue.url || undefined,
+      impact: issue.impact || undefined,
+    };
+  });
+
+  // Stats by severity
+  const bySeverity = { ...EMPTY_SEVERITY_COUNTS };
+  for (const it of issuesOut) {
+    bySeverity[it.severity] = (bySeverity[it.severity] || 0) + 1;
+  }
+
+  // Stats by principle (unique issues per principle)
+  const byPrinciple = {
+    Perceivable: 0,
+    Operable: 0,
+    Understandable: 0,
+    Robust: 0,
+  };
+  const ref = getWcagByCode();
+  for (const issue of issuesOut) {
+    const seenPrinciples = new Set<string>();
+    for (const w of issue.wcag || []) {
+      const detail = ref.get(w.criterion);
+      if (detail) seenPrinciples.add(detail.principle);
+    }
+    // Count this issue once per principle it touches
+    for (const p of seenPrinciples) {
+      // @ts-expect-error narrowed by keys above
+      byPrinciple[p] = (byPrinciple[p] || 0) + 1;
+    }
+  }
+
+  // Stats by WCAG (group by code; unique issues per code)
+  const issuesByCode = new Map<string, Set<string>>(); // code -> set(issueId)
+  for (const issue of issuesOut) {
+    const id = issue.id;
+    for (const w of issue.wcag || []) {
+      const set = issuesByCode.get(w.criterion) || new Set<string>();
+      set.add(id);
+      issuesByCode.set(w.criterion, set);
+    }
+  }
+  // Build sorted array with names
+  const byWcagArr = Array.from(issuesByCode.entries())
+    .map(([code, set]) => {
+      const detail = ref.get(code);
+      return {
+        criterion: code,
+        name: detail?.name || `Unknown criterion ${code}`,
+        count: set.size,
+      };
+    })
+    .sort((a, b) =>
+      a.criterion < b.criterion ? -1 : a.criterion > b.criterion ? 1 : 0,
+    );
+
+  const payload = {
+    assessment: { id: assessment.id, name: assessment.name, date },
+    stats: {
+      by_severity: bySeverity,
+      by_principle: byPrinciple,
+      by_wcag: byWcagArr,
+    },
+    issues: issuesOut,
+  };
+
+  // Validate and return
+  const parsed = assessmentInputSchema.parse(payload);
+  return parsed as AssessmentInput;
 }
