@@ -1,5 +1,6 @@
 import { severityEnum, statusEnum } from "@/lib/validation/issues";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
+import type { StatsBySeverity } from "@/lib/validation/report";
 
 export type Option = { value: string; label: string };
 
@@ -48,6 +49,46 @@ export const statusOptions: ReadonlyArray<Option> = buildOptionsFromEnum(
   statusEnum.options as unknown as readonly [string, ...string[]],
   (v) => statusLabels[v as keyof typeof statusLabels],
 );
+
+/**
+ * Map persisted severity values to report severity buckets.
+ * Accepts:
+ *  - "1"|"2"|"3"|"4" (from severityEnum)
+ *  - 1|2|3|4 (numeric)
+ *  - Already bucketed names "Critical"|"High"|"Medium"|"Low"
+ *  - Any other/unknown value defaults to "Medium" (per technical plan Step 2)
+ */
+export function mapSeverityToBucket(
+  input: unknown,
+): "Critical" | "High" | "Medium" | "Low" {
+  // Normalize input to string
+  if (input === "Critical" || input === "High" || input === "Medium" || input === "Low") {
+    return input;
+  }
+  const n = typeof input === "number" ? String(input) : typeof input === "string" ? input.trim() : "";
+  switch (n) {
+    case "1":
+      return "Critical";
+    case "2":
+      return "High";
+    case "3":
+      return "Medium";
+    case "4":
+      return "Low";
+    default:
+      return "Medium"; // default per Phase 0 Step 2
+  }
+}
+
+/**
+ * Empty severity count initializer in the StatsBySeverity shape.
+ */
+export const EMPTY_SEVERITY_COUNTS: StatsBySeverity = {
+  Critical: 0,
+  High: 0,
+  Medium: 0,
+  Low: 0,
+};
 
 /** Criteria key helpers: use a stable composite key version|code */
 export function makeCriteriaKey(version: WcagVersion, code: string): string {

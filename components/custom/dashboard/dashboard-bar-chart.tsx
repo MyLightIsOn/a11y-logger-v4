@@ -27,13 +27,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { issuesApi } from "@/lib/api";
 import wcagWithPrinciples from "@/data/wcag-criteria.json";
 
-// Principle keys
-const PRINCIPLES = [
-  "Perceivable",
-  "Operable",
-  "Understandable",
-  "Robust",
-] as const;
+// Principle keys (centralized)
+import { PRINCIPLES } from "@/types/report";
 
 type Principle = (typeof PRINCIPLES)[number];
 
