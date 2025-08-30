@@ -150,6 +150,7 @@ import {
   EMPTY_SEVERITY_COUNTS,
 } from "@/lib/issues/constants";
 import { getWcagByCode, normalizeCriteria } from "@/lib/wcag/reference";
+import type { SeverityBucket, StatsBySeverity, Patterns } from "@/types/report";
 
 export async function buildAssessmentReportInput(
   assessmentId: string,
@@ -254,4 +255,56 @@ export async function buildAssessmentReportInput(
   // Validate and return
   const parsed = assessmentInputSchema.parse(payload);
   return parsed as AssessmentInput;
+}
+
+/**
+ * Estimate the overall user impact of the assessment based on issue distribution and risk patterns.
+ *
+ * Rationale (mirrors planning/report_generation_plan.md §10):
+ * - High concentrations of Critical/High issues typically block key tasks for multiple user groups.
+ * - Certain patterns (e.g., keyboard traps) represent catastrophic failures and merit an upward adjustment.
+ * - We cap results when evidence is weak to avoid overstating impact from tiny samples.
+ */
+export function estimateUserImpact(
+  stats: { by_severity: StatsBySeverity },
+  patterns?: Pick<Patterns, "high_risk_patterns"> | { high_risk_patterns?: string[] },
+): SeverityBucket {
+  const s = stats?.by_severity || { Critical: 0, High: 0, Medium: 0, Low: 0 };
+  const total = (s.Critical || 0) + (s.High || 0) + (s.Medium || 0) + (s.Low || 0);
+
+  // Handle no/low data cases first: with zero issues, report Low and document insufficient evidence.
+  if (!total || total <= 0) return "Low";
+
+  const highPlus = (s.Critical || 0) + (s.High || 0);
+  const pctHighPlus = highPlus / total;
+
+  let level: SeverityBucket = "Low";
+
+  // Primary thresholds tuned for signal vs. noise balance
+  if (pctHighPlus >= 0.7) level = "Critical";
+  else if (pctHighPlus >= 0.5) level = "High";
+  else {
+    // When severe issues are not dominant, Medium indicates noticeable friction.
+    const medium = s.Medium || 0;
+    if (medium > (s.High || 0) && medium >= (s.Low || 0)) level = "Medium";
+    else level = "Low";
+  }
+
+  // Upward adjustment for catastrophic patterns observed across issues.
+  const bumpers = new Set((patterns?.high_risk_patterns || []).map((p) => p.toLowerCase()));
+  const catastrophic = [
+    "keyboard trap",
+    "no visible focus",
+    "missing form labels on required fields",
+  ];
+  const hasCatastrophic = catastrophic.some((c) => Array.from(bumpers).some((b) => b.includes(c)));
+  if (hasCatastrophic && level !== "Critical") {
+    // Controlled bump to avoid runaway escalation; one level bump only.
+    level = level === "Low" ? "Medium" : "High";
+  }
+
+  // Dampener: extremely small samples (<=2) shouldn’t yield Critical.
+  if (total <= 2 && level === "Critical") level = "High";
+
+  return level;
 }
