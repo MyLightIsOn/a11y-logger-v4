@@ -16,8 +16,16 @@ import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
 import { useGenerateReport } from "@/lib/query/use-generate-report-mutation";
+import { reportsApi } from "@/lib/api";
+import AiIcon from "@/components/AiIcon";
 
-function GenerateReportButton({ assessmentId }: { assessmentId: string }) {
+function GenerateReportButton({
+  assessmentId,
+  hasReport,
+}: {
+  assessmentId: string;
+  hasReport: boolean | null;
+}) {
   const router = useRouter();
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const { generate, isPending, error } = useGenerateReport(assessmentId, () => {
@@ -44,11 +52,17 @@ function GenerateReportButton({ assessmentId }: { assessmentId: string }) {
             Generating...
           </span>
         ) : (
-          <span className="flex items-center">Generate Report</span>
+          <span className="flex items-center gap-2">
+            <AiIcon /> {hasReport ? "Regenerate Report" : "Generate Report"}
+          </span>
         )}
       </Button>
       {localError && (
-        <span className="text-sm text-red-600 mt-1" role="status" aria-live="polite">
+        <span
+          className="text-sm text-red-600 mt-1"
+          role="status"
+          aria-live="polite"
+        >
           {localError}
         </span>
       )}
@@ -57,11 +71,32 @@ function GenerateReportButton({ assessmentId }: { assessmentId: string }) {
 }
 
 export default function AssessmentDetailPage() {
+  const [hasReport, setHasReport] = useState<boolean | null>(null);
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { assessment, stats, issues, deleteAssessment, isLoading, error } =
     useAssessmentDetails(id);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    const check = async () => {
+      if (!id) return;
+      try {
+        const res = await reportsApi.getLatest(id);
+        console.log(res);
+        if (!active) return;
+        setHasReport(Boolean(res?.success && res?.data));
+      } catch {
+        if (!active) return;
+        setHasReport(false);
+      }
+    };
+    void check();
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   const critical = stats?.critical ?? 0;
   const high = stats?.high ?? 0;
@@ -250,7 +285,17 @@ export default function AssessmentDetailPage() {
         </Link>
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
-          <GenerateReportButton assessmentId={id} />
+          <GenerateReportButton assessmentId={id} hasReport={hasReport} />
+          {hasReport ? (
+            <Button
+              className={"min-w-[140px]"}
+              variant="outline"
+              onClick={() => router.push(`/reports/${id}`)}
+              aria-label="View latest report"
+            >
+              View Report
+            </Button>
+          ) : null}
           <Button
             className={"min-w-[100px]"}
             variant="outline"
