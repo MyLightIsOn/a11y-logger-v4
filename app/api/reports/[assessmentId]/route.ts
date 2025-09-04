@@ -14,6 +14,7 @@ import {
   PERSONAS,
 } from "@/lib/ai/persona-prompts";
 import type { Report, PersonaSummary } from "@/lib/validation/report";
+import { reportSchema } from "@/lib/validation/report";
 
 // Request body schema for POST /api/reports/[assessmentId]
 const postBodySchema = z
@@ -158,5 +159,81 @@ export async function POST(
       { error: "Internal server error" },
       { status: 500 },
     );
+  }
+}
+
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ assessmentId: string }> },
+) {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Dynamic route param
+    const { assessmentId } = await params;
+    if (!assessmentId) {
+      return NextResponse.json(
+        { error: "Missing assessmentId" },
+        { status: 400 },
+      );
+    }
+
+    // Authorization: ensure the user owns the assessment
+    const { data: assessmentRow, error: assessErr } = await supabase
+      .from("assessments")
+      .select("id, user_id")
+      .eq("id", assessmentId)
+      .single();
+
+    if (assessErr || !assessmentRow) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (assessmentRow.user_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Fetch latest report for this assessment
+    const { data: reportRows, error: reportsErr } = await supabase
+      .from("reports")
+      .select("id, assessment_id, payload, created_at")
+      .eq("assessment_id", assessmentId)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    // If the table does not exist or query failed, treat as no report (Phase 12 optional)
+    if (reportsErr || !reportRows || reportRows.length === 0) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    const row = reportRows[0] as {
+      id: string;
+      assessment_id: string;
+      payload: unknown;
+      created_at: string;
+    };
+
+    // Validate payload shape before returning
+    const parsed = reportSchema.safeParse(row.payload);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Stored report is invalid", details: parsed.error.issues.map(i => ({ path: i.path, message: i.message })) },
+        { status: 422 },
+      );
+    }
+
+    // Success
+    return NextResponse.json(parsed.data satisfies Report);
+  } catch (error) {
+    console.error("Unhandled error in GET /api/reports/[assessmentId]:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
