@@ -63,7 +63,7 @@ export async function POST(
     }
 
     // Build the strict AssessmentInput payload (handles auth scoping internally)
-    let input;
+    let input: Awaited<ReturnType<typeof buildAssessmentReportInput>>;
     try {
       input = await buildAssessmentReportInput(assessmentId);
     } catch {

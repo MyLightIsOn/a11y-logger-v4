@@ -17,7 +17,7 @@ import type { Issue } from "@/types/issue";
 
 import { useGenerateReport } from "@/lib/query/use-generate-report-mutation";
 import { reportsApi } from "@/lib/api";
-import AiIcon from "@/components/AiIcon";
+import AiIcon from "@/components/custom/AiIcon";
 
 function GenerateReportButton({
   assessmentId,
