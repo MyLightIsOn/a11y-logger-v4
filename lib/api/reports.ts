@@ -18,6 +18,14 @@ export class ReportsApiService extends BaseApiService {
     return this.post<Report>(`${this.basePath}/${assessmentId}`, { ...payload, mode });
   }
 
+  /** POST /api/reports/[assessmentId]/save */
+  async saveReport(
+    assessmentId: string,
+    report: Report,
+  ): Promise<ApiResponse<{ id: string }>> {
+    return this.post<{ id: string }>(`${this.basePath}/${assessmentId}/save`, report);
+  }
+
   /** GET /api/reports/[assessmentId] (latest) */
   async getLatest(assessmentId: string): Promise<ApiResponse<Report>> {
     return this.get<Report>(`${this.basePath}/${assessmentId}`);

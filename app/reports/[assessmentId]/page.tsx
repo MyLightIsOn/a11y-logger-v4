@@ -10,6 +10,7 @@ import { reportsApi } from "@/lib/api";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { getWcagByCode } from "@/lib/wcag/reference";
+import { useSaveReport } from "@/lib/query/use-save-report-mutation";
 
 export default function ReportDetailsPage() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
@@ -96,14 +97,37 @@ export default function ReportDetailsPage() {
   const isLoading = loading || isAssessmentLoading;
   const pageError = error || assessError?.message;
 
+  const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
+  const { save, isPending: isSaving, error: saveError } = useSaveReport(
+    assessmentId,
+    () => {
+      setSaveMessage("Report saved successfully.");
+      setTimeout(() => setSaveMessage(null), 4000);
+    },
+  );
+
+  const handleSave = React.useCallback(() => {
+    if (!report || !assessmentId) return;
+    setSaveMessage(null);
+    save(report);
+  }, [assessmentId, report, save]);
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex justify-between items-center">
-        <Button variant="outline" onClick={() => router.back()}>
-          Back
-        </Button>
+      <div className="mb-6 flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => router.back()}>
+            Back
+          </Button>
+          {saveMessage && <span className="text-green-600 text-sm">{saveMessage}</span>}
+          {saveError && <span className="text-red-600 text-sm">{saveError.message}</span>}
+        </div>
         <h1 className="text-2xl font-bold">Report Details</h1>
-        <div />
+        <div className="flex items-center gap-2">
+          <Button onClick={handleSave} disabled={!report || isSaving}>
+            {isSaving ? "Saving..." : "Save Report"}
+          </Button>
+        </div>
       </div>
 
       {isLoading && <p>Loading report...</p>}
