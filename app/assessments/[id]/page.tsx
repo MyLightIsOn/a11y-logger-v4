@@ -15,6 +15,47 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatDate } from "@/lib/utils";
 import type { Issue } from "@/types/issue";
 
+import { useGenerateReport } from "@/lib/query/use-generate-report-mutation";
+
+function GenerateReportButton({ assessmentId }: { assessmentId: string }) {
+  const router = useRouter();
+  const [localError, setLocalError] = useState<string | undefined>(undefined);
+  const { generate, isPending, error } = useGenerateReport(assessmentId, () => {
+    router.push(`/reports/${assessmentId}`);
+  });
+
+  React.useEffect(() => {
+    setLocalError(error?.message);
+  }, [error?.message]);
+
+  return (
+    <div className="flex flex-col items-end">
+      <Button
+        className={"min-w-[160px]"}
+        onClick={() => {
+          setLocalError(undefined);
+          generate({ mode: "master", includePatterns: false });
+        }}
+        disabled={isPending}
+      >
+        {isPending ? (
+          <span className="flex items-center">
+            <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Generating...
+          </span>
+        ) : (
+          <span className="flex items-center">Generate Report</span>
+        )}
+      </Button>
+      {localError && (
+        <span className="text-sm text-red-600 mt-1" role="status" aria-live="polite">
+          {localError}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function AssessmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -209,6 +250,7 @@ export default function AssessmentDetailPage() {
         </Link>
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
+          <GenerateReportButton assessmentId={id} />
           <Button
             className={"min-w-[100px]"}
             variant="outline"
