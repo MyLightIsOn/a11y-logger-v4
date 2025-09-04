@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { z } from "zod";
 import { reportSchema, type Report } from "@/lib/validation/report";
+import { buildAssessmentReportInput } from "@/lib/reports";
 
 // Body must be a Report matching the assessmentId param
 const saveBodySchema = reportSchema;
@@ -69,12 +70,52 @@ export async function POST(
       );
     }
 
-    // Insert into reports table using existing pattern (payload jsonb)
+    // Build derived fields for columns from current assessment context and report
+    // Compute severity_counts and wcag_breakdown by reusing the report input builder
+    let severity_counts: Record<string, number> | undefined;
+    let wcag_breakdown: Record<string, unknown> | undefined;
+    try {
+      const input = await buildAssessmentReportInput(assessmentId);
+      severity_counts = input?.stats?.by_severity;
+      wcag_breakdown = {
+        by_principle: input?.stats?.by_principle,
+        by_wcag: input?.stats?.by_wcag,
+      } as Record<string, unknown>;
+    } catch {
+      // If computing stats fails, continue with defaults; DB has defaults for jsonb columns
+      severity_counts = undefined;
+      wcag_breakdown = undefined;
+    }
+
+    // Map persona summaries to dedicated summary_* columns
+    const personaMap = new Map<string, string>();
+    for (const ps of report.persona_summaries || []) {
+      if (ps?.persona && ps?.summary) personaMap.set(ps.persona, ps.summary);
+    }
+
+    const summary_screen_reader = personaMap.get("Screen reader user (blind)") || null;
+    const summary_low_vision = personaMap.get("Low vision / magnification") || null;
+    const summary_color_blind = personaMap.get("Color vision deficiency") || null;
+    const summary_keyboard_only = personaMap.get("Keyboard-only / motor") || null;
+    const summary_cognitive = personaMap.get("Cognitive / attention") || null;
+    const summary_dhh = personaMap.get("Deaf / hard of hearing") || null;
+    const summary_exec = report.executive_summary?.overview || null;
+
+    // Insert into reports table with parsed columns + payload jsonb
     const { data: inserted, error: insertErr } = await supabase
       .from("reports")
       .insert({
         assessment_id: assessmentId,
         user_id: user.id,
+        severity_counts: severity_counts as unknown as Record<string, unknown> | undefined,
+        wcag_breakdown: wcag_breakdown as unknown as Record<string, unknown> | undefined,
+        summary_screen_reader,
+        summary_low_vision,
+        summary_color_blind,
+        summary_keyboard_only,
+        summary_cognitive,
+        summary_dhh,
+        summary_exec,
         // Persist the full report under a payload column, as used by GET endpoint
         payload: report as unknown as Record<string, unknown>,
       })
