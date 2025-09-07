@@ -63,23 +63,24 @@ const urlSchema = z
 // Screenshots are URL strings; modest limits
 const screenshotUrlSchema = urlSchema;
 
-export const criterionRefSchema = z.preprocess((raw) => {
-  // Accept either { version, code: 'd.d.d' } or { version?, code: 'v|d.d.d' }
-  if (raw && typeof raw === "object") {
-    const r = raw as Record<string, unknown>;
-    const codeVal = typeof r.code === "string" ? r.code : undefined;
-    const versionVal = typeof r.version === "string" ? r.version : undefined;
-    if (codeVal && codeVal.includes("|")) {
-      const [maybeVersion, maybeCode] = codeVal.split("|", 2);
-      if (maybeVersion && maybeCode) {
-        // If version is missing, take it from code; otherwise keep provided version
-        const finalVersion = (versionVal ?? maybeVersion) as unknown;
-        return { ...r, version: finalVersion, code: maybeCode };
+export const criterionRefSchema = z.preprocess(
+  (raw) => {
+    // Accept either { version, code: 'd.d.d' } or { version?, code: 'v|d.d.d' }
+    if (raw && typeof raw === "object") {
+      const r = raw as Record<string, unknown>;
+      const codeVal = typeof r.code === "string" ? r.code : undefined;
+      const versionVal = typeof r.version === "string" ? r.version : undefined;
+      if (codeVal && codeVal.includes("|")) {
+        const [maybeVersion, maybeCode] = codeVal.split("|", 2);
+        if (maybeVersion && maybeCode) {
+          // If version is missing, take it from code; otherwise keep provided version
+          const finalVersion = (versionVal ?? maybeVersion) as unknown;
+          return { ...r, version: finalVersion, code: maybeCode };
+        }
       }
     }
-  }
-  return raw;
-},
+    return raw;
+  },
   z
     .object({
       code: z
@@ -102,12 +103,16 @@ export const criterionRefSchema = z.preprocess((raw) => {
           path: ["code"],
         });
       }
-    })
+    }),
 );
 
 export const createIssueSchema = z
   .object({
-    title: z.string().trim().min(1, "Title is required").max(200, "Title is too long"),
+    title: z
+      .string()
+      .trim()
+      .min(1, "Title is required")
+      .max(200, "Title is too long"),
     description: z.string().trim().max(5000).optional(),
     severity: severityEnum,
     status: statusEnum,
@@ -127,9 +132,9 @@ export type CreateIssueSchema = typeof createIssueSchema;
 export type CreateIssueInput = z.infer<typeof createIssueSchema>;
 
 /** Utility to deduplicate a criteria array by version+code. */
-export function dedupeCriteria<T extends { version: WcagVersion; code: string }>(
-  arr: T[]
-): T[] {
+export function dedupeCriteria<
+  T extends { version: WcagVersion; code: string },
+>(arr: T[]): T[] {
   const seen = new Set<string>();
   const out: T[] = [];
   for (const it of arr || []) {

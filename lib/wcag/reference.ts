@@ -26,12 +26,22 @@ let _byCode: Map<string, CriteriaDetail> | null = null;
 function buildByCode(): Map<string, CriteriaDetail> {
   const map = new Map<string, CriteriaDetail>();
   (wcagList as WcagJsonEntry[]).forEach((item) => {
-    if (!item?.code || !item?.name || !item?.level || !item?.versions || !item?.principle) return;
+    if (
+      !item?.code ||
+      !item?.name ||
+      !item?.level ||
+      !item?.versions ||
+      !item?.principle
+    )
+      return;
     map.set(item.code, {
       code: item.code,
       name: item.name,
       level: item.level,
-      versions: item.versions.filter((v): v is "2.0" | "2.1" | "2.2" => v === "2.0" || v === "2.1" || v === "2.2"),
+      versions: item.versions.filter(
+        (v): v is "2.0" | "2.1" | "2.2" =>
+          v === "2.0" || v === "2.1" || v === "2.2",
+      ),
       principle: item.principle,
     });
   });
@@ -45,12 +55,19 @@ export function getWcagByCode(): Map<string, CriteriaDetail> {
 }
 
 /** Utility to pick the highest WCAG version from a list (defaults to "2.2" on empty/unknown). */
-export function pickHighestVersion(versions: string[] | undefined): "2.0" | "2.1" | "2.2" {
+export function pickHighestVersion(
+  versions: string[] | undefined,
+): "2.0" | "2.1" | "2.2" {
   const allowed: ("2.0" | "2.1" | "2.2")[] = ["2.0", "2.1", "2.2"];
-  const filtered = (versions || []).filter((v): v is "2.0" | "2.1" | "2.2" => v === "2.0" || v === "2.1" || v === "2.2");
+  const filtered = (versions || []).filter(
+    (v): v is "2.0" | "2.1" | "2.2" =>
+      v === "2.0" || v === "2.1" || v === "2.2",
+  );
   if (filtered.length === 0) return "2.2";
   // Return the max by order
-  return filtered.sort((a, b) => allowed.indexOf(a) - allowed.indexOf(b))[filtered.length - 1];
+  return filtered.sort((a, b) => allowed.indexOf(a) - allowed.indexOf(b))[
+    filtered.length - 1
+  ];
 }
 
 /**
@@ -63,7 +80,7 @@ export function codesToCriteriaDetails(codes: string[]): CriteriaDetail[] {
   const seen = new Set<string>();
   const out: CriteriaDetail[] = [];
   for (const raw of codes || []) {
-    const code = (typeof raw === "string" ? raw.trim() : "");
+    const code = typeof raw === "string" ? raw.trim() : "";
     if (!/^\d+\.\d+\.\d+$/.test(code)) continue;
     if (seen.has(code)) continue;
     seen.add(code);
@@ -113,7 +130,9 @@ export type WcagEntryNormalized = {
  * - Choose the highest version from versions[] if present; otherwise from reference; default "2.2" if still unknown
  * - Level comes from agg item, otherwise from reference; default to "AA" if unknown
  */
-export function normalizeCriteria(input: NormalizeCriteriaInput): WcagEntryNormalized[] {
+export function normalizeCriteria(
+  input: NormalizeCriteriaInput,
+): WcagEntryNormalized[] {
   const byCode = getWcagByCode();
   const seen = new Set<string>();
   const out: WcagEntryNormalized[] = [];
@@ -121,13 +140,20 @@ export function normalizeCriteria(input: NormalizeCriteriaInput): WcagEntryNorma
   const fromAgg = input.fromAgg || [];
   const fromCodes = input.fromCodes || [];
 
-  const pushForCode = (code: string, levelHint?: WcagLevel, versionsHint?: string[] | undefined) => {
+  const pushForCode = (
+    code: string,
+    levelHint?: WcagLevel,
+    versionsHint?: string[] | undefined,
+  ) => {
     if (!/^\d+\.\d+\.\d+$/.test(code)) return;
     if (seen.has(code)) return;
     seen.add(code);
     const ref = byCode.get(code);
 
-    const versions = (versionsHint && Array.isArray(versionsHint) ? versionsHint : ref?.versions) || [];
+    const versions =
+      (versionsHint && Array.isArray(versionsHint)
+        ? versionsHint
+        : ref?.versions) || [];
     const version = pickHighestVersion(versions);
 
     const level = levelHint || ref?.level || wcagLevelEnum.Enum.AA;
@@ -144,12 +170,16 @@ export function normalizeCriteria(input: NormalizeCriteriaInput): WcagEntryNorma
     if (!it || typeof it !== "object") continue;
     const code = (it.code || "").trim();
     if (!code) continue;
-    pushForCode(code, it.level, Array.isArray(it.versions) ? (it.versions as string[]) : undefined);
+    pushForCode(
+      code,
+      it.level,
+      Array.isArray(it.versions) ? (it.versions as string[]) : undefined,
+    );
   }
 
   // Add any codes not covered by agg
   for (const raw of fromCodes) {
-    const code = (typeof raw === "string" ? raw.trim() : "");
+    const code = typeof raw === "string" ? raw.trim() : "";
     if (!code) continue;
     pushForCode(code);
   }
