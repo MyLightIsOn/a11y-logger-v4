@@ -23,6 +23,7 @@ export interface VpatCurrentView {
   vpat_id: UUID;
   project_id: UUID;
   title: string;
+  description?: string | null;
   status: VpatStatus;
   created_by: UUID;
   created_at: string;
