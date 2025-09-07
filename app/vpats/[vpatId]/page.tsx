@@ -63,10 +63,31 @@ export default function VpatEditorSkeletonPage() {
   // Save row mutation
   const saveRowMutation = useSaveVpatRow(vpatId as UUID);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+
+  const validateRow = (row: RowState): { valid: boolean; message?: string } => {
+    const conf = row.conformance;
+    const remarks = (row.remarks || "").trim();
+    // Rule 1: Not Applicable requires remarks
+    if (conf === "Not Applicable" && remarks.length === 0) {
+      return { valid: false, message: "Remarks are required when conformance is Not Applicable." };
+    }
+    // Rule 2: If value != Supports, remarks required
+    if (conf !== null && conf !== "Supports" && remarks.length === 0) {
+      return { valid: false, message: "Remarks are required unless conformance is Supports." };
+    }
+    return { valid: true };
+  };
 
   const handleSave = async (criterionId: string) => {
     if (!criterionId) return;
     const local = rowState[criterionId] ?? { conformance: null, remarks: "" };
+    // Validate before save
+    const v = validateRow(local);
+    if (!v.valid) {
+      setRowErrors((prev) => ({ ...prev, [criterionId]: v.message || "Invalid row" }));
+      return;
+    }
     try {
       setSavingId(criterionId);
       await saveRowMutation.mutateAsync({
@@ -76,6 +97,7 @@ export default function VpatEditorSkeletonPage() {
           remarks: local.remarks,
         },
       });
+      setRowErrors((prev) => ({ ...prev, [criterionId]: "" }));
     } catch (e) {
       // surface error minimally now; richer toasts can be added later
       console.error(e);
@@ -146,14 +168,20 @@ export default function VpatEditorSkeletonPage() {
   }
 
   const handleChange = (criterionId: string, patch: Partial<RowState>) => {
-    setRowState((prev) => ({
-      ...prev,
-      [criterionId]: {
+    setRowState((prev) => {
+      const nextRow: RowState = {
         conformance: prev[criterionId]?.conformance ?? null,
         remarks: prev[criterionId]?.remarks ?? "",
         ...patch,
-      },
-    }));
+      };
+      // live-validate on change
+      const v = validateRow(nextRow);
+      setRowErrors((errs) => ({ ...errs, [criterionId]: v.valid ? "" : (v.message || "Invalid row") }));
+      return {
+        ...prev,
+        [criterionId]: nextRow,
+      };
+    });
   };
 
   return (
@@ -219,6 +247,8 @@ export default function VpatEditorSkeletonPage() {
                   const conformance = local?.conformance ?? null;
                   const remarks = local?.remarks ?? "";
                   const status = cid ? getRowStatus(cid) : "Empty";
+                  const errorMsg = cid ? (rowErrors[cid] || "") : "";
+                  const canSave = !!cid && savingId !== cid && status !== "Drafted" && validateRow({ conformance, remarks }).valid;
                   return (
                     <tr key={`${c.code}-${cid || "noid"}`} className="border-t align-top">
                       <td className="p-3">
@@ -253,13 +283,20 @@ export default function VpatEditorSkeletonPage() {
                         </Select>
                       </td>
                       <td className="p-3">
-                        <Textarea
-                          placeholder="Add remarks…"
-                          className="min-h-[3rem]"
-                          value={remarks}
-                          onChange={(e) => cid && handleChange(cid, { remarks: e.target.value })}
-                          disabled={!cid}
-                        />
+                        <div className="space-y-1">
+                          <Textarea
+                            placeholder="Add remarks…"
+                            className={`min-h-[3rem] ${errorMsg ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                            aria-invalid={!!errorMsg}
+                            aria-describedby={errorMsg ? `${cid}-remarks-error` : undefined}
+                            value={remarks}
+                            onChange={(e) => cid && handleChange(cid, { remarks: e.target.value })}
+                            disabled={!cid}
+                          />
+                          {errorMsg && (
+                            <p id={`${cid}-remarks-error`} className="text-xs text-red-600">{errorMsg}</p>
+                          )}
+                        </div>
                       </td>
                       <td className="p-3">
                         <div className="text-xs text-muted-foreground">—</div>
@@ -269,7 +306,7 @@ export default function VpatEditorSkeletonPage() {
                           <Button
                             size="sm"
                             onClick={() => cid && handleSave(cid)}
-                            disabled={!cid || savingId === cid || status === "Drafted"}
+                            disabled={!canSave}
                           >
                             {savingId === cid ? "Saving…" : "Save"}
                           </Button>
