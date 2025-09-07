@@ -109,7 +109,7 @@ Perfect catch. Here are **drop-in replacements** for sections **5) Data Model** 
 **Tables (base)**
 
 **vpat**
-`id uuid pk, project_id uuid fk→projects.id, title text, status vpat_status('draft'|'published'), created_by uuid, created_at timestamptz, updated_at timestamptz, current_version_id uuid fk→vpat_version.id (DEFERRABLE INITIALLY DEFERRED)`
+`id uuid pk, project_id uuid fk→projects.id, title text, description text, status vpat_status('draft'|'published'), created_by uuid, created_at timestamptz, updated_at timestamptz, current_version_id uuid fk→vpat_version.id (DEFERRABLE INITIALLY DEFERRED)`
 
 **vpat\_row\_draft** (editable surface)
 `id uuid pk, vpat_id uuid fk→vpat.id, wcag_criterion_id uuid fk→wcag_criteria.id, conformance conformance_value, remarks text, related_issue_ids uuid[], related_issue_urls text[], last_generated_at timestamptz, last_edited_by uuid, updated_at timestamptz, UNIQUE(vpat_id, wcag_criterion_id)`
