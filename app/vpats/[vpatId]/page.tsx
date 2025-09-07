@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useVpatDraft, useVpatDraftRows } from "@/lib/query/use-vpat-queries";
+import { useVpatDraft, useVpatDraftRows, useSaveVpatRow } from "@/lib/query/use-vpat-queries";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
@@ -59,6 +59,34 @@ export default function VpatEditorSkeletonPage() {
   type RowState = { conformance: ConformanceValue | null; remarks: string };
   const [rowState, setRowState] = useState<Record<string, RowState>>({});
   const [hydrated, setHydrated] = useState<boolean>(false);
+
+  // Save row mutation
+  const saveRowMutation = useSaveVpatRow(vpatId as UUID);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const handleSave = async (criterionId: string) => {
+    if (!criterionId) return;
+    const local = rowState[criterionId] ?? { conformance: null, remarks: "" };
+    try {
+      setSavingId(criterionId);
+      await saveRowMutation.mutateAsync({
+        criterionId: criterionId as UUID,
+        payload: {
+          conformance: local.conformance,
+          remarks: local.remarks,
+        },
+      });
+    } catch (e) {
+      // surface error minimally now; richer toasts can be added later
+      console.error(e);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  const handleClear = (criterionId: string) => {
+    handleChange(criterionId, { conformance: null, remarks: "" });
+  };
 
   // Hydrate local state from persisted drafts once (or when drafts change if not yet edited)
   useEffect(() => {
@@ -238,8 +266,21 @@ export default function VpatEditorSkeletonPage() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-2">
-                          <Button size="sm" disabled>Save</Button>
-                          <Button size="sm" variant="outline" disabled>Clear</Button>
+                          <Button
+                            size="sm"
+                            onClick={() => cid && handleSave(cid)}
+                            disabled={!cid || savingId === cid || status === "Drafted"}
+                          >
+                            {savingId === cid ? "Saving…" : "Save"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => cid && handleClear(cid)}
+                            disabled={!cid || (conformance === null && remarks === "")}
+                          >
+                            Clear
+                          </Button>
                           <Button size="sm" variant="secondary" disabled title="Generation will be enabled in a later milestone">Generate</Button>
                         </div>
                       </td>
