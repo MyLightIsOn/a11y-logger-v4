@@ -149,6 +149,29 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
       console.warn("Failed to compute project metrics on publish:", e);
     }
 
+    // Milestone 7 - step 32: Write snapshot to project_accessibility_metrics
+    if (metrics) {
+      try {
+        const notes = { vpat_version_id: newVersionId } as const;
+        const { error: pamErr } = await supabase
+          .from("project_accessibility_metrics")
+          .insert([
+            {
+              project_id: projectId,
+              counts_by_severity: metrics.countsBySeverity,
+              counts_by_wcag_level: metrics.countsByWcagLevel,
+              open_vs_resolved: metrics.openVsResolved,
+              notes,
+            },
+          ]);
+        if (pamErr) {
+          console.warn("Failed to insert project_accessibility_metrics snapshot:", pamErr);
+        }
+      } catch (e) {
+        console.warn("Unexpected error inserting project_accessibility_metrics snapshot:", e);
+      }
+    }
+
     return NextResponse.json({
       version_id: newVersionId,
       version_number: (inserted as { version_number: number }).version_number,
