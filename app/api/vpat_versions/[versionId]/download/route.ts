@@ -32,6 +32,16 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const format = (searchParams.get("format") || "md").toLowerCase();
 
+    // Optional: PDF (time-box). Leave a clear TODO and return 501 for now.
+    if (format === "pdf") {
+      // TODO: Implement HTML->PDF rendering using Playwright or a serverless-friendly library.
+      // Consider caching and storing artifact URL in vpat_version.export_artifacts.
+      return NextResponse.json(
+        { error: "PDF export not implemented yet" },
+        { status: 501 },
+      );
+    }
+
     if (format !== "md") {
       return NextResponse.json(
         { error: "Unsupported format" },
