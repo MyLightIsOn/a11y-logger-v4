@@ -10,7 +10,7 @@ export type FormActionsProps = {
   submitting: boolean;
   error: unknown | null;
 };
-
+//TODO the form state should update when the form is submitted
 export function FormActions({ formId, submitting, error }: FormActionsProps) {
   return (
     <div>

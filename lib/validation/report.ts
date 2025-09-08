@@ -50,7 +50,7 @@ const criterionCode = z
   .regex(/^\d+\.\d+\.\d+$/u, {
     message: "Criterion must be d.d.d (e.g., 1.4.3)",
   });
-
+//TODO this error needs to surface to the UI, right now it just shows a 400 error.
 const urlSchema = z
   .string()
   .trim()
