@@ -98,3 +98,8 @@ export interface ValidateVpatResponse {
     field?: "conformance" | "remarks" | "related_issue_ids" | "related_issue_urls";
   }>;
 }
+
+export interface GenerateVpatRowResponse {
+  status: "UPDATED" | "INSERTED" | "SKIPPED";
+  row: VpatRowDraft | null;
+}

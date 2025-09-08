@@ -7,6 +7,7 @@ import type {
   VpatRowDraft,
   VpatVersion,
   SaveVpatRowRequest,
+  GenerateVpatRowResponse,
 } from "@/types/vpat";
 
 // useVpatsList(projectId)
@@ -60,6 +61,24 @@ export function useSaveVpatRow(vpatId: UUID) {
       const { criterionId, payload } = args;
       const res = await vpatsApi.saveRow(vpatId, criterionId, payload);
       if (!res.success || !res.data) throw new Error(res.error || "Failed to save row");
+      return res.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["vpat", "rows", vpatId] });
+      void qc.invalidateQueries({ queryKey: ["vpat", vpatId] });
+    },
+  });
+}
+
+// useGenerateVpatRow — mutation for single-row AI generate
+export function useGenerateVpatRow(vpatId: UUID) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationKey: ["vpat","generateRow", vpatId],
+    mutationFn: async (args: { criterionId: UUID }): Promise<GenerateVpatRowResponse> => {
+      const { criterionId } = args;
+      const res = await vpatsApi.generateRow(vpatId, criterionId);
+      if (!res.success || !res.data) throw new Error(res.error || "Failed to generate row");
       return res.data;
     },
     onSuccess: () => {
