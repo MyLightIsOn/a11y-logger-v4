@@ -81,6 +81,11 @@ export class VpatsApiService extends BaseApiService {
   async getVersion(versionId: UUID): Promise<ApiResponse<VpatVersion>> {
     return super.get<VpatVersion>(`/vpat_versions/${versionId}`);
   }
+
+  // Publish the current draft into a new version
+  async publish(vpatId: UUID): Promise<ApiResponse<{ version_id: UUID; version_number: number; published_at: string }>> {
+    return this.post<{ version_id: UUID; version_number: number; published_at: string }>(`${this.basePath}/${vpatId}:publish`);
+  }
 }
 
 // Export a singleton instance for convenience
