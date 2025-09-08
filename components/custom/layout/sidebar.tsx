@@ -56,6 +56,14 @@ export default function SideBar({
 
               <Link
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                href="/vpats"
+              >
+                <User className="h-4 w-4" />
+                VPATS
+              </Link>
+
+              <Link
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
                 href="/account"
               >
                 <User className="h-4 w-4" />
