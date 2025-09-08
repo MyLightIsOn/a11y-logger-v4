@@ -1,4 +1,5 @@
 import { getWcagByCode, type CriteriaDetail } from "@/lib/wcag/reference";
+import type { VpatRowDraft } from "@/types/vpat";
 
 /**
  * Parse a WCAG criterion code (e.g., "1.4.13") into its numeric tuple [1,4,13].
@@ -62,4 +63,61 @@ export function filterByMinVersion(
     const maxIndex = Math.max(...c.versions.map((v) => order[v] ?? -1));
     return maxIndex >= order[min];
   });
+}
+
+/** Minimal shape for criteria items used in computeNextNEmpty */
+export type CriterionForNext = { id: string; code: string };
+
+/** Determine if a persisted draft row is effectively empty (no conformance and no non-empty remarks). */
+export function isDraftRowEmpty(row: VpatRowDraft | undefined | null): boolean {
+  if (!row) return true; // no row persisted yet is considered empty
+  const hasConformance = row.conformance !== null && row.conformance !== undefined;
+  const remarks = (row.remarks || "").trim();
+  const hasRemarks = remarks.length > 0;
+  return !hasConformance && !hasRemarks;
+}
+
+/**
+ * Compute the next N criterion IDs that are empty in the draft rows, ordered by
+ * ascending numeric WCAG code. Deterministic and unaffected by filled rows.
+ */
+export function computeNextNEmpty(
+  criteria: readonly CriterionForNext[],
+  draftRows:
+    | readonly VpatRowDraft[]
+    | Map<string, VpatRowDraft>
+    | Record<string, VpatRowDraft>
+    | undefined,
+  n: number = 5,
+): string[] {
+  // Normalize draft rows into a Map keyed by wcag_criterion_id
+  const byCriterionId = new Map<string, VpatRowDraft>();
+  if (Array.isArray(draftRows)) {
+    for (const r of draftRows) {
+      if (r && typeof r.wcag_criterion_id === "string") {
+        byCriterionId.set(r.wcag_criterion_id, r);
+      }
+    }
+  } else if (draftRows instanceof Map) {
+    for (const [k, v] of draftRows.entries()) {
+      if (k && v) byCriterionId.set(k, v);
+    }
+  } else if (draftRows && typeof draftRows === "object") {
+    for (const k of Object.keys(draftRows)) {
+      const v = (draftRows as Record<string, VpatRowDraft>)[k];
+      if (v) byCriterionId.set(k, v);
+    }
+  }
+
+  const sorted = sortCriteriaByCode(criteria);
+  const out: string[] = [];
+  for (const c of sorted) {
+    if (!c || typeof c.id !== "string" || !c.id) continue;
+    const row = byCriterionId.get(c.id);
+    if (isDraftRowEmpty(row)) {
+      out.push(c.id);
+      if (out.length >= n) break;
+    }
+  }
+  return out;
 }
