@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { UUID } from "@/types/common";
 import type { ConformanceValue, VpatVersion } from "@/types/vpat";
 import type { CriteriaRow, WcagScope } from "@/lib/vpat/export";
+import { computeProjectMetrics } from "@/lib/metrics/project";
 
 /**
  * POST /api/vpats/[vpatId]:publish
@@ -33,6 +34,7 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
     if (vpatErr || !vpatRow) {
       return NextResponse.json({ error: "VPAT not found" }, { status: 404 });
     }
+    const projectId = (vpatRow as { project_id: UUID }).project_id;
 
     // Fetch all WCAG criteria (A/AA/AAA)
     const { data: criteriaRows, error: critErr } = await supabase
@@ -139,12 +141,21 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
       .eq("id", vpatId);
     if (updErr) throw updErr;
 
+    // Compute project metrics snapshot (Milestone 7 - step 31)
+    let metrics: Awaited<ReturnType<typeof computeProjectMetrics>> | null = null;
+    try {
+      metrics = await computeProjectMetrics(projectId);
+    } catch (e) {
+      console.warn("Failed to compute project metrics on publish:", e);
+    }
+
     return NextResponse.json({
       version_id: newVersionId,
       version_number: (inserted as { version_number: number }).version_number,
       published_at: (inserted as { published_at: string }).published_at,
       wcag_scope,
       criteria_rows_count: criteria_rows.length,
+      metrics,
     });
   } catch (error) {
     console.error("Error publishing VPAT:", error);
