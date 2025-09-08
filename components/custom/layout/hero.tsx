@@ -31,6 +31,7 @@ export function Hero() {
         <a
           className={"underline cursor-pointer"}
           href={"https://thelawrencemoore.com/a11y-logger.html"}
+          target="_blank"
         >
           Read Case Study
         </a>

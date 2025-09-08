@@ -375,7 +375,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
   return (
     <section className="bg-card rounded-lg p-4 border border-border mb-4">
       <h2 className="text-lg font-semibold mb-2">Screenshots</h2>
-      {screenshots.length === 0 ? (
+      {!screenshots || screenshots.length === 0 ? (
         <p className="text-sm text-gray-600">No screenshots attached.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3">
