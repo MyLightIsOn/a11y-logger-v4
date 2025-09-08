@@ -102,4 +102,5 @@ export interface ValidateVpatResponse {
 export interface GenerateVpatRowResponse {
   status: "UPDATED" | "INSERTED" | "SKIPPED";
   row: VpatRowDraft | null;
+  warning?: string;
 }

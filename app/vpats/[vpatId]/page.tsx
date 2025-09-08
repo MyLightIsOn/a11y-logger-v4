@@ -66,6 +66,8 @@ export default function VpatEditorSkeletonPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
+    const [rowWarnings, setRowWarnings] = useState<Record<string, string>>({});
+    const [dismissedWarnings, setDismissedWarnings] = useState<Record<string, boolean>>({});
 
   const validateRow = (row: RowState): { valid: boolean; message?: string } => {
     const conf = row.conformance;
@@ -126,6 +128,11 @@ export default function VpatEditorSkeletonPage() {
         setRowState((prev) => ({ ...prev, [criterionId]: next }));
         // Clear any validation error because generator returns a valid combination
         setRowErrors((prev) => ({ ...prev, [criterionId]: "" }));
+      }
+      // Surface non-blocking warning if present
+      if (res.warning) {
+        setRowWarnings((prev) => ({ ...prev, [criterionId]: res.warning as string }));
+        setDismissedWarnings((prev) => ({ ...prev, [criterionId]: false }));
       }
       // For SKIPPED, we leave the content as-is per spec
     } catch (e) {
@@ -327,7 +334,21 @@ export default function VpatEditorSkeletonPage() {
                         <div className="text-xs text-muted-foreground">—</div>
                       </td>
                       <td className="p-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col gap-2">
+                          {cid && rowWarnings[cid] && !dismissedWarnings[cid] && (
+                            <div className="rounded border border-amber-300 bg-amber-50 text-amber-900 px-3 py-2 text-xs flex items-start justify-between gap-3" role="status" aria-live="polite">
+                              <span>{rowWarnings[cid]}</span>
+                              <button
+                                type="button"
+                                className="text-amber-900/70 hover:text-amber-900"
+                                aria-label="Dismiss warning"
+                                onClick={() => setDismissedWarnings((prev) => ({ ...prev, [cid]: true }))}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
                           <Button
                             size="sm"
                             onClick={() => cid && handleSave(cid)}
@@ -351,6 +372,7 @@ export default function VpatEditorSkeletonPage() {
                           >
                             {generatingId === cid ? "Generating…" : "Generate"}
                           </Button>
+                        </div>
                         </div>
                       </td>
                     </tr>

@@ -10,6 +10,7 @@ type Params = { params: { vpatId: UUID; criterionId: UUID } };
 interface GenerateResponse {
   status: "UPDATED" | "INSERTED" | "SKIPPED";
   row: VpatRowDraft | null;
+  warning?: string;
 }
 
 export async function POST(_request: NextRequest, ctx: Params) {
@@ -137,7 +138,7 @@ export async function POST(_request: NextRequest, ctx: Params) {
       const row = existingRow as VpatRowDraft;
       const hasContent = Boolean((row.conformance && String(row.conformance).length > 0) || (row.remarks && row.remarks.length > 0));
       if (hasContent) {
-        return NextResponse.json({ status: "SKIPPED", row } as GenerateResponse, { status: 200 });
+        return NextResponse.json({ status: "SKIPPED", row, warning: suggestion.warning } satisfies GenerateResponse, { status: 200 });
       }
     }
 
@@ -164,7 +165,7 @@ export async function POST(_request: NextRequest, ctx: Params) {
       .single();
 
     if (!updateErr && afterUpdate) {
-      return NextResponse.json({ status: "UPDATED", row: afterUpdate as VpatRowDraft } satisfies GenerateResponse);
+      return NextResponse.json({ status: "UPDATED", row: afterUpdate as VpatRowDraft, warning: suggestion.warning } satisfies GenerateResponse);
     }
 
     // If no update occurred (either no row or guarded), attempt INSERT with ON CONFLICT DO NOTHING
@@ -190,7 +191,7 @@ export async function POST(_request: NextRequest, ctx: Params) {
 
     // If there was no existingRow before, we consider this an INSERTED; otherwise UPDATED due to filling blanks.
     const finalStatus: GenerateResponse["status"] = existingRow ? "UPDATED" : "INSERTED";
-    return NextResponse.json({ status: finalStatus, row: (finalRow as VpatRowDraft) ?? null } satisfies GenerateResponse);
+    return NextResponse.json({ status: finalStatus, row: (finalRow as VpatRowDraft) ?? null, warning: suggestion.warning } satisfies GenerateResponse);
   } catch (error) {
     console.error("Error generating VPAT row:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
