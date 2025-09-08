@@ -13,7 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useVpatDraft, useVpatDraftRows, useSaveVpatRow, useGenerateVpatRow } from "@/lib/query/use-vpat-queries";
+import {
+  useVpatDraft,
+  useVpatDraftRows,
+  useSaveVpatRow,
+  useGenerateVpatRow,
+} from "@/lib/query/use-vpat-queries";
 import { useGenerateVpatBatch } from "@/lib/query/use-generate-vpat-batch";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
@@ -31,7 +36,9 @@ const CONFORMANCE_OPTIONS: ConformanceValue[] = [
 export default function VpatEditorSkeletonPage() {
   const params = useParams();
   const vpatIdParam = (params?.vpatId ?? null) as string | string[] | null;
-  const vpatId = Array.isArray(vpatIdParam) ? (vpatIdParam[0] as UUID) : (vpatIdParam as UUID | null);
+  const vpatId = Array.isArray(vpatIdParam)
+    ? (vpatIdParam[0] as UUID)
+    : (vpatIdParam as UUID | null);
 
   const { data: vpat, isLoading, isError, error } = useVpatDraft(vpatId);
 
@@ -48,7 +55,12 @@ export default function VpatEditorSkeletonPage() {
 
   // Fetch draft rows and WCAG criteria (with IDs)
   const { data: draftRows } = useVpatDraftRows(vpatId);
-  const { data: wcagCriteria, isLoading: isLoadingCriteria, isError: isCriteriaError, error: criteriaError } = useWcagCriteria();
+  const {
+    data: wcagCriteria,
+    isLoading: isLoadingCriteria,
+    isError: isCriteriaError,
+    error: criteriaError,
+  } = useWcagCriteria();
 
   // Build maps for quick access
   const draftByCriterionId = useMemo(() => {
@@ -69,19 +81,26 @@ export default function VpatEditorSkeletonPage() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [rowWarnings, setRowWarnings] = useState<Record<string, string>>({});
-  const [dismissedWarnings, setDismissedWarnings] = useState<Record<string, boolean>>({});
-
+  const [dismissedWarnings, setDismissedWarnings] = useState<
+    Record<string, boolean>
+  >({});
 
   const validateRow = (row: RowState): { valid: boolean; message?: string } => {
     const conf = row.conformance;
     const remarks = (row.remarks || "").trim();
     // Rule 1: Not Applicable requires remarks
     if (conf === "Not Applicable" && remarks.length === 0) {
-      return { valid: false, message: "Remarks are required when conformance is Not Applicable." };
+      return {
+        valid: false,
+        message: "Remarks are required when conformance is Not Applicable.",
+      };
     }
     // Rule 2: If value != Supports, remarks required
     if (conf !== null && conf !== "Supports" && remarks.length === 0) {
-      return { valid: false, message: "Remarks are required unless conformance is Supports." };
+      return {
+        valid: false,
+        message: "Remarks are required unless conformance is Supports.",
+      };
     }
     return { valid: true };
   };
@@ -92,7 +111,10 @@ export default function VpatEditorSkeletonPage() {
     // Validate before save
     const v = validateRow(local);
     if (!v.valid) {
-      setRowErrors((prev) => ({ ...prev, [criterionId]: v.message || "Invalid row" }));
+      setRowErrors((prev) => ({
+        ...prev,
+        [criterionId]: v.message || "Invalid row",
+      }));
       return;
     }
     try {
@@ -121,7 +143,9 @@ export default function VpatEditorSkeletonPage() {
     if (!criterionId) return;
     try {
       setGeneratingId(criterionId);
-      const res = await generateRowMutation.mutateAsync({ criterionId: criterionId as UUID });
+      const res = await generateRowMutation.mutateAsync({
+        criterionId: criterionId as UUID,
+      });
       // If the API returned a row, hydrate local state immediately
       if (res.row) {
         const next: RowState = {
@@ -134,7 +158,10 @@ export default function VpatEditorSkeletonPage() {
       }
       // Surface non-blocking warning if present
       if (res.warning) {
-        setRowWarnings((prev) => ({ ...prev, [criterionId]: res.warning as string }));
+        setRowWarnings((prev) => ({
+          ...prev,
+          [criterionId]: res.warning as string,
+        }));
         setDismissedWarnings((prev) => ({ ...prev, [criterionId]: false }));
       }
       // For SKIPPED, we leave the content as-is per spec
@@ -160,20 +187,42 @@ export default function VpatEditorSkeletonPage() {
     }
   }, [draftRows, hydrated]);
 
-  const criteria = useMemo((): Array<{ id?: string; code: string; name: string; level: string }> => {
+  const criteria = useMemo((): Array<{
+    id?: string;
+    code: string;
+    name: string;
+    level: string;
+  }> => {
     // if API provided list not yet loaded, fall back to static for structure
     if (!wcagCriteria || wcagCriteria.length === 0) {
-      return getAllWcagCriteria().map((c) => ({ code: c.code, name: c.name, level: c.level }));
+      return getAllWcagCriteria().map((c) => ({
+        code: c.code,
+        name: c.name,
+        level: c.level,
+      }));
     }
     // Some DBs store multiple versions per code; choose highest version per code
-    const byCode = new Map<string, { id: string; code: string; name: string; level: string }>();
+    const byCode = new Map<
+      string,
+      { id: string; code: string; name: string; level: string }
+    >();
     for (const row of wcagCriteria) {
       const existing = byCode.get(row.code);
       if (!existing) {
-        byCode.set(row.code, { id: row.id, code: row.code, name: row.name, level: row.level });
+        byCode.set(row.code, {
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          level: row.level,
+        });
       } else {
         // Prefer AA/AAA? Keep latest by code occurrence; exact version selection isn't critical here
-        byCode.set(row.code, { id: row.id, code: row.code, name: row.name, level: row.level });
+        byCode.set(row.code, {
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          level: row.level,
+        });
       }
     }
     // Order by numeric code using util (reference sort)
@@ -182,7 +231,12 @@ export default function VpatEditorSkeletonPage() {
       .filter((c) => byCode.has(c.code))
       .map((c) => {
         const base = byCode.get(c.code)!;
-        return { id: base.id, code: c.code, name: base.name, level: base.level };
+        return {
+          id: base.id,
+          code: c.code,
+          name: base.name,
+          level: base.level,
+        };
       });
   }, [wcagCriteria]);
 
@@ -194,7 +248,8 @@ export default function VpatEditorSkeletonPage() {
       const persisted = draftByCriterionId.get(cid);
       const persistedConformance = persisted?.conformance ?? null;
       const persistedRemarks = (persisted?.remarks ?? "").trim();
-      const isEmpty = persistedConformance === null && persistedRemarks.length === 0;
+      const isEmpty =
+        persistedConformance === null && persistedRemarks.length === 0;
       if (isEmpty) ids.push(cid);
     }
     return ids;
@@ -218,11 +273,17 @@ export default function VpatEditorSkeletonPage() {
     const localConformance = local?.conformance ?? null;
     const localRemarks = local?.remarks ?? "";
 
-    const hasPersisted = (persistedConformance !== null) || (persistedRemarks.trim().length > 0);
-    const hasLocal = (localConformance !== null) || (localRemarks.trim().length > 0);
+    const hasPersisted =
+      persistedConformance !== null || persistedRemarks.trim().length > 0;
+    const hasLocal =
+      localConformance !== null || localRemarks.trim().length > 0;
 
     if (!hasPersisted && !hasLocal) return "Empty";
-    if (persistedConformance === localConformance && persistedRemarks === localRemarks) return hasPersisted ? "Drafted" : "Empty";
+    if (
+      persistedConformance === localConformance &&
+      persistedRemarks === localRemarks
+    )
+      return hasPersisted ? "Drafted" : "Empty";
     return "Edited";
   }
 
@@ -235,7 +296,10 @@ export default function VpatEditorSkeletonPage() {
       };
       // live-validate on change
       const v = validateRow(nextRow);
-      setRowErrors((errs) => ({ ...errs, [criterionId]: v.valid ? "" : (v.message || "Invalid row") }));
+      setRowErrors((errs) => ({
+        ...errs,
+        [criterionId]: v.valid ? "" : v.message || "Invalid row",
+      }));
       return {
         ...prev,
         [criterionId]: nextRow,
@@ -262,9 +326,15 @@ export default function VpatEditorSkeletonPage() {
           {batch.isRunning && (
             <div className="text-xs text-muted-foreground">
               {batch.counts.done}/{batch.counts.total} done
-              {batch.counts.total - batch.counts.done > 0 ? ` · ${batch.counts.total - batch.counts.done} remaining` : ""}
-              {batch.counts.errors > 0 ? ` · ${batch.counts.errors} errors` : ""}
-              {batch.counts.skipped > 0 ? ` · ${batch.counts.skipped} skipped` : ""}
+              {batch.counts.total - batch.counts.done > 0
+                ? ` · ${batch.counts.total - batch.counts.done} remaining`
+                : ""}
+              {batch.counts.errors > 0
+                ? ` · ${batch.counts.errors} errors`
+                : ""}
+              {batch.counts.skipped > 0
+                ? ` · ${batch.counts.skipped} skipped`
+                : ""}
             </div>
           )}
           {batch.isRunning && (
@@ -276,12 +346,17 @@ export default function VpatEditorSkeletonPage() {
       </div>
 
       {isError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        <div
+          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          role="alert"
+        >
           {error?.message || "Failed to load VPAT"}
         </div>
       )}
 
-      {isLoading && <div className="text-sm text-muted-foreground">Loading VPAT…</div>}
+      {isLoading && (
+        <div className="text-sm text-muted-foreground">Loading VPAT…</div>
+      )}
 
       {!isLoading && vpat && (
         <div className="space-y-6">
@@ -290,7 +365,11 @@ export default function VpatEditorSkeletonPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vpat-title">Title</Label>
-                <Input id="vpat-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                <Input
+                  id="vpat-title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="vpat-description">Description</Label>
@@ -303,7 +382,8 @@ export default function VpatEditorSkeletonPage() {
             </div>
             <div className="pt-1">
               <div className="text-sm text-muted-foreground">
-                <strong>Scope</strong>: Placeholder summary (read-only). This will display WCAG scope details in later milestones.
+                <strong>Scope</strong>: Placeholder summary (read-only). This
+                will display WCAG scope details in later milestones.
               </div>
             </div>
           </div>
@@ -311,7 +391,10 @@ export default function VpatEditorSkeletonPage() {
           {/* Criteria table */}
           <div className="rounded-lg border overflow-hidden">
             {isCriteriaError && (
-              <div className="p-3 text-sm text-red-700 bg-red-50 border-b">{(criteriaError as Error)?.message || "Failed to load WCAG criteria"}</div>
+              <div className="p-3 text-sm text-red-700 bg-red-50 border-b">
+                {(criteriaError as Error)?.message ||
+                  "Failed to load WCAG criteria"}
+              </div>
             )}
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
@@ -330,21 +413,33 @@ export default function VpatEditorSkeletonPage() {
                   const conformance = local?.conformance ?? null;
                   const remarks = local?.remarks ?? "";
                   const status = cid ? getRowStatus(cid) : "Empty";
-                  const errorMsg = cid ? (rowErrors[cid] || "") : "";
-                  const canSave = !!cid && savingId !== cid && status !== "Drafted" && validateRow({ conformance, remarks }).valid;
+                  const errorMsg = cid ? rowErrors[cid] || "" : "";
+                  const canSave =
+                    !!cid &&
+                    savingId !== cid &&
+                    status !== "Drafted" &&
+                    validateRow({ conformance, remarks }).valid;
                   return (
-                    <tr key={`${c.code}-${cid || "noid"}`} className="border-t align-top">
+                    <tr
+                      key={`${c.code}-${cid || "noid"}`}
+                      className="border-t align-top"
+                    >
                       <td className="p-3">
-                        <div className="font-medium">{c.code} — {c.name}</div>
+                        <div className="font-medium">
+                          {c.code} — {c.name}
+                        </div>
                         <div className="text-xs text-muted-foreground flex items-center gap-2">
                           <span>Level {c.level}</span>
-                          <span aria-live="polite" className={
-                            status === "Edited"
-                              ? "text-amber-600"
-                              : status === "Drafted"
-                              ? "text-emerald-600"
-                              : "text-muted-foreground"
-                          }>
+                          <span
+                            aria-live="polite"
+                            className={
+                              status === "Edited"
+                                ? "text-amber-600"
+                                : status === "Drafted"
+                                  ? "text-emerald-600"
+                                  : "text-muted-foreground"
+                            }
+                          >
                             [{status}]
                           </span>
                         </div>
@@ -352,15 +447,24 @@ export default function VpatEditorSkeletonPage() {
                       <td className="p-3">
                         <Select
                           value={conformance ?? undefined}
-                          onValueChange={(val) => cid && handleChange(cid, { conformance: val as ConformanceValue })}
+                          onValueChange={(val) =>
+                            cid &&
+                            handleChange(cid, {
+                              conformance: val as ConformanceValue,
+                            })
+                          }
                           disabled={!cid}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={cid ? "Select…" : "Loading…"} />
+                            <SelectValue
+                              placeholder={cid ? "Select…" : "Loading…"}
+                            />
                           </SelectTrigger>
                           <SelectContent>
                             {CONFORMANCE_OPTIONS.map((opt) => (
-                              <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                              <SelectItem key={opt} value={opt}>
+                                {opt}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -369,15 +473,25 @@ export default function VpatEditorSkeletonPage() {
                         <div className="space-y-1">
                           <Textarea
                             placeholder="Add remarks…"
-                            className={`min-h-[3rem] ${errorMsg ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                            className={`min-h-[3rem] ${errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                             aria-invalid={!!errorMsg}
-                            aria-describedby={errorMsg ? `${cid}-remarks-error` : undefined}
+                            aria-describedby={
+                              errorMsg ? `${cid}-remarks-error` : undefined
+                            }
                             value={remarks}
-                            onChange={(e) => cid && handleChange(cid, { remarks: e.target.value })}
+                            onChange={(e) =>
+                              cid &&
+                              handleChange(cid, { remarks: e.target.value })
+                            }
                             disabled={!cid}
                           />
                           {errorMsg && (
-                            <p id={`${cid}-remarks-error`} className="text-xs text-red-600">{errorMsg}</p>
+                            <p
+                              id={`${cid}-remarks-error`}
+                              className="text-xs text-red-600"
+                            >
+                              {errorMsg}
+                            </p>
                           )}
                         </div>
                       </td>
@@ -386,62 +500,86 @@ export default function VpatEditorSkeletonPage() {
                       </td>
                       <td className="p-3">
                         <div className="flex flex-col gap-2">
-                          {cid && rowWarnings[cid] && !dismissedWarnings[cid] && (
-                            <div className="rounded border border-amber-300 bg-amber-50 text-amber-900 px-3 py-2 text-xs flex items-start justify-between gap-3" role="status" aria-live="polite">
-                              <span>{rowWarnings[cid]}</span>
-                              <button
-                                type="button"
-                                className="text-amber-900/70 hover:text-amber-900"
-                                aria-label="Dismiss warning"
-                                onClick={() => setDismissedWarnings((prev) => ({ ...prev, [cid]: true }))}
+                          {cid &&
+                            rowWarnings[cid] &&
+                            !dismissedWarnings[cid] && (
+                              <div
+                                className="rounded border border-amber-300 bg-amber-50 text-amber-900 px-3 py-2 text-xs flex items-start justify-between gap-3"
+                                role="status"
+                                aria-live="polite"
                               >
-                                ×
-                              </button>
-                            </div>
-                          )}
+                                <span>{rowWarnings[cid]}</span>
+                                <button
+                                  type="button"
+                                  className="text-amber-900/70 hover:text-amber-900"
+                                  aria-label="Dismiss warning"
+                                  onClick={() =>
+                                    setDismissedWarnings((prev) => ({
+                                      ...prev,
+                                      [cid]: true,
+                                    }))
+                                  }
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            )}
                           <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => cid && handleSave(cid)}
-                            disabled={!canSave}
-                          >
-                            {savingId === cid ? "Saving…" : "Save"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => cid && handleClear(cid)}
-                            disabled={!cid || (conformance === null && remarks === "")}
-                          >
-                            Clear
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => cid && handleGenerate(cid)}
-                            disabled={(() => {
-                              if (!cid) return true;
-                              const inBatch = batch.progress.has(cid);
-                              const p = inBatch ? batch.progress.get(cid) : undefined;
-                              if (batch.isRunning) {
-                                if (inBatch) {
-                                  return p?.status === "PENDING";
-                                }
-                                return true;
+                            <Button
+                              size="sm"
+                              onClick={() => cid && handleSave(cid)}
+                              disabled={!canSave}
+                            >
+                              {savingId === cid ? "Saving…" : "Save"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => cid && handleClear(cid)}
+                              disabled={
+                                !cid || (conformance === null && remarks === "")
                               }
-                              return generatingId === cid;
-                            })()}
-                          >
-                            {(() => {
-                              if (cid) {
+                            >
+                              Clear
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => cid && handleGenerate(cid)}
+                              disabled={(() => {
+                                if (!cid) return true;
                                 const inBatch = batch.progress.has(cid);
-                                const p = inBatch ? batch.progress.get(cid) : undefined;
-                                if (batch.isRunning && inBatch && p?.status === "PENDING") return "Generating…";
-                              }
-                              return generatingId === cid ? "Generating…" : "Generate";
-                            })()}
-                          </Button>
-                        </div>
+                                const p = inBatch
+                                  ? batch.progress.get(cid)
+                                  : undefined;
+                                if (batch.isRunning) {
+                                  if (inBatch) {
+                                    return p?.status === "PENDING";
+                                  }
+                                  return true;
+                                }
+                                return generatingId === cid;
+                              })()}
+                            >
+                              {(() => {
+                                if (cid) {
+                                  const inBatch = batch.progress.has(cid);
+                                  const p = inBatch
+                                    ? batch.progress.get(cid)
+                                    : undefined;
+                                  if (
+                                    batch.isRunning &&
+                                    inBatch &&
+                                    p?.status === "PENDING"
+                                  )
+                                    return "Generating…";
+                                }
+                                return generatingId === cid
+                                  ? "Generating…"
+                                  : "Generate";
+                              })()}
+                            </Button>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -449,8 +587,13 @@ export default function VpatEditorSkeletonPage() {
                 })}
                 {criteria.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="p-4 text-sm text-muted-foreground">
-                      {isLoadingCriteria ? "Loading WCAG criteria…" : "No criteria available."}
+                    <td
+                      colSpan={5}
+                      className="p-4 text-sm text-muted-foreground"
+                    >
+                      {isLoadingCriteria
+                        ? "Loading WCAG criteria…"
+                        : "No criteria available."}
                     </td>
                   </tr>
                 )}
