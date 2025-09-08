@@ -9,6 +9,7 @@ import type {
   UpdateVpatRequest,
   SaveVpatRowRequest,
   ValidateVpatResponse,
+  GenerateVpatRowResponse,
 } from "@/types/vpat";
 
 /**
@@ -61,6 +62,14 @@ export class VpatsApiService extends BaseApiService {
   // Validate a draft VPAT (stubbed on server initially)
   async validate(vpatId: UUID): Promise<ApiResponse<ValidateVpatResponse>> {
     return this.post<ValidateVpatResponse>(`${this.basePath}/${vpatId}:validate`);
+  }
+
+  // Generate a single row via AI with no-overwrite guard
+  async generateRow(
+    vpatId: UUID,
+    criterionId: UUID,
+  ): Promise<ApiResponse<GenerateVpatRowResponse>> {
+    return this.post<GenerateVpatRowResponse>(`${this.basePath}/${vpatId}/rows/${criterionId}:generate`);
   }
 
   // List published versions for a VPAT

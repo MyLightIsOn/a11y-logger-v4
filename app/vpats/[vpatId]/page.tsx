@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useVpatDraft, useVpatDraftRows, useSaveVpatRow } from "@/lib/query/use-vpat-queries";
+import { useVpatDraft, useVpatDraftRows, useSaveVpatRow, useGenerateVpatRow } from "@/lib/query/use-vpat-queries";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
@@ -62,7 +62,9 @@ export default function VpatEditorSkeletonPage() {
 
   // Save row mutation
   const saveRowMutation = useSaveVpatRow(vpatId as UUID);
+  const generateRowMutation = useGenerateVpatRow(vpatId as UUID);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
 
   const validateRow = (row: RowState): { valid: boolean; message?: string } => {
@@ -108,6 +110,29 @@ export default function VpatEditorSkeletonPage() {
 
   const handleClear = (criterionId: string) => {
     handleChange(criterionId, { conformance: null, remarks: "" });
+  };
+
+  const handleGenerate = async (criterionId: string) => {
+    if (!criterionId) return;
+    try {
+      setGeneratingId(criterionId);
+      const res = await generateRowMutation.mutateAsync({ criterionId: criterionId as UUID });
+      // If the API returned a row, hydrate local state immediately
+      if (res.row) {
+        const next: RowState = {
+          conformance: res.row.conformance ?? null,
+          remarks: res.row.remarks ?? "",
+        };
+        setRowState((prev) => ({ ...prev, [criterionId]: next }));
+        // Clear any validation error because generator returns a valid combination
+        setRowErrors((prev) => ({ ...prev, [criterionId]: "" }));
+      }
+      // For SKIPPED, we leave the content as-is per spec
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGeneratingId(null);
+    }
   };
 
   // Hydrate local state from persisted drafts once (or when drafts change if not yet edited)
@@ -318,7 +343,14 @@ export default function VpatEditorSkeletonPage() {
                           >
                             Clear
                           </Button>
-                          <Button size="sm" variant="secondary" disabled title="Generation will be enabled in a later milestone">Generate</Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => cid && handleGenerate(cid)}
+                            disabled={!cid || generatingId === cid}
+                          >
+                            {generatingId === cid ? "Generating…" : "Generate"}
+                          </Button>
                         </div>
                       </td>
                     </tr>
