@@ -28,7 +28,11 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { vpatId, criterionId } = await ctx.params;
+    const { vpatId: rawVpatId, criterionId: rawCriterionId } = await ctx.params;
+
+    // Normalize route params in case of suffix like ":generate"
+    const vpatId = (rawVpatId as string).split(":")[0] as UUID;
+    const criterionId = (rawCriterionId as string).split(":")[0] as UUID;
 
     // Resolve VPAT and project id (and ensure accessible via RLS)
     const { data: vpatRow, error: vpatErr } = await supabase
