@@ -3,6 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -525,60 +532,73 @@ export default function VpatEditorSkeletonPage() {
                               </div>
                             )}
                           <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => cid && handleSave(cid)}
-                              disabled={!canSave}
-                            >
-                              {savingId === cid ? "Saving…" : "Save"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => cid && handleClear(cid)}
-                              disabled={
-                                !cid || (conformance === null && remarks === "")
-                              }
-                            >
-                              Clear
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => cid && handleGenerate(cid)}
-                              disabled={(() => {
-                                if (!cid) return true;
-                                const inBatch = batch.progress.has(cid);
-                                const p = inBatch
-                                  ? batch.progress.get(cid)
-                                  : undefined;
-                                if (batch.isRunning) {
-                                  if (inBatch) {
-                                    return p?.status === "PENDING";
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  aria-label="Actions menu"
+                                  disabled={!cid}
+                                >
+                                  <Settings className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="bg-white dark:bg-card-dark"
+                              >
+                                <DropdownMenuItem
+                                  onClick={() => cid && handleSave(cid)}
+                                  disabled={!canSave}
+                                >
+                                  {savingId === cid ? "Saving…" : "Save"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => cid && handleClear(cid)}
+                                  disabled={
+                                    !cid ||
+                                    (conformance === null && remarks === "")
                                   }
-                                  return true;
-                                }
-                                return generatingId === cid;
-                              })()}
-                            >
-                              {(() => {
-                                if (cid) {
-                                  const inBatch = batch.progress.has(cid);
-                                  const p = inBatch
-                                    ? batch.progress.get(cid)
-                                    : undefined;
-                                  if (
-                                    batch.isRunning &&
-                                    inBatch &&
-                                    p?.status === "PENDING"
-                                  )
-                                    return "Generating…";
-                                }
-                                return generatingId === cid
-                                  ? "Generating…"
-                                  : "Generate";
-                              })()}
-                            </Button>
+                                >
+                                  Clear
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => cid && handleGenerate(cid)}
+                                  disabled={(() => {
+                                    if (!cid) return true;
+                                    const inBatch = batch.progress.has(cid);
+                                    const p = inBatch
+                                      ? batch.progress.get(cid)
+                                      : undefined;
+                                    if (batch.isRunning) {
+                                      if (inBatch) {
+                                        return p?.status === "PENDING";
+                                      }
+                                      return true;
+                                    }
+                                    return generatingId === cid;
+                                  })()}
+                                >
+                                  {(() => {
+                                    if (cid) {
+                                      const inBatch = batch.progress.has(cid);
+                                      const p = inBatch
+                                        ? batch.progress.get(cid)
+                                        : undefined;
+                                      if (
+                                        batch.isRunning &&
+                                        inBatch &&
+                                        p?.status === "PENDING"
+                                      )
+                                        return "Generating…";
+                                    }
+                                    return generatingId === cid
+                                      ? "Generating…"
+                                      : "Generate";
+                                  })()}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </td>
