@@ -26,7 +26,6 @@ import {
   useSaveVpatRow,
   useGenerateVpatRow,
 } from "@/lib/query/use-vpat-queries";
-import { useGenerateVpatBatch } from "@/lib/query/use-generate-vpat-batch";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
@@ -83,7 +82,6 @@ export default function VpatEditorSkeletonPage() {
   // Save row mutation
   const saveRowMutation = useSaveVpatRow(vpatId as UUID);
   const generateRowMutation = useGenerateVpatRow(vpatId as UUID);
-  const batch = useGenerateVpatBatch(vpatId as UUID);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
@@ -247,30 +245,6 @@ export default function VpatEditorSkeletonPage() {
       });
   }, [wcagCriteria]);
 
-  const emptyCriterionIds = useMemo((): UUID[] => {
-    const ids: UUID[] = [];
-    for (const c of criteria) {
-      const cid = (c.id || "") as UUID;
-      if (!cid) continue;
-      const persisted = draftByCriterionId.get(cid);
-      const persistedConformance = persisted?.conformance ?? null;
-      const persistedRemarks = (persisted?.remarks ?? "").trim();
-      const isEmpty =
-        persistedConformance === null && persistedRemarks.length === 0;
-      if (isEmpty) ids.push(cid);
-    }
-    return ids;
-  }, [criteria, draftByCriterionId]);
-
-  const nextFiveIds = useMemo((): UUID[] => {
-    const queued = new Set<string>(Array.from(batch.progress.keys()));
-    const list: UUID[] = [];
-    for (const id of emptyCriterionIds) {
-      if (!queued.has(id)) list.push(id);
-      if (list.length >= 5) break;
-    }
-    return list;
-  }, [emptyCriterionIds, batch.progress]);
 
   function getRowStatus(criterionId: string): "Empty" | "Drafted" | "Edited" {
     const persisted = draftByCriterionId.get(criterionId);
@@ -318,38 +292,6 @@ export default function VpatEditorSkeletonPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">VPAT Editor</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            onClick={async () => {
-              if (nextFiveIds.length > 0) {
-                await batch.start(nextFiveIds);
-              }
-            }}
-            disabled={batch.isRunning || nextFiveIds.length === 0}
-          >
-            {batch.isRunning ? "Generating…" : "Generate Next 5"}
-          </Button>
-          {batch.isRunning && (
-            <div className="text-xs text-muted-foreground">
-              {batch.counts.done}/{batch.counts.total} done
-              {batch.counts.total - batch.counts.done > 0
-                ? ` · ${batch.counts.total - batch.counts.done} remaining`
-                : ""}
-              {batch.counts.errors > 0
-                ? ` · ${batch.counts.errors} errors`
-                : ""}
-              {batch.counts.skipped > 0
-                ? ` · ${batch.counts.skipped} skipped`
-                : ""}
-            </div>
-          )}
-          {batch.isRunning && (
-            <Button size="sm" variant="outline" onClick={() => batch.abort()}>
-              Abort
-            </Button>
-          )}
-        </div>
       </div>
 
       {isError && (
@@ -564,38 +506,9 @@ export default function VpatEditorSkeletonPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => cid && handleGenerate(cid)}
-                                  disabled={(() => {
-                                    if (!cid) return true;
-                                    const inBatch = batch.progress.has(cid);
-                                    const p = inBatch
-                                      ? batch.progress.get(cid)
-                                      : undefined;
-                                    if (batch.isRunning) {
-                                      if (inBatch) {
-                                        return p?.status === "PENDING";
-                                      }
-                                      return true;
-                                    }
-                                    return generatingId === cid;
-                                  })()}
+                                  disabled={!cid || generatingId === cid}
                                 >
-                                  {(() => {
-                                    if (cid) {
-                                      const inBatch = batch.progress.has(cid);
-                                      const p = inBatch
-                                        ? batch.progress.get(cid)
-                                        : undefined;
-                                      if (
-                                        batch.isRunning &&
-                                        inBatch &&
-                                        p?.status === "PENDING"
-                                      )
-                                        return "Generating…";
-                                    }
-                                    return generatingId === cid
-                                      ? "Generating…"
-                                      : "Generate";
-                                  })()}
+                                  {generatingId === cid ? "Generating…" : "Generate"}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
