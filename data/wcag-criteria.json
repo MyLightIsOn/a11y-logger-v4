@@ -8,8 +8,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 111
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.1",
@@ -20,8 +19,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 121
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.2",
@@ -32,8 +30,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 122
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.3",
@@ -44,8 +41,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 123
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.4",
@@ -56,8 +52,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 124
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.5",
@@ -68,8 +63,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 125
+    "principle": "Perceivable"
   },
   {
     "code": "1.3.1",
@@ -80,8 +74,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 131
+    "principle": "Perceivable"
   },
   {
     "code": "1.3.2",
@@ -92,8 +85,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 132
+    "principle": "Perceivable"
   },
   {
     "code": "1.3.3",
@@ -104,8 +96,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 133
+    "principle": "Perceivable"
   },
   {
     "code": "1.3.4",
@@ -115,8 +106,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 134
+    "principle": "Perceivable"
   },
   {
     "code": "1.3.5",
@@ -126,8 +116,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 135
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.1",
@@ -138,8 +127,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 141
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.2",
@@ -150,8 +138,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 142
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.3",
@@ -162,8 +149,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 143
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.4",
@@ -174,8 +160,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 144
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.5",
@@ -186,8 +171,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 145
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.10",
@@ -197,8 +181,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 1410
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.11",
@@ -208,8 +191,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 1411
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.12",
@@ -219,8 +201,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 1412
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.13",
@@ -230,8 +211,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 1413
+    "principle": "Perceivable"
   },
   {
     "code": "2.1.1",
@@ -242,8 +222,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 211
+    "principle": "Operable"
   },
   {
     "code": "2.1.2",
@@ -254,8 +233,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 212
+    "principle": "Operable"
   },
   {
     "code": "2.1.4",
@@ -265,8 +243,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 214
+    "principle": "Operable"
   },
   {
     "code": "2.2.1",
@@ -277,8 +254,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 221
+    "principle": "Operable"
   },
   {
     "code": "2.2.2",
@@ -289,8 +265,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 222
+    "principle": "Operable"
   },
   {
     "code": "2.3.1",
@@ -301,8 +276,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 231
+    "principle": "Operable"
   },
   {
     "code": "2.4.1",
@@ -313,8 +287,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 241
+    "principle": "Operable"
   },
   {
     "code": "2.4.2",
@@ -325,8 +298,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 242
+    "principle": "Operable"
   },
   {
     "code": "2.4.3",
@@ -337,8 +309,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 243
+    "principle": "Operable"
   },
   {
     "code": "2.4.4",
@@ -349,8 +320,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 244
+    "principle": "Operable"
   },
   {
     "code": "2.4.5",
@@ -361,8 +331,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 245
+    "principle": "Operable"
   },
   {
     "code": "2.4.6",
@@ -373,8 +342,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 246
+    "principle": "Operable"
   },
   {
     "code": "2.4.7",
@@ -385,8 +353,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 247
+    "principle": "Operable"
   },
   {
     "code": "2.4.11",
@@ -395,8 +362,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 2411
+    "principle": "Operable"
   },
   {
     "code": "2.5.1",
@@ -406,8 +372,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 251
+    "principle": "Operable"
   },
   {
     "code": "2.5.2",
@@ -417,8 +382,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 252
+    "principle": "Operable"
   },
   {
     "code": "2.5.3",
@@ -428,8 +392,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 253
+    "principle": "Operable"
   },
   {
     "code": "2.5.4",
@@ -439,8 +402,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 254
+    "principle": "Operable"
   },
   {
     "code": "2.5.7",
@@ -449,8 +411,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 257
+    "principle": "Operable"
   },
   {
     "code": "2.5.8",
@@ -459,8 +420,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 258
+    "principle": "Operable"
   },
   {
     "code": "3.1.1",
@@ -471,8 +431,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 311
+    "principle": "Understandable"
   },
   {
     "code": "3.1.2",
@@ -483,8 +442,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 312
+    "principle": "Understandable"
   },
   {
     "code": "3.2.1",
@@ -495,8 +453,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 321
+    "principle": "Understandable"
   },
   {
     "code": "3.2.2",
@@ -507,8 +464,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 322
+    "principle": "Understandable"
   },
   {
     "code": "3.2.3",
@@ -519,8 +475,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 323
+    "principle": "Understandable"
   },
   {
     "code": "3.2.4",
@@ -531,8 +486,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 324
+    "principle": "Understandable"
   },
   {
     "code": "3.2.6",
@@ -541,8 +495,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 326
+    "principle": "Understandable"
   },
   {
     "code": "3.3.1",
@@ -553,8 +506,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 331
+    "principle": "Understandable"
   },
   {
     "code": "3.3.2",
@@ -565,8 +517,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 332
+    "principle": "Understandable"
   },
   {
     "code": "3.3.3",
@@ -577,8 +528,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 333
+    "principle": "Understandable"
   },
   {
     "code": "3.3.4",
@@ -589,8 +539,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 334
+    "principle": "Understandable"
   },
   {
     "code": "3.3.7",
@@ -599,8 +548,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 337
+    "principle": "Understandable"
   },
   {
     "code": "3.3.8",
@@ -609,8 +557,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 338
+    "principle": "Understandable"
   },
   {
     "code": "4.1.1",
@@ -620,8 +567,7 @@
       "2.0",
       "2.1"
     ],
-    "principle": "Robust",
-    "id": 411
+    "principle": "Robust"
   },
   {
     "code": "4.1.2",
@@ -632,8 +578,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Robust",
-    "id": 412
+    "principle": "Robust"
   },
   {
     "code": "4.1.3",
@@ -643,8 +588,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Robust",
-    "id": 413
+    "principle": "Robust"
   },
   {
     "code": "1.2.6",
@@ -655,8 +599,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 126
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.7",
@@ -667,8 +610,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 127
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.8",
@@ -679,8 +621,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 128
+    "principle": "Perceivable"
   },
   {
     "code": "1.2.9",
@@ -691,8 +632,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 129
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.6",
@@ -703,8 +643,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 146
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.7",
@@ -715,8 +654,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 147
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.8",
@@ -727,8 +665,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 148
+    "principle": "Perceivable"
   },
   {
     "code": "1.4.9",
@@ -739,8 +676,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable",
-    "id": 149
+    "principle": "Perceivable"
   },
   {
     "code": "2.1.3",
@@ -751,8 +687,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 213
+    "principle": "Operable"
   },
   {
     "code": "2.2.3",
@@ -763,8 +698,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 223
+    "principle": "Operable"
   },
   {
     "code": "2.2.4",
@@ -775,8 +709,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 224
+    "principle": "Operable"
   },
   {
     "code": "2.2.5",
@@ -787,8 +720,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 225
+    "principle": "Operable"
   },
   {
     "code": "2.2.6",
@@ -797,8 +729,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 226
+    "principle": "Operable"
   },
   {
     "code": "2.3.2",
@@ -809,8 +740,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 232
+    "principle": "Operable"
   },
   {
     "code": "2.3.3",
@@ -820,8 +750,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 233
+    "principle": "Operable"
   },
   {
     "code": "2.4.8",
@@ -832,8 +761,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 248
+    "principle": "Operable"
   },
   {
     "code": "2.4.9",
@@ -844,8 +772,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 249
+    "principle": "Operable"
   },
   {
     "code": "2.4.10",
@@ -856,8 +783,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 2410
+    "principle": "Operable"
   },
   {
     "code": "2.4.12",
@@ -866,8 +792,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 2412
+    "principle": "Operable"
   },
   {
     "code": "2.4.13",
@@ -876,8 +801,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 2413
+    "principle": "Operable"
   },
   {
     "code": "2.5.5",
@@ -887,8 +811,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 255
+    "principle": "Operable"
   },
   {
     "code": "2.5.6",
@@ -898,8 +821,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable",
-    "id": 256
+    "principle": "Operable"
   },
   {
     "code": "3.1.3",
@@ -910,8 +832,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 313
+    "principle": "Understandable"
   },
   {
     "code": "3.1.4",
@@ -922,8 +843,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 314
+    "principle": "Understandable"
   },
   {
     "code": "3.1.5",
@@ -934,8 +854,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 315
+    "principle": "Understandable"
   },
   {
     "code": "3.1.6",
@@ -946,8 +865,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 316
+    "principle": "Understandable"
   },
   {
     "code": "3.2.5",
@@ -958,8 +876,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 325
+    "principle": "Understandable"
   },
   {
     "code": "3.3.5",
@@ -970,8 +887,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 335
+    "principle": "Understandable"
   },
   {
     "code": "3.3.6",
@@ -982,8 +898,7 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 336
+    "principle": "Understandable"
   },
   {
     "code": "3.3.9",
@@ -992,7 +907,6 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable",
-    "id": 339
+    "principle": "Understandable"
   }
 ]

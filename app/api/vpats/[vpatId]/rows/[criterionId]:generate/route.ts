@@ -5,15 +5,16 @@ import type { VpatRowDraft } from "@/types/vpat";
 import type { IssueRead } from "@/types/issue";
 import { generateForCriterion } from "@/lib/vpat/generation";
 
-type Params = { params: { vpatId: UUID; criterionId: UUID } };
-
 interface GenerateResponse {
   status: "UPDATED" | "INSERTED" | "SKIPPED";
   row: VpatRowDraft | null;
   warning?: string;
 }
 
-export async function POST(_request: NextRequest, ctx: Params) {
+export async function POST(
+  _request: NextRequest,
+  ctx: { params: Promise<{ vpatId: UUID; criterionId: UUID }> },
+) {
   try {
     const supabase = await createClient();
 
@@ -27,8 +28,7 @@ export async function POST(_request: NextRequest, ctx: Params) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = ctx.params.vpatId as UUID;
-    const criterionId = ctx.params.criterionId as UUID;
+    const { vpatId, criterionId } = await ctx.params;
 
     // Resolve VPAT and project id (and ensure accessible via RLS)
     const { data: vpatRow, error: vpatErr } = await supabase
@@ -48,8 +48,13 @@ export async function POST(_request: NextRequest, ctx: Params) {
       .select("id, code")
       .eq("id", criterionId)
       .single();
+    console.log(wcagErr);
+    console.log(wcagRow);
     if (wcagErr || !wcagRow) {
-      return NextResponse.json({ error: "WCAG criterion not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "WCAG criterion not found" },
+        { status: 404 },
+      );
     }
     const criterionCode = (wcagRow as { code: string }).code;
 
@@ -64,7 +69,9 @@ export async function POST(_request: NextRequest, ctx: Params) {
       new Set(
         ((paRows || []) as { assessment_id: string }[])
           .map((r) => r.assessment_id)
-          .filter((id): id is string => typeof id === "string" && id.length > 0),
+          .filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          ),
       ),
     );
 
@@ -93,33 +100,40 @@ export async function POST(_request: NextRequest, ctx: Params) {
       // Flatten joins into IssueRead[] similar to other endpoints
       type IssueRowWithJoin = IssueRead & {
         issues_tags?: { tags: unknown }[];
-        issue_criteria_agg?: Array<{ criteria_codes?: string[]; criteria?: unknown[] }>;
+        issue_criteria_agg?: Array<{
+          criteria_codes?: string[];
+          criteria?: unknown[];
+        }>;
       };
 
-      const mapped: IssueRead[] = ((issueRows as unknown as IssueRowWithJoin[] | null) || []).map(
-        (row) => {
-          const { issue_criteria_agg, issues_tags: _omitTags, ...rest } = row;
-          void _omitTags;
-          const out: IssueRead = { ...(rest as IssueRead) };
-          if (issue_criteria_agg?.[0]) {
-            const agg = issue_criteria_agg[0];
-            out.criteria_codes = Array.isArray(agg.criteria_codes)
-              ? agg.criteria_codes
-              : [];
-            // criteria array is optional; we don't need to fully materialize for generation
-            // but keep as-is if present when available
-            out.criteria = Array.isArray(agg.criteria)
-              ? (agg.criteria as IssueRead["criteria"])
-              : [];
-          }
-          return out;
-        },
-      );
+      const mapped: IssueRead[] = (
+        (issueRows as unknown as IssueRowWithJoin[] | null) || []
+      ).map((row) => {
+        const { issue_criteria_agg, issues_tags: _omitTags, ...rest } = row;
+        void _omitTags;
+        const out: IssueRead = { ...(rest as IssueRead) };
+        if (issue_criteria_agg?.[0]) {
+          const agg = issue_criteria_agg[0];
+          out.criteria_codes = Array.isArray(agg.criteria_codes)
+            ? agg.criteria_codes
+            : [];
+          // criteria array is optional; we don't need to fully materialize for generation
+          // but keep as-is if present when available
+          out.criteria = Array.isArray(agg.criteria)
+            ? (agg.criteria as IssueRead["criteria"])
+            : [];
+        }
+        return out;
+      });
       issues = mapped;
     }
 
     // Call generator with injected issues for purity
-    const suggestion = generateForCriterion({ projectId, criterionCode, issues });
+    const suggestion = generateForCriterion({
+      projectId,
+      criterionCode,
+      issues,
+    });
 
     // No-overwrite guard: if an existing row has content, skip
     const { data: existingRow, error: existingErr } = await supabase
@@ -136,9 +150,19 @@ export async function POST(_request: NextRequest, ctx: Params) {
 
     if (existingRow) {
       const row = existingRow as VpatRowDraft;
-      const hasContent = Boolean((row.conformance && String(row.conformance).length > 0) || (row.remarks && row.remarks.length > 0));
+      const hasContent = Boolean(
+        (row.conformance && String(row.conformance).length > 0) ||
+          (row.remarks && row.remarks.length > 0),
+      );
       if (hasContent) {
-        return NextResponse.json({ status: "SKIPPED", row, warning: suggestion.warning } satisfies GenerateResponse, { status: 200 });
+        return NextResponse.json(
+          {
+            status: "SKIPPED",
+            row,
+            warning: suggestion.warning,
+          } satisfies GenerateResponse,
+          { status: 200 },
+        );
       }
     }
 
@@ -165,7 +189,11 @@ export async function POST(_request: NextRequest, ctx: Params) {
       .single();
 
     if (!updateErr && afterUpdate) {
-      return NextResponse.json({ status: "UPDATED", row: afterUpdate as VpatRowDraft, warning: suggestion.warning } satisfies GenerateResponse);
+      return NextResponse.json({
+        status: "UPDATED",
+        row: afterUpdate as VpatRowDraft,
+        warning: suggestion.warning,
+      } satisfies GenerateResponse);
     }
 
     // If no update occurred (either no row or guarded), attempt INSERT with ON CONFLICT DO NOTHING
@@ -177,7 +205,10 @@ export async function POST(_request: NextRequest, ctx: Params) {
 
     const { error: insertErr } = await supabase
       .from("vpat_row_draft")
-      .upsert([insertRow], { onConflict: "vpat_id,wcag_criterion_id", ignoreDuplicates: true });
+      .upsert([insertRow], {
+        onConflict: "vpat_id,wcag_criterion_id",
+        ignoreDuplicates: true,
+      });
 
     if (insertErr) throw insertErr;
 
@@ -190,10 +221,19 @@ export async function POST(_request: NextRequest, ctx: Params) {
       .single();
 
     // If there was no existingRow before, we consider this an INSERTED; otherwise UPDATED due to filling blanks.
-    const finalStatus: GenerateResponse["status"] = existingRow ? "UPDATED" : "INSERTED";
-    return NextResponse.json({ status: finalStatus, row: (finalRow as VpatRowDraft) ?? null, warning: suggestion.warning } satisfies GenerateResponse);
+    const finalStatus: GenerateResponse["status"] = existingRow
+      ? "UPDATED"
+      : "INSERTED";
+    return NextResponse.json({
+      status: finalStatus,
+      row: (finalRow as VpatRowDraft) ?? null,
+      warning: suggestion.warning,
+    } satisfies GenerateResponse);
   } catch (error) {
     console.error("Error generating VPAT row:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
