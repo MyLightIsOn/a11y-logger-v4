@@ -9,7 +9,7 @@ import type { Vpat, UpdateVpatRequest } from "@/types/vpat";
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { vpatId: UUID } },
+  ctx: { params: Promise<{ vpatId: UUID }> },
 ) {
   try {
     const supabase = await createClient();
@@ -23,7 +23,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = params.vpatId as UUID;
+    const { vpatId } = await ctx.params;
 
     const { data, error } = await supabase
       .from("vpat")
@@ -49,7 +49,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { vpatId: UUID } },
+  ctx: { params: Promise<{ vpatId: UUID }> },
 ) {
   try {
     const supabase = await createClient();
@@ -63,7 +63,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = params.vpatId as UUID;
+    const { vpatId } = await ctx.params;
 
     // First ensure the VPAT exists and is draft
     const { data: existing, error: fetchErr } = await supabase

@@ -407,10 +407,10 @@ export default function VpatEditorSkeletonPage() {
               <thead className="bg-muted/50">
                 <tr className="text-left">
                   <th className="p-3 w-[22rem]">Criterion</th>
-                  <th className="p-3 w-[14rem]">Conformance</th>
+                  <th className="p-3 w-[10rem]">Conformance</th>
                   <th className="p-3">Remarks</th>
                   <th className="p-3 w-[10rem]">Issues</th>
-                  <th className="p-3 w-[18rem]">Actions</th>
+                  <th className="p-3 w-[4rem]">Actions</th>
                 </tr>
               </thead>
               <tbody>
