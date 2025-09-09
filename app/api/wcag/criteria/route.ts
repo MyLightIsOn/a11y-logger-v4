@@ -21,7 +21,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("wcag_criteria")
-      .select("code, name, version, level")
+      .select("id, code, name, version, level")
       .order("version", { ascending: true })
       .order("code", { ascending: true });
 
