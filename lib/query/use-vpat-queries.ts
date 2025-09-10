@@ -103,6 +103,20 @@ export function useVpatVersions(vpatId: UUID | null | undefined) {
 }
 
 // useGetVersion(versionId)
+// useVpatIssuesSummary(vpatId) — counts of issues per WCAG code for the VPAT's project
+export function useVpatIssuesSummary(vpatId: UUID | null | undefined) {
+  return useQuery<{ code: string; count: number }[], Error, { code: string; count: number }[], ["vpat","issuesSummary", UUID | null | undefined]>({
+    queryKey: ["vpat", "issuesSummary", vpatId ?? null],
+    queryFn: async () => {
+      if (!vpatId) return [];
+      const res = await vpatsApi.getIssuesSummary(vpatId);
+      if (!res.success) throw new Error(res.error || "Failed to load issues summary");
+      return res.data?.data ?? [];
+    },
+    enabled: !!vpatId,
+  });
+}
+
 export function useGetVersion(versionId: UUID | null | undefined) {
   return useQuery<VpatVersion, Error, VpatVersion, ["vpatVersion", UUID | null | undefined]>({
     queryKey: ["vpatVersion", versionId ?? null],
