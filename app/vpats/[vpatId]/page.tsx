@@ -28,6 +28,10 @@ import {
 } from "@/lib/query/use-vpat-queries";
 import { useVpatIssuesSummary } from "@/lib/query/use-vpat-queries";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
+import Link from "next/link";
+import { useVpatIssuesByCriterion } from "@/lib/query/use-vpat-queries";
+import { IssueHeader, CoreFieldsDisplay, AttachmentsDisplay } from "@/components/custom/issues/IssueDetailPage";
+import { useIssueQuery } from "@/lib/query/use-issue-query";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
 import type { ConformanceValue, VpatRowDraft } from "@/types/vpat";
@@ -99,6 +103,24 @@ export default function VpatEditorSkeletonPage() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [rowWarnings, setRowWarnings] = useState<Record<string, string>>({});
+
+  // Issues Drawer state
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [drawerCriterion, setDrawerCriterion] = useState<{
+    code: string;
+    name: string;
+    level: string | number;
+  } | null>(null);
+  const [slideIndex, setSlideIndex] = useState<number>(0);
+
+  const selectedCode = drawerCriterion?.code ?? null;
+  const { data: issuesForCode } = useVpatIssuesByCriterion(vpatId, selectedCode);
+
+  const closeDrawer = () => {
+    setDrawerOpen(false);
+    setDrawerCriterion(null);
+    setSlideIndex(0);
+  }
   const [dismissedWarnings, setDismissedWarnings] = useState<
     Record<string, boolean>
   >({});
@@ -329,7 +351,7 @@ export default function VpatEditorSkeletonPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={"p-6 space-y-6 " + (drawerOpen ? "pr-[34rem]" : "")}>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">VPAT Editor</h1>
       </div>
@@ -489,6 +511,12 @@ export default function VpatEditorSkeletonPage() {
                           className={
                             "text-2xl text-center font-semibold flex items-center justify-center gap-2 w-full min-h-full underline"
                           }
+                          onClick={() => {
+                            setDrawerCriterion({ code: c.code, name: c.name, level: c.level });
+                            setDrawerOpen(true);
+                            setSlideIndex(0);
+                          }}
+                          aria-label={`Open issues for ${c.code} ${c.name}`}
                         >
                           {issuesCountByCode.get(c.code) ?? 0}
                         </button>
@@ -587,6 +615,102 @@ export default function VpatEditorSkeletonPage() {
       {!isLoading && !vpat && !isError && (
         <div className="text-sm text-muted-foreground">VPAT not found.</div>
       )}
+
+      {drawerOpen && drawerCriterion && (
+        <aside
+          className="fixed top-0 right-0 h-full w-[34rem] bg-white dark:bg-card border-l border-border shadow-xl z-30 overflow-y-auto"
+          aria-label="Issues drawer"
+        >
+          <div className="p-4 border-b border-border sticky top-0 bg-white dark:bg-card z-10">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {drawerCriterion.code} — {drawerCriterion.name} Issues
+                </h2>
+                <p className="text-xs text-muted-foreground">Level {drawerCriterion.level}</p>
+              </div>
+              <button
+                className="text-sm underline"
+                onClick={closeDrawer}
+                aria-label="Close issues drawer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm text-muted-foreground">
+                {issuesForCode?.length ?? 0} issue{(issuesForCode?.length ?? 0) === 1 ? "" : "s"}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  onClick={() => setSlideIndex((idx) => Math.max(0, idx - 1))}
+                  disabled={!issuesForCode || issuesForCode.length === 0 || slideIndex === 0}
+                  aria-label="Previous issue"
+                >
+                  Prev
+                </button>
+                <span className="text-xs">
+                  {issuesForCode && issuesForCode.length > 0
+                    ? `${slideIndex + 1} / ${issuesForCode.length}`
+                    : "0 / 0"}
+                </span>
+                <button
+                  className="px-2 py-1 border rounded disabled:opacity-50"
+                  onClick={() =>
+                    setSlideIndex((idx) =>
+                      !issuesForCode ? 0 : Math.min(issuesForCode.length - 1, idx + 1),
+                    )
+                  }
+                  disabled={!issuesForCode || issuesForCode.length === 0 || (issuesForCode ? slideIndex >= issuesForCode.length - 1 : true)}
+                  aria-label="Next issue"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+
+            {issuesForCode && issuesForCode.length > 0 ? (
+              <IssueSlide issueId={issuesForCode[slideIndex]} />
+            ) : (
+              <div className="text-sm text-muted-foreground">No issues for this criterion.</div>
+            )}
+          </div>
+        </aside>
+      )}
+    </div>
+  );
+}
+
+// Lightweight slide component reusing Issue Detail sections
+function IssueSlide({ issueId }: { issueId: string }) {
+  const { data, isLoading, error } = useIssueQuery({ id: issueId, includeCriteria: true });
+
+  if (isLoading) return <div className="text-sm text-muted-foreground">Loading issue…</div>;
+  if (error || !data) return <div className="text-sm text-red-600">Failed to load issue.</div>;
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Link href={`/issues/${data.id}`} className="underline text-base font-medium">
+          {data.title}
+        </Link>
+        <div className="mt-2">
+          <IssueHeader title={data.title} severity={data.severity} status={data.status} />
+        </div>
+      </div>
+      <CoreFieldsDisplay
+        description={data.description}
+        url={data.url}
+        impact={data.impact}
+        suggestedFix={data.suggested_fix}
+        selector={data.selector}
+        codeSnippet={data.code_snippet}
+      />
+      <AttachmentsDisplay screenshots={data.screenshots} />
     </div>
   );
 }
