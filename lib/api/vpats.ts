@@ -72,6 +72,13 @@ export class VpatsApiService extends BaseApiService {
     return this.post<GenerateVpatRowResponse>(`${this.basePath}/${vpatId}/rows/${criterionId}:generate`);
   }
 
+  // Get project-scoped issues summary for a VPAT (counts by WCAG code)
+  async getIssuesSummary(
+    vpatId: UUID,
+  ): Promise<ApiResponse<{ data: Array<{ code: string; count: number }>; total: number }>> {
+    return super.get<{ data: Array<{ code: string; count: number }>; total: number }>(`${this.basePath}/${vpatId}/issues-summary`);
+  }
+
   // List published versions for a VPAT
   async listVersions(vpatId: UUID): Promise<ApiResponse<VpatVersion[]>> {
     return super.get<VpatVersion[]>(`${this.basePath}/${vpatId}/versions`);

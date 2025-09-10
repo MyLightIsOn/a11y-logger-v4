@@ -26,6 +26,7 @@ import {
   useSaveVpatRow,
   useGenerateVpatRow,
 } from "@/lib/query/use-vpat-queries";
+import { useVpatIssuesSummary } from "@/lib/query/use-vpat-queries";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
@@ -68,12 +69,24 @@ export default function VpatEditorSkeletonPage() {
     error: criteriaError,
   } = useWcagCriteria();
 
+  // Fetch project-scoped issues summary for this VPAT
+  const { data: issuesSummary } = useVpatIssuesSummary(vpatId);
+
   // Build maps for quick access
   const draftByCriterionId = useMemo(() => {
     const map = new Map<string, VpatRowDraft>();
     for (const r of draftRows || []) map.set(r.wcag_criterion_id, r);
     return map;
   }, [draftRows]);
+
+  // Map WCAG code -> count from issues summary
+  const issuesCountByCode = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of issuesSummary || []) {
+      map.set(row.code, row.count);
+    }
+    return map;
+  }, [issuesSummary]);
 
   type RowState = { conformance: ConformanceValue | null; remarks: string };
   const [rowState, setRowState] = useState<Record<string, RowState>>({});
@@ -177,21 +190,6 @@ export default function VpatEditorSkeletonPage() {
     }
   };
 
-  // Hydrate local state from persisted drafts once (or when drafts change if not yet edited)
-  useEffect(() => {
-    if (!hydrated && draftRows) {
-      const next: Record<string, RowState> = {};
-      for (const r of draftRows) {
-        next[r.wcag_criterion_id] = {
-          conformance: r.conformance ?? null,
-          remarks: r.remarks ?? "",
-        };
-      }
-      setRowState((prev) => ({ ...next, ...prev }));
-      setHydrated(true);
-    }
-  }, [draftRows, hydrated]);
-
   const criteria = useMemo((): Array<{
     id?: string;
     code: string;
@@ -245,6 +243,48 @@ export default function VpatEditorSkeletonPage() {
       });
   }, [wcagCriteria]);
 
+  // Hydrate local state from persisted drafts once (or when drafts change if not yet edited)
+  useEffect(() => {
+    if (!hydrated && draftRows) {
+      const next: Record<string, RowState> = {};
+      for (const r of draftRows) {
+        next[r.wcag_criterion_id] = {
+          conformance: r.conformance ?? null,
+          remarks: r.remarks ?? "",
+        };
+      }
+      setRowState((prev) => ({ ...next, ...prev }));
+      setHydrated(true);
+    }
+  }, [draftRows, hydrated]);
+
+  // Prefill Remarks with "Not Applicable" when there are 0 mapped issues and the row has no content yet.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!criteria || criteria.length === 0) return;
+    // Build map from WCAG code to criterionId (wcag_criterion_id)
+    const codeToId = new Map<string, string>();
+    for (const c of criteria) {
+      if (c.id) codeToId.set(c.code, c.id);
+    }
+    const updates: Record<string, RowState> = {};
+    for (const c of criteria) {
+      const count = issuesCountByCode.get(c.code) ?? 0;
+      const cid = c.id || "";
+      if (!cid) continue;
+      const current = rowState[cid];
+      const hasContent = Boolean(
+        (current?.conformance ?? null) !== null ||
+          (current?.remarks || "").trim().length > 0,
+      );
+      if (count === 0 && !hasContent) {
+        updates[cid] = { conformance: null, remarks: "Not Applicable" };
+      }
+    }
+    if (Object.keys(updates).length > 0) {
+      setRowState((prev) => ({ ...prev, ...updates }));
+    }
+  }, [hydrated, criteria, issuesCountByCode]);
 
   function getRowStatus(criterionId: string): "Empty" | "Drafted" | "Edited" {
     const persisted = draftByCriterionId.get(criterionId);
@@ -445,7 +485,9 @@ export default function VpatEditorSkeletonPage() {
                         </div>
                       </td>
                       <td className="p-3">
-                        <div className="text-xs text-muted-foreground">—</div>
+                        <div className="text-xs text-muted-foreground">
+                          {issuesCountByCode.get(c.code) ?? 0}
+                        </div>
                       </td>
                       <td className="p-3">
                         <div className="flex flex-col gap-2">
@@ -508,7 +550,9 @@ export default function VpatEditorSkeletonPage() {
                                   onClick={() => cid && handleGenerate(cid)}
                                   disabled={!cid || generatingId === cid}
                                 >
-                                  {generatingId === cid ? "Generating…" : "Generate"}
+                                  {generatingId === cid
+                                    ? "Generating…"
+                                    : "Generate"}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
