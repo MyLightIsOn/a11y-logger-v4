@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient();
 
@@ -69,21 +69,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get("projectId") as UUID | null;
-
-    if (!projectId) {
-      return NextResponse.json(
-        { error: "projectId query param is required" },
-        { status: 400 },
-      );
-    }
-
     // Query from the current view for list cards
     const { data, error } = await supabase
       .from("v_vpat_current")
-      .select("*")
-      .eq("project_id", projectId);
+      .select("*");
 
     if (error) throw error;
 

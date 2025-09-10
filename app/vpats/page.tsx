@@ -1,13 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useVpatsList } from "@/lib/query/use-vpat-queries";
 import { formatDate } from "@/lib/utils";
-import type { UUID } from "@/types/common";
 import type { VpatCurrentView } from "@/types/vpat";
 
 function DescriptionFirstLine({ text }: { text?: string | null }) {
@@ -28,20 +26,17 @@ function StatusBadge({ status }: { status: VpatCurrentView["status"] }) {
 }
 
 export default function VpatsListPage() {
-  const params = useSearchParams();
-  const projectId = (params.get("projectId") as UUID | null) ?? null;
-
-  const { data: vpats, isLoading, isError, error } = useVpatsList(projectId);
+  const { data: vpats, isLoading, isError, error } = useVpatsList();
 
   const headerExtras = useMemo(() => {
     return (
       <div className="flex items-center gap-3">
-        <Link href={projectId ? `/vpats/new?projectId=${projectId}` : "/vpats/new"}>
+        <Link href="/vpats/new">
           <Button>Create VPAT</Button>
         </Link>
       </div>
     );
-  }, [projectId]);
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
@@ -49,12 +44,6 @@ export default function VpatsListPage() {
         <h1 className="text-2xl font-semibold">VPATs</h1>
         {headerExtras}
       </div>
-
-      {!projectId && (
-        <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-          Add ?projectId=... to the URL to view VPATs for a specific project.
-        </div>
-      )}
 
       {isError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
@@ -66,9 +55,9 @@ export default function VpatsListPage() {
         <div className="text-sm text-muted-foreground">Loading VPATs…</div>
       )}
 
-      {!isLoading && projectId && (vpats?.length ?? 0) === 0 && (
+      {!isLoading && (vpats?.length ?? 0) === 0 && (
         <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
-          No VPATs found for this project. Create your first VPAT.
+          No VPATs found. Create your first VPAT.
         </div>
       )}
 

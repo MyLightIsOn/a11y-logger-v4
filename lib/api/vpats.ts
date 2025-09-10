@@ -24,9 +24,15 @@ export class VpatsApiService extends BaseApiService {
     return this.post<Vpat>(this.basePath, payload);
   }
 
-  // List VPATs scoped to a project (via v_vpat_current)
-  async listByProject(projectId: UUID): Promise<ApiResponse<VpatListResponse>> {
-    return super.get<VpatListResponse>(this.basePath, { projectId });
+  // List all VPATs (draft and published) visible to current user/context
+  async listAll(): Promise<ApiResponse<VpatListResponse>> {
+    return super.get<VpatListResponse>(this.basePath);
+  }
+
+  // Deprecated: List VPATs scoped to a project (kept for compatibility). Ignores filter and returns all.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async listByProject(_projectId: UUID): Promise<ApiResponse<VpatListResponse>> {
+    return this.listAll();
   }
 
   // Get a single VPAT (draft metadata)

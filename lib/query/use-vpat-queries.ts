@@ -10,17 +10,15 @@ import type {
   GenerateVpatRowResponse,
 } from "@/types/vpat";
 
-// useVpatsList(projectId)
-export function useVpatsList(projectId: UUID | null | undefined) {
-  return useQuery<VpatListResponse["data"], Error, VpatListResponse["data"], ["vpats","project", UUID | null | undefined]>({
-    queryKey: ["vpats", "project", projectId ?? null],
+// useVpatsList() — list all VPATs (draft and published) for the current user/context
+export function useVpatsList() {
+  return useQuery<VpatListResponse["data"], Error, VpatListResponse["data"], ["vpats"]>({
+    queryKey: ["vpats"],
     queryFn: async () => {
-      if (!projectId) return [];
-      const res = await vpatsApi.listByProject(projectId);
+      const res = await vpatsApi.listAll();
       if (!res.success) throw new Error(res.error || "Failed to load VPATs");
       return res.data?.data ?? [];
     },
-    enabled: !!projectId,
   });
 }
 
