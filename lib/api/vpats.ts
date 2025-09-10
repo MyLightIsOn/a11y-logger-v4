@@ -93,6 +93,14 @@ export class VpatsApiService extends BaseApiService {
   async publish(vpatId: UUID): Promise<ApiResponse<{ version_id: UUID; version_number: number; published_at: string }>> {
     return this.post<{ version_id: UUID; version_number: number; published_at: string }>(`${this.basePath}/${vpatId}:publish`);
   }
+
+  // Get issue IDs for a specific WCAG code within VPAT's project
+  async getIssuesByCriterion(
+    vpatId: UUID,
+    code: string,
+  ): Promise<ApiResponse<{ data: string[]; count: number }>> {
+    return super.get<{ data: string[]; count: number }>(`${this.basePath}/${vpatId}/criteria/${encodeURIComponent(code)}/issues`);
+  }
 }
 
 // Export a singleton instance for convenience

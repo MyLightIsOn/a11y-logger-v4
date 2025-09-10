@@ -117,6 +117,23 @@ export function useVpatIssuesSummary(vpatId: UUID | null | undefined) {
   });
 }
 
+// useVpatIssuesByCriterion(vpatId, code) — list of issue IDs for slideshow
+export function useVpatIssuesByCriterion(
+  vpatId: UUID | null | undefined,
+  code: string | null,
+) {
+  return useQuery<string[], Error, string[], ["vpat","issuesByCode", UUID | null | undefined, string | null]>({
+    queryKey: ["vpat", "issuesByCode", vpatId ?? null, code ?? null],
+    queryFn: async () => {
+      if (!vpatId || !code) return [];
+      const res = await vpatsApi.getIssuesByCriterion(vpatId, code);
+      if (!res.success) throw new Error(res.error || "Failed to load issues");
+      return res.data?.data ?? [];
+    },
+    enabled: Boolean(vpatId && code && code.length > 0),
+  });
+}
+
 export function useGetVersion(versionId: UUID | null | undefined) {
   return useQuery<VpatVersion, Error, VpatVersion, ["vpatVersion", UUID | null | undefined]>({
     queryKey: ["vpatVersion", versionId ?? null],
