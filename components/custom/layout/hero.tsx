@@ -29,10 +29,18 @@ export function Hero() {
         reports. Credentials are on the login page. <br />
         <br />
         <a
-          className={"underline cursor-pointer"}
+          className={"underline cursor-pointer block mb-4"}
           href={"https://thelawrencemoore.com/a11y-logger.html"}
+          target={"_blank"}
         >
           Read Case Study
+        </a>
+        <a
+          className={"underline cursor-pointer block"}
+          href={"https://github.com/MyLightIsOn/a11y-logger-v4"}
+          target={"_blank"}
+        >
+          See Github Repo
         </a>
       </p>
       <p>⚠️ Pardon the mess, this is a work in progress.</p>
