@@ -391,8 +391,8 @@ export default function VpatEditorSkeletonPage() {
                   <th className="p-3 w-[22rem]">Criterion</th>
                   <th className="p-3 w-[10rem]">Conformance</th>
                   <th className="p-3">Remarks</th>
-                  <th className="p-3 w-[10rem]">Issues</th>
-                  <th className="p-3 w-[4rem]">Actions</th>
+                  <th className="p-3 w-[5rem] text-center">Issues</th>
+                  <th className="p-3 w-[5rem] text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -485,12 +485,16 @@ export default function VpatEditorSkeletonPage() {
                         </div>
                       </td>
                       <td className="p-3">
-                        <div className="text-xs text-muted-foreground">
+                        <button
+                          className={
+                            "text-2xl text-center font-semibold flex items-center justify-center gap-2 w-full min-h-full underline"
+                          }
+                        >
                           {issuesCountByCode.get(c.code) ?? 0}
-                        </div>
+                        </button>
                       </td>
                       <td className="p-3">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 flex items-center justify-center">
                           {cid &&
                             rowWarnings[cid] &&
                             !dismissedWarnings[cid] && (
