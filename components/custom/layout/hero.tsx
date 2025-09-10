@@ -27,24 +27,23 @@ export function Hero() {
       <p className="text-lg lg:text-xl !leading-tight mx-auto max-w-xl text-center">
         This tool uses Generative AI to speed up logging issues and creating
         reports. Credentials are on the login page. <br />
-        <br />
-        <div className={"flex gap-4 w-full justify-center"}>
-          <a
-            className={"underline cursor-pointer"}
-            href={"https://thelawrencemoore.com/a11y-logger.html"}
-            target={"_blank"}
-          >
-            Read Case Study
-          </a>
-          <a
-            className={"underline cursor-pointer"}
-            href={"https://github.com/MyLightIsOn/a11y-logger-v4"}
-            target={"_blank"}
-          >
-            See Github Repo
-          </a>
-        </div>
       </p>
+      <div className={"flex gap-4 w-full justify-center"}>
+        <a
+          className={"underline cursor-pointer"}
+          href={"https://thelawrencemoore.com/a11y-logger.html"}
+          target={"_blank"}
+        >
+          Read Case Study
+        </a>
+        <a
+          className={"underline cursor-pointer"}
+          href={"https://github.com/MyLightIsOn/a11y-logger-v4"}
+          target={"_blank"}
+        >
+          See Github Repo
+        </a>
+      </div>
       <p>⚠️ Pardon the mess, this is a work in progress.</p>
       <AuthButton />
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
