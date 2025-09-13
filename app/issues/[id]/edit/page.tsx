@@ -2,11 +2,11 @@ import React from "react";
 import EditIssueFormContainer from "@/components/custom/issues/EditIssueFormContainer";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function Page({ params }: PageProps) {
-  const { id } = params;
+export default async function Page({ params }: PageProps) {
+  const { id } = await params;
 
   return (
     <div className="container mx-auto px-4 py-6">
