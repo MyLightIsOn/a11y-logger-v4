@@ -9,10 +9,7 @@ import {
   validatePersonaSummaryJson,
   sortPersonaSummaries,
 } from "@/lib/ai/output-validation";
-import {
-  buildPersonaPromptByName,
-  PERSONAS,
-} from "@/lib/ai/persona-prompts";
+import { buildPersonaPromptByName, PERSONAS } from "@/lib/ai/persona-prompts";
 import type { Report, PersonaSummary } from "@/lib/validation/report";
 import { reportSchema } from "@/lib/validation/report";
 
@@ -121,10 +118,7 @@ export async function POST(
       personaSummaries = await Promise.all(personaPromises);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Persona generation failed";
-      return NextResponse.json(
-        { error: msg },
-        { status: 422 },
-      );
+      return NextResponse.json({ error: msg }, { status: 422 });
     }
 
     // Also call master prompt once to obtain an executive_summary matching schema
@@ -139,7 +133,10 @@ export async function POST(
     });
     if (!masterValidated.ok) {
       return NextResponse.json(
-        { error: "Invalid master summary output", details: masterValidated.error },
+        {
+          error: "Invalid master summary output",
+          details: masterValidated.error,
+        },
         { status: 422 },
       );
     }
@@ -154,7 +151,10 @@ export async function POST(
 
     return NextResponse.json(report);
   } catch (error) {
-    console.error("Unhandled error in POST /api/reports/[assessmentId]:", error);
+    console.error(
+      "Unhandled error in POST /api/reports/[assessmentId]:",
+      error,
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -211,7 +211,7 @@ export async function GET(
 
     // If the table does not exist or query failed, treat as no report (Phase 12 optional)
     if (reportsErr || !reportRows || reportRows.length === 0) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+      return NextResponse.json(null, { status: 200 });
     }
 
     const row = reportRows[0] as {
@@ -225,7 +225,13 @@ export async function GET(
     const parsed = reportSchema.safeParse(row.payload);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Stored report is invalid", details: parsed.error.issues.map(i => ({ path: i.path, message: i.message })) },
+        {
+          error: "Stored report is invalid",
+          details: parsed.error.issues.map((i) => ({
+            path: i.path,
+            message: i.message,
+          })),
+        },
         { status: 422 },
       );
     }
@@ -234,6 +240,9 @@ export async function GET(
     return NextResponse.json(parsed.data satisfies Report);
   } catch (error) {
     console.error("Unhandled error in GET /api/reports/[assessmentId]:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

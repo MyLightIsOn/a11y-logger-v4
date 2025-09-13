@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useVpatsList } from "@/lib/query/use-vpat-queries";
 import { formatDate } from "@/lib/utils";
 import type { VpatCurrentView } from "@/types/vpat";
@@ -21,7 +27,11 @@ function StatusBadge({ status }: { status: VpatCurrentView["status"] }) {
       : "bg-amber-100 text-amber-800 border-amber-200";
   const label = status === "published" ? "Published" : "Draft";
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border ${cls}`}>{label}</span>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs border ${cls}`}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -46,7 +56,10 @@ export default function VpatsListPage() {
       </div>
 
       {isError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        <div
+          className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          role="alert"
+        >
           {error?.message || "Failed to load VPATs"}
         </div>
       )}
@@ -67,39 +80,41 @@ export default function VpatsListPage() {
           data-testid="vpats-grid"
         >
           {vpats!.map((row) => (
-            <Card key={row.vpat_id} className="h-full">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Link href={`/vpats/${row.vpat_id}`} className="hover:underline">
+            <Link key={row.vpat_id} href={`/vpats/${row.vpat_id}`}>
+              <Card key={row.vpat_id} className="h-full">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
                     {row.title}
-                  </Link>
-                  <StatusBadge status={row.status} />
-                </CardTitle>
-                <CardDescription>
-                  <DescriptionFirstLine text={row.description ?? null} />
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-sm">
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Version</span>
-                    <span className="tabular-nums">
-                      {row.version_number ?? "—"}
-                    </span>
+                    <StatusBadge status={row.status} />
+                  </CardTitle>
+                  <CardDescription>
+                    <DescriptionFirstLine text={row.description ?? null} />
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Version</span>
+                      <span className="tabular-nums">
+                        {row.version_number ?? "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Published</span>
+                      <span className="tabular-nums">
+                        {row.published_at ? formatDate(row.published_at) : "—"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Updated</span>
+                      <span className="tabular-nums">
+                        {formatDate(row.updated_at)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Published</span>
-                    <span className="tabular-nums">
-                      {row.published_at ? formatDate(row.published_at) : "—"}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Updated</span>
-                    <span className="tabular-nums">{formatDate(row.updated_at)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
