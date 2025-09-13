@@ -170,12 +170,12 @@ interface IssueHeaderProps {
   severity: string;
 }
 
-export function IssueHeader({ title, severity }: IssueHeaderProps) {
+export function IssueHeader({ title, severity, status }: IssueHeaderProps) {
   return (
     <header className="flex items-start gap-3 w-full">
       <h1 className="text-2xl font-bold flex-1 pr-2">{title}</h1>
       {/* Hiding the status for now*/}
-      {/*<Badge
+      <Badge
         variant="outline"
         className="px-2 py-1 text-xs bg-gray-100 border-gray-400 text-gray-800"
       >
@@ -184,7 +184,7 @@ export function IssueHeader({ title, severity }: IssueHeaderProps) {
           : status === "closed"
             ? "Closed"
             : "Archived"}
-      </Badge>*/}
+      </Badge>
       <Badge
         variant="outline"
         className={`text-black p-1 px-2 ${severityBadgeClasses(severity)}`}
@@ -234,14 +234,14 @@ export function CoreFieldsDisplay({
 }: CoreFieldsDisplayProps) {
   return (
     <section className="space-y-4">
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className="bg-muted rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {description || "No description provided."}
         </p>
       </div>
 
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className="bg-muted rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-2">URL</h2>
         {url ? (
           <Link
@@ -256,22 +256,22 @@ export function CoreFieldsDisplay({
         )}
       </div>
 
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className="bg-muted rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-2">Impact</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {impact || "No impact specified."}
         </p>
       </div>
 
-      <div className="bg-card rounded-lg p-4 border border-border">
+      <div className="bg-muted rounded-lg p-4">
         <h2 className="text-lg font-semibold mb-2">Suggested Fix</h2>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+        <pre className="whitespace-pre-wrap text-sm leading-relaxed border border-border p-4 rounded-md bg-card">
           {suggestedFix || "No suggestion provided."}
-        </p>
+        </pre>
       </div>
 
       {(selector || codeSnippet) && (
-        <div className="bg-card rounded-lg p-4 border border-border">
+        <div className="bg-muted rounded-lg p-4">
           <h2 className="text-lg font-semibold mb-2">Technical Details</h2>
           {selector && (
             <p className="text-sm mb-2">
@@ -312,7 +312,7 @@ export function StandardsDisplay({
         : [];
 
   return (
-    <section className="bg-card rounded-lg p-4 border border-border mt-4">
+    <section className="bg-muted rounded-lg p-4 mt-4">
       <h2 className="text-lg font-semibold mb-2">Standards</h2>
       {codes.length > 0 ? (
         <div className="flex flex-wrap gap-2">
@@ -335,7 +335,7 @@ interface TagsDisplayProps {
 
 export function TagsDisplay({ tags }: TagsDisplayProps) {
   return (
-    <section className="bg-card rounded-lg p-4 border border-border mt-4">
+    <section className="bg-muted rounded-lg p-4 mt-4">
       <h2 className="text-lg font-semibold mb-2">Tags</h2>
       <div className="flex flex-wrap gap-2">
         {tags && tags.length > 0 ? (
@@ -379,7 +379,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
   };
 
   return (
-    <section className="bg-card rounded-lg p-4 border border-border mb-4">
+    <section className="bg-card rounded-lg mb-4">
       <h2 className="text-lg font-semibold mb-2">Screenshots</h2>
       {!screenshots || screenshots.length === 0 ? (
         <p className="text-sm text-gray-600">No screenshots attached.</p>
@@ -395,7 +395,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
                 tabIndex={0}
                 role="button"
                 aria-label={`Open ${alt}`}
-                className="relative group focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
+                className="relative group focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus border border-border rounded-md overflow-hidden cursor-pointer transition-shadow hover:shadow-lg"
                 onClick={() => handleOpen(url, alt, ref)}
                 onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -409,7 +409,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
                   alt={alt}
                   width={300}
                   height={160}
-                  className="h-40 w-full object-cover rounded-md"
+                  className="h-40 w-full object-contain rounded-md"
                   unoptimized
                 />
               </div>
@@ -446,7 +446,7 @@ export function MetadataDisplay({
   };
 
   return (
-    <section className="bg-card rounded-lg p-4 border border-border">
+    <section className="bg-muted rounded-lg p-4">
       <h2 className="text-lg font-semibold mb-2">Metadata</h2>
       <dl className="text-sm">
         <div className="flex justify-between py-1">
