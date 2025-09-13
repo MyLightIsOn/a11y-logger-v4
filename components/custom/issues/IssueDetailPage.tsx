@@ -93,7 +93,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden flex flex-wrap md:flex-nowrap">
+      <div className="overflow-hidden flex flex-wrap md:flex-nowrap">
         <div className="p-4 md:p-6 w-full md:w-2/3">
           <div className="flex justify-between items-start mb-4 w-full">
             <div className={"w-full"}>
@@ -234,14 +234,14 @@ export function CoreFieldsDisplay({
 }: CoreFieldsDisplayProps) {
   return (
     <section className="space-y-4">
-      <div className="bg-muted rounded-lg p-4">
+      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {description || "No description provided."}
         </p>
       </div>
 
-      <div className="bg-muted rounded-lg p-4">
+      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
         <h2 className="text-lg font-semibold mb-2">URL</h2>
         {url ? (
           <Link
@@ -256,29 +256,29 @@ export function CoreFieldsDisplay({
         )}
       </div>
 
-      <div className="bg-muted rounded-lg p-4">
+      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
         <h2 className="text-lg font-semibold mb-2">Impact</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {impact || "No impact specified."}
         </p>
       </div>
 
-      <div className="bg-muted rounded-lg p-4">
+      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
         <h2 className="text-lg font-semibold mb-2">Suggested Fix</h2>
-        <pre className="whitespace-pre-wrap text-sm leading-relaxed border border-border p-4 rounded-md bg-card">
+        <pre className="whitespace-pre-wrap text-sm leading-relaxed border border-border p-4 rounded-md bg-muted">
           {suggestedFix || "No suggestion provided."}
         </pre>
       </div>
 
       {selector && (
-        <div className="bg-muted rounded-lg p-4">
+        <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
           <h2 className="text-lg font-semibold mb-2">Selector</h2>
           <p className="text-sm mb-2">{selector}</p>
         </div>
       )}
 
       {codeSnippet && (
-        <div className="bg-muted rounded-lg p-4">
+        <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
           <h2 className="text-lg font-semibold mb-2">Code Snippet</h2>
           <pre className="text-xs p-3 rounded bg-muted overflow-auto border border-border">
             {codeSnippet}
@@ -312,7 +312,7 @@ export function StandardsDisplay({
         : [];
 
   return (
-    <section className="bg-muted rounded-lg p-4 mt-4">
+    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card mt-4">
       <h2 className="text-lg font-semibold mb-2">Standards</h2>
       {codes.length > 0 ? (
         <div className="flex flex-wrap gap-2">
@@ -335,7 +335,7 @@ interface TagsDisplayProps {
 
 export function TagsDisplay({ tags }: TagsDisplayProps) {
   return (
-    <section className="bg-muted rounded-lg p-4 mt-4">
+    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card mt-4 mb-4">
       <h2 className="text-lg font-semibold mb-2">Tags</h2>
       <div className="flex flex-wrap gap-2">
         {tags && tags.length > 0 ? (
@@ -379,7 +379,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
   };
 
   return (
-    <section className="bg-card rounded-lg mb-4">
+    <section className="bg-card border border-border rounded-lg mb-4 p-4 shadow-md dark:bg-card">
       <h2 className="text-lg font-semibold mb-2">Screenshots</h2>
       {!screenshots || screenshots.length === 0 ? (
         <p className="text-sm text-gray-600">No screenshots attached.</p>
@@ -446,7 +446,7 @@ export function MetadataDisplay({
   };
 
   return (
-    <section className="bg-muted rounded-lg p-4">
+    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
       <h2 className="text-lg font-semibold mb-2">Metadata</h2>
       <dl className="text-sm">
         <div className="flex justify-between py-1">
