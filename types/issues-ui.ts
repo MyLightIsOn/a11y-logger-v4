@@ -17,6 +17,10 @@ export type CoreFieldsProps = {
   onImpactChangeAction: (v: string) => void;
   suggestedFix: string;
   onSuggestedFixChangeAction: (v: string) => void;
+  selector: string;
+  onSelectorChangeAction: (v: string) => void;
+  codeSnippet: string;
+  onCodeSnippetChangeAction: (v: string) => void;
   errors: FieldErrors<CreateIssueInput>;
 };
 

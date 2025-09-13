@@ -26,6 +26,10 @@ export function CoreFields({
   onImpactChangeAction,
   suggestedFix,
   onSuggestedFixChangeAction,
+  selector,
+  onSelectorChangeAction,
+  codeSnippet,
+  onCodeSnippetChangeAction,
   errors,
 }: CoreFieldsProps) {
   return (
@@ -155,6 +159,61 @@ export function CoreFields({
           </p>
         )}
         <div className="mb-6" />
+      </section>
+
+      <section className="bg-card rounded-lg p-4 border border-border mb-4">
+        <h3 className="text-xl font-bold mb-2">Technical Details</h3>
+        <div className="mb-6">
+          <label htmlFor="selector" className="block text-lg font-medium">
+            Selector
+          </label>
+          <p id="selector-help" className="text-sm text-gray-500 mb-1">
+            Provide a CSS selector or DOM path for the affected element.
+          </p>
+          <Input
+            type="text"
+            id="selector"
+            value={selector}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onSelectorChangeAction(e.target.value)
+            }
+            className="mt-1 block w-full placeholder:text-gray-400"
+            placeholder={"Example: #search-button or header nav .menu > li:nth-child(3) a"}
+            aria-invalid={!!errors?.selector}
+            aria-describedby={`selector-help${errors?.selector ? " selector-error" : ""}`}
+          />
+          {errors?.selector && (
+            <p id="selector-error" className="text-sm text-red-600 mt-1" role="alert">
+              {String(errors.selector.message)}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="codeSnippet" className="block text-lg font-medium">
+            Code Snippet
+          </label>
+          <p id="codeSnippet-help" className="text-sm text-gray-500 mb-1">
+            Include a relevant HTML/JSX snippet that reproduces the issue.
+          </p>
+          <Textarea
+            id="codeSnippet"
+            value={codeSnippet}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              onCodeSnippetChangeAction(e.target.value)
+            }
+            rows={6}
+            className="mt-1 block w-full font-mono text-sm"
+            placeholder={`Example:\n<button class="btn" aria-label="">...</button>`}
+            aria-invalid={!!errors?.code_snippet}
+            aria-describedby={`codeSnippet-help${errors?.code_snippet ? " codeSnippet-error" : ""}`}
+          />
+          {errors?.code_snippet && (
+            <p id="codeSnippet-error" className="text-sm text-red-600 mt-1" role="alert">
+              {String(errors.code_snippet.message)}
+            </p>
+          )}
+        </div>
       </section>
 
       <section className="bg-card rounded-lg p-4 border border-border mb-4">
