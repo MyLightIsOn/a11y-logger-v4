@@ -48,7 +48,20 @@ export async function GET(
       .from("issues")
       .select(
         `
-        *,
+        id,
+        title,
+        description,
+        severity,
+        suggested_fix,
+        impact,
+        url,
+        selector,
+        code_snippet,
+        screenshots,
+        status,
+        created_at,
+        updated_at,
+        user_id,
         issues_tags(
           tags(*)
         )
@@ -73,7 +86,7 @@ export async function GET(
     }
 
     type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
-    const row = issueRow as IssueRowWithJoin;
+    const row = issueRow as unknown as IssueRowWithJoin;
 
     const { issues_tags, ...rest } = row;
     const baseIssue: Issue = {
@@ -341,7 +354,20 @@ export async function PATCH(
       .from("issues")
       .select(
         `
-        *,
+        id,
+        title,
+        description,
+        severity,
+        suggested_fix,
+        impact,
+        url,
+        selector,
+        code_snippet,
+        screenshots,
+        status,
+        created_at,
+        updated_at,
+        user_id,
         issues_tags(
           tags(*)
         )
@@ -360,7 +386,7 @@ export async function PATCH(
     }
 
     type IssueRowWithJoin = Issue & { issues_tags?: { tags: Tag }[] };
-    const row = issueRow as IssueRowWithJoin;
+    const row = issueRow as unknown as IssueRowWithJoin;
 
     const { issues_tags, ...rest } = row;
     const baseIssue: Issue = {

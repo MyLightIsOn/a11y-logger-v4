@@ -61,22 +61,16 @@ export function AttachmentsSection({
             <div className="grid grid-cols-2 gap-4">
               {existingImages.map((url, index) => (
                 <div key={url} className="relative group">
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="relative block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
-                    aria-label={`Open existing screenshot ${index + 1}`}
-                  >
+                  <div className="relative block rounded-md border border-border ">
                     <Image
                       src={url}
                       alt={`Existing screenshot ${index + 1}`}
                       width={300}
                       height={160}
-                      className="h-40 w-full object-cover rounded-md"
+                      className="h-40 w-full object-contain rounded-md"
                       unoptimized
                     />
-                  </a>
+                  </div>
                   {onRemoveExistingImage && (
                     <button
                       type="button"

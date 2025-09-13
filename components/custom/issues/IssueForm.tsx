@@ -263,6 +263,10 @@ export function IssueForm({
   const setImpact = (v: string) =>
     setValue("impact", v, { shouldValidate: false });
   const setUrl = (v: string) => setValue("url", v, { shouldValidate: false });
+  const setSelector = (v: string) =>
+    setValue("selector", v, { shouldValidate: false });
+  const setCodeSnippet = (v: string) =>
+    setValue("code_snippet", v, { shouldValidate: false });
   const setScreenshots = (arr: string[]) =>
     setValue("screenshots", arr, { shouldValidate: false });
   const setTagIds = (arr: string[]) =>
@@ -564,6 +568,10 @@ export function IssueForm({
             onImpactChangeAction={setImpact}
             suggestedFix={suggestedFix || ""}
             onSuggestedFixChangeAction={setSuggestedFix}
+            selector={selector || ""}
+            onSelectorChangeAction={setSelector}
+            codeSnippet={codeSnippet || ""}
+            onCodeSnippetChangeAction={setCodeSnippet}
             errors={errors}
           />
 

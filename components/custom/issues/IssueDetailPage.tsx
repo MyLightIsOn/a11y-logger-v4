@@ -270,19 +270,19 @@ export function CoreFieldsDisplay({
         </pre>
       </div>
 
-      {(selector || codeSnippet) && (
+      {selector && (
         <div className="bg-muted rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Technical Details</h2>
-          {selector && (
-            <p className="text-sm mb-2">
-              <span className="font-medium">Selector:</span> {selector}
-            </p>
-          )}
-          {codeSnippet && (
-            <pre className="text-xs p-3 rounded bg-muted overflow-auto border border-border">
-              {codeSnippet}
-            </pre>
-          )}
+          <h2 className="text-lg font-semibold mb-2">Selector</h2>
+          <p className="text-sm mb-2">{selector}</p>
+        </div>
+      )}
+
+      {codeSnippet && (
+        <div className="bg-muted rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-2">Code Snippet</h2>
+          <pre className="text-xs p-3 rounded bg-muted overflow-auto border border-border">
+            {codeSnippet}
+          </pre>
         </div>
       )}
     </section>

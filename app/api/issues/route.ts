@@ -37,7 +37,20 @@ export async function GET(request: NextRequest) {
 
     // Build query based on whether criteria is needed
     let selectClause = `
-      *,
+      id,
+      title,
+      description,
+      severity,
+      suggested_fix,
+      impact,
+      url,
+      selector,
+      code_snippet,
+      screenshots,
+      status,
+      created_at,
+      updated_at,
+      user_id,
       issues_tags!left(
         tags(*)
       )
@@ -45,7 +58,20 @@ export async function GET(request: NextRequest) {
 
     if (includeCriteria) {
       selectClause = `
-        *,
+        id,
+        title,
+        description,
+        severity,
+        suggested_fix,
+        impact,
+        url,
+        selector,
+        code_snippet,
+        screenshots,
+        status,
+        created_at,
+        updated_at,
+        user_id,
         issues_tags!left(
           tags(*)
         ),
@@ -304,7 +330,20 @@ export async function POST(request: NextRequest) {
       .from("issues")
       .select(
         `
-        *,
+        id,
+        title,
+        description,
+        severity,
+        suggested_fix,
+        impact,
+        url,
+        selector,
+        code_snippet,
+        screenshots,
+        status,
+        created_at,
+        updated_at,
+        user_id,
         issues_tags(
           tags(*)
         )
