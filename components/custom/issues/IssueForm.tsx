@@ -11,6 +11,7 @@ import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
 import { useUpdateIssueMutation } from "@/lib/query/use-update-issue-mutation";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import CoreFields from "@/components/custom/issues/CoreFields";
+import { Button } from "@/components/ui/button";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
 import FormActions from "@/components/custom/issues/FormActions";
@@ -122,6 +123,10 @@ export function IssueForm({
     useState<boolean>(false);
   const [pendingAssessmentId, setPendingAssessmentId] = useState<string>("");
 
+  // Unsaved changes navigation guard state
+  const [showUnsavedConfirm, setShowUnsavedConfirm] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
 
@@ -190,6 +195,118 @@ export function IssueForm({
 
   const createIssue = useCreateIssueMutation();
   const updateIssue = useUpdateIssueMutation();
+
+  // Uploads via hook (declared early so other logic can reference its state)
+  const {
+    filesToUpload,
+    setFilesToUpload,
+    uploading,
+    uploadError,
+    uploadedUrls,
+    upload,
+  } = useFileUploads({
+    folder: "a11y-logger/issues",
+    onUploaded: (urls) => setScreenshots(urls),
+  });
+
+  // Determine if there are unsaved changes (custom, reliable for create/edit)
+  const isDirty = React.useMemo(() => {
+    // Normalize helpers
+    const norm = (v?: string | null) => (v ?? "").trim();
+    const arrEq = (a: string[] = [], b: string[] = []) => {
+      if (a.length !== b.length) return false;
+      const as = [...a].sort();
+      const bs = [...b].sort();
+      for (let i = 0; i < as.length; i++) if (as[i] !== bs[i]) return false;
+      return true;
+    };
+
+    const anyUploads = (filesToUpload && filesToUpload.length > 0) ||
+      (uploadedUrls && uploadedUrls.length > 0);
+
+    if (mode === "create") {
+      const anyText =
+        norm(title) || norm(description) || norm(suggestedFix) || norm(impact) ||
+        norm(url) || norm(selector) || norm(codeSnippet);
+      const severityChanged = severity !== "3"; // default is 3
+      const tagsChanged = (tagIds?.length ?? 0) > 0;
+      const criteriaChanged = (criteriaCodes?.length ?? 0) > 0;
+      return Boolean(
+        anyText || severityChanged || tagsChanged || criteriaChanged || anyUploads,
+      );
+    }
+
+    // edit mode
+    const init = initialData;
+    if (!init) return false;
+
+    const titleChanged = norm(title) !== norm(init.title);
+    const descChanged = norm(description) !== norm(init.description);
+    const sevChanged = severity !== (init.severity as Severity);
+    const fixChanged = norm(suggestedFix) !== norm(init.suggested_fix);
+    const impactChanged = norm(impact) !== norm(init.impact);
+    const urlChanged = norm(url) !== norm(init.url);
+    const selectorChanged = norm(selector) !== norm(init.selector);
+    const codeChanged = norm(codeSnippet) !== norm(init.code_snippet);
+
+    const initTagIds = Array.isArray(init.tags) ? init.tags.map((t) => t.id) : [];
+    const tagsChanged = !arrEq(tagIds || [], initTagIds);
+
+    const initCriteriaCodes = Array.isArray(init.criteria)
+      ? init.criteria.map((c) => `${c.version}|${c.code}`)
+      : Array.isArray(init.criteria_codes)
+        ? init.criteria_codes
+        : [];
+    const criteriaChanged = !arrEq(criteriaCodes || [], initCriteriaCodes);
+
+    const removedChanged = (imagesToRemove?.length ?? 0) > 0;
+    const imagesChanged = removedChanged || anyUploads;
+
+    return (
+      titleChanged || descChanged || sevChanged || fixChanged || impactChanged ||
+      urlChanged || selectorChanged || codeChanged || tagsChanged || criteriaChanged || imagesChanged
+    );
+  }, [mode, title, description, suggestedFix, impact, url, selector, codeSnippet, severity, tagIds, criteriaCodes, filesToUpload, uploadedUrls, existingImages, imagesToRemove, initialData]);
+
+  const isSubmitting = (mode === "edit" ? updateIssue.isPending : createIssue.isPending) || uploading;
+
+  // Warn on unload (refresh, closing tab, typing URL) when there are unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty && !isSubmitting) {
+        e.preventDefault();
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty, isSubmitting]);
+
+  // Intercept in-app link clicks to confirm navigation when dirty
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (!isDirty || isSubmitting) return;
+      // Ignore modified clicks
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const anchor = target.closest('a[href]') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      // Only intercept same-origin, same-tab navigations
+      const href = anchor.getAttribute('href');
+      if (!href) return;
+      const url = new URL(anchor.href, window.location.href);
+      if (anchor.target && anchor.target !== "_self") return;
+      if (anchor.hasAttribute("download")) return;
+      if (url.origin !== window.location.origin) return;
+      // At this point, block and show modal
+      e.preventDefault();
+      setPendingHref(url.toString());
+      setShowUnsavedConfirm(true);
+    };
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, [isDirty, isSubmitting]);
 
   // Pre-populate when in edit mode and initialData is provided
   useEffect(() => {
@@ -442,18 +559,6 @@ export function IssueForm({
     });
   };
 
-  // Uploads via hook
-  const {
-    filesToUpload,
-    setFilesToUpload,
-    uploading,
-    uploadError,
-    uploadedUrls,
-    upload,
-  } = useFileUploads({
-    folder: "a11y-logger/issues",
-    onUploaded: (urls) => setScreenshots(urls),
-  });
   return (
     <div>
       <form
@@ -641,21 +746,62 @@ export function IssueForm({
           cancelButtonText="Cancel"
         />
       )}
-      <FormActions
-        formId={mode === "edit" ? "edit-issue-form" : "create-issue-form"}
-        submitting={
-          (mode === "edit" ? updateIssue.isPending : createIssue.isPending) ||
-          uploading
-        }
-        error={
-          (localError ??
-            uploadError ??
-            (mode === "edit"
-              ? updateIssue.error?.message
-              : createIssue.error?.message) ??
-            null) as string | null
-        }
+      {/* Unsaved changes confirmation */}
+      <ConfirmationModal
+        isOpen={showUnsavedConfirm}
+        onClose={() => {
+          setShowUnsavedConfirm(false);
+          setPendingHref(null);
+        }}
+        onConfirm={() => {
+          const target = pendingHref ?? (mode === "edit" ? `/issues/${issueId}` : "/issues");
+          try {
+            const u = new URL(target, window.location.href);
+            const path = `${u.pathname}${u.search}${u.hash}`;
+            router.push(path);
+          } catch {
+            router.push(target);
+          }
+        }}
+        title="Discard changes?"
+        message="You will lose any information you have already entered. Continue?"
+        confirmButtonText="Leave page"
+        cancelButtonText="Continue editing"
       />
+      <div className="mt-6 flex items-center gap-3">
+        <FormActions
+          formId={mode === "edit" ? "edit-issue-form" : "create-issue-form"}
+          submitting={
+            (mode === "edit" ? updateIssue.isPending : createIssue.isPending) ||
+            uploading
+          }
+          error={
+            (localError ??
+              uploadError ??
+              (mode === "edit"
+                ? updateIssue.error?.message
+                : createIssue.error?.message) ??
+              null) as string | null
+          }
+        />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={(e) => {
+            e.preventDefault();
+            const cancelTarget = mode === "edit" ? `/issues/${issueId}` : "/issues";
+            if (isSubmitting) return;
+            if (isDirty) {
+              setPendingHref(cancelTarget);
+              setShowUnsavedConfirm(true);
+            } else {
+              router.push(cancelTarget);
+            }
+          }}
+        >
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }
