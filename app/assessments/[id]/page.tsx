@@ -71,7 +71,7 @@ function GenerateReportButton({
 }
 
 export default function AssessmentDetailPage() {
-  const [hasReport, setHasReport] = useState<boolean | null>(null);
+  const [hasReport, setHasReport] = useState<boolean | null>(false);
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { assessment, stats, issues, deleteAssessment, isLoading, error } =

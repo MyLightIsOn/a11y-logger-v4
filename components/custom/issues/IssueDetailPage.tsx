@@ -300,7 +300,13 @@ export function StandardsDisplay({
 }: StandardsDisplayProps) {
   const codes: string[] =
     Array.isArray(criteria) && criteria.length > 0
-      ? Array.from(new Set(criteria.map((c) => c.code)))
+      ? Array.from(
+          new Set(
+            criteria.map((c) => {
+              return c.code + "-" + c.name;
+            }),
+          ),
+        )
       : Array.isArray(criteriaCodes) && criteriaCodes.length > 0
         ? criteriaCodes
         : [];
