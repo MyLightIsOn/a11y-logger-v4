@@ -22,9 +22,11 @@ import AiIcon from "@/components/custom/AiIcon";
 function GenerateReportButton({
   assessmentId,
   hasReport,
+  issueCount,
 }: {
   assessmentId: string;
   hasReport: boolean | null;
+  issueCount: number;
 }) {
   const router = useRouter();
   const [localError, setLocalError] = useState<string | undefined>(undefined);
@@ -44,7 +46,7 @@ function GenerateReportButton({
           setLocalError(undefined);
           generate({ mode: "master", includePatterns: false });
         }}
-        disabled={isPending}
+        disabled={isPending || issueCount === 0}
       >
         {isPending ? (
           <span className="flex items-center">
@@ -84,7 +86,6 @@ export default function AssessmentDetailPage() {
       if (!id) return;
       try {
         const res = await reportsApi.getLatest(id);
-        console.log(res);
         if (!active) return;
         setHasReport(Boolean(res?.success && res?.data));
       } catch {
@@ -285,7 +286,11 @@ export default function AssessmentDetailPage() {
         </Link>
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
-          <GenerateReportButton assessmentId={id} hasReport={hasReport} />
+          <GenerateReportButton
+            issueCount={issues.length}
+            assessmentId={id}
+            hasReport={hasReport}
+          />
           {hasReport ? (
             <Button
               className={"min-w-[140px]"}
