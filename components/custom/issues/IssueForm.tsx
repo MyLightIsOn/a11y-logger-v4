@@ -23,7 +23,7 @@ import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
-import { parseCriteriaKey, dedupeStrings } from "@/lib/issues/constants";
+import { parseCriteriaKey, dedupeStrings, statusOptions } from "@/lib/issues/constants";
 import {
   Select,
   SelectContent,
@@ -328,6 +328,7 @@ export function IssueForm({
     setValue("code_snippet", initialData.code_snippet ?? "", {
       shouldValidate: false,
     });
+    setValue("status", (initialData.status as IssueStatus) ?? "open", { shouldValidate: false });
 
     if (mode === "edit") {
       // In edit mode, store existing images separately for enhanced image management
@@ -374,7 +375,11 @@ export function IssueForm({
     }
     // Ignore anything else (keeps current severity stable)
   };
-  // Note: status is not currently user-editable in this form; no setter needed
+  const setStatusFromString = (v: string) => {
+      if (v === "open" || v === "closed" || v === "archive") {
+        setValue("status", v as IssueStatus, { shouldValidate: false });
+      }
+    };
   const setSuggestedFix = (v: string) =>
     setValue("suggested_fix", v, { shouldValidate: false });
   const setImpact = (v: string) =>
@@ -679,6 +684,40 @@ export function IssueForm({
             onCodeSnippetChangeAction={setCodeSnippet}
             errors={errors}
           />
+
+
+          {/* Status field */}
+          <section className="bg-card rounded-lg p-4 border border-border mb-4">
+            <label htmlFor="status" className="block text-xl font-bold">
+              Status
+            </label>
+            <p id="status-help" className="text-sm text-gray-500 mb-1">
+              Choose the current status of this issue.
+            </p>
+            <Select value={status || "open"} onValueChange={setStatusFromString}>
+              <SelectTrigger
+                id="status"
+                className="w-full py-6 text-lg"
+                aria-invalid={!!errors?.status}
+                aria-describedby={`status-help${errors?.status ? " status-error" : ""}`}
+              >
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors?.status && (
+              <p id="status-error" className="text-sm text-red-600 mt-1" role="alert">
+                {String(errors.status.message)}
+              </p>
+            )}
+            <div className="mb-6" />
+          </section>
 
           <WcagCriteriaSection
             isLoading={wcagLoading}
