@@ -260,8 +260,8 @@ export async function PATCH(
       );
     }
 
-    // Handle criteria updates if provided
-    if (criteria) {
+    // Handle criteria updates if provided (allow empty array to clear)
+    if (criteria !== undefined) {
       // Remove existing criteria associations
       const { error: deleteErr } = await supabase
         .from("issue_criteria")
@@ -278,36 +278,53 @@ export async function PATCH(
 
       // Add new criteria associations if any
       if (criteria.length > 0) {
-        // Get WCAG criteria IDs for the provided codes
-        const { data: wcagCriteria, error: wcagErr } = await supabase
-          .from("wcag_criteria")
-          .select("id, code")
-          .in("code", criteria);
+        // Resolve provided (version, code) pairs to wcag_criteria IDs
+        const versions = Array.from(new Set(criteria.map((c) => c.version)));
+        const codes = Array.from(new Set(criteria.map((c) => c.code)));
 
-        if (wcagErr) {
-          console.error("Error fetching WCAG criteria:", wcagErr);
-          return NextResponse.json(
-            { error: "Failed to lookup criteria" },
-            { status: 500 },
-          );
+        let wcagRows: { id: string; code: string; version: string }[] = [];
+        if (versions.length && codes.length) {
+          const { data: wcagData, error: wcagErr } = await supabase
+            .from("wcag_criteria")
+            .select("id, code, version")
+            .in("version", versions)
+            .in("code", codes);
+          if (wcagErr) {
+            console.error("Error fetching WCAG criteria:", wcagErr);
+            return NextResponse.json(
+              { error: "Failed to lookup criteria" },
+              { status: 500 },
+            );
+          }
+          wcagRows = (wcagData ?? []) as { id: string; code: string; version: string }[];
         }
 
+        // Filter to exact (version, code) pairs
+        const wanted = new Set(
+          criteria.map((c) => `${c.version}|${c.code}`),
+        );
+        const matched = wcagRows.filter((row) =>
+          wanted.has(`${row.version}|${row.code}`),
+        );
+
         // Create new associations
-        const criteriaInserts = wcagCriteria.map((criterion) => ({
+        const criteriaInserts = matched.map((criterion) => ({
           issue_id: id,
-          criteria_id: criterion.id,
+          criterion_id: criterion.id,
         }));
 
-        const { error: insertErr } = await supabase
-          .from("issue_criteria")
-          .insert(criteriaInserts);
+        if (criteriaInserts.length > 0) {
+          const { error: insertErr } = await supabase
+            .from("issue_criteria")
+            .insert(criteriaInserts);
 
-        if (insertErr) {
-          console.error("Error inserting criteria:", insertErr);
-          return NextResponse.json(
-            { error: "Failed to update criteria" },
-            { status: 500 },
-          );
+          if (insertErr) {
+            console.error("Error inserting criteria:", insertErr);
+            return NextResponse.json(
+              { error: "Failed to update criteria" },
+              { status: 500 },
+            );
+          }
         }
       }
     }
