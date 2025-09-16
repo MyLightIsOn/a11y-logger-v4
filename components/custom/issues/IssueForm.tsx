@@ -51,6 +51,7 @@ export function IssueForm({
     clearErrors,
     reset,
     control,
+    getValues,
   } = useForm<CreateIssueInput>({
     defaultValues: {
       title: "",
@@ -224,12 +225,24 @@ export function IssueForm({
     const anyUploads = (filesToUpload && filesToUpload.length > 0) ||
       (uploadedUrls && uploadedUrls.length > 0);
 
+    // Pull the latest values from the form without subscribing IssueForm to changes
+    const {
+      description: _desc,
+      suggested_fix: _fix,
+      impact: _impact,
+      url: _url,
+      selector: _selector,
+      code_snippet: _code,
+      severity: _severity,
+      tag_ids: _tagIds,
+    } = getValues();
+
     if (mode === "create") {
       const anyText =
-        norm(title) || norm(description) || norm(suggestedFix) || norm(impact) ||
-        norm(url) || norm(selector) || norm(codeSnippet);
-      const severityChanged = severity !== "3"; // default is 3
-      const tagsChanged = (tagIds?.length ?? 0) > 0;
+        norm(title) || norm(_desc) || norm(_fix) || norm(_impact) ||
+        norm(_url) || norm(_selector) || norm(_code);
+      const severityChanged = _severity !== "3"; // default is 3
+      const tagsChanged = (_tagIds?.length ?? 0) > 0;
       const criteriaChanged = (criteriaCodes?.length ?? 0) > 0;
       return Boolean(
         anyText || severityChanged || tagsChanged || criteriaChanged || anyUploads,
@@ -241,16 +254,16 @@ export function IssueForm({
     if (!init) return false;
 
     const titleChanged = norm(title) !== norm(init.title);
-    const descChanged = norm(description) !== norm(init.description);
-    const sevChanged = severity !== (init.severity as Severity);
-    const fixChanged = norm(suggestedFix) !== norm(init.suggested_fix);
-    const impactChanged = norm(impact) !== norm(init.impact);
-    const urlChanged = norm(url) !== norm(init.url);
-    const selectorChanged = norm(selector) !== norm(init.selector);
-    const codeChanged = norm(codeSnippet) !== norm(init.code_snippet);
+    const descChanged = norm(_desc) !== norm(init.description);
+    const sevChanged = _severity !== (init.severity as Severity);
+    const fixChanged = norm(_fix) !== norm(init.suggested_fix);
+    const impactChanged = norm(_impact) !== norm(init.impact);
+    const urlChanged = norm(_url) !== norm(init.url);
+    const selectorChanged = norm(_selector) !== norm(init.selector);
+    const codeChanged = norm(_code) !== norm(init.code_snippet);
 
     const initTagIds = Array.isArray(init.tags) ? init.tags.map((t) => t.id) : [];
-    const tagsChanged = !arrEq(tagIds || [], initTagIds);
+    const tagsChanged = !arrEq(_tagIds || [], initTagIds);
 
     const initCriteriaCodes = Array.isArray(init.criteria)
       ? init.criteria.map((c) => `${c.version}|${c.code}`)
@@ -266,7 +279,7 @@ export function IssueForm({
       titleChanged || descChanged || sevChanged || fixChanged || impactChanged ||
       urlChanged || selectorChanged || codeChanged || tagsChanged || criteriaChanged || imagesChanged
     );
-  }, [mode, title, description, suggestedFix, impact, url, selector, codeSnippet, severity, tagIds, criteriaCodes, filesToUpload, uploadedUrls, existingImages, imagesToRemove, initialData]);
+  }, [mode, title, criteriaCodes, filesToUpload, uploadedUrls, existingImages, imagesToRemove, initialData, getValues]);
 
   const isSubmitting = (mode === "edit" ? updateIssue.isPending : createIssue.isPending) || uploading;
 
@@ -407,25 +420,29 @@ export function IssueForm({
 
   // AI Assist via hook
   const { aiPrompt, setAiPrompt, aiBusy, generate } = useAiAssist({
-    getContext: () => ({
-      description: aiPrompt || description || "",
-      url: url || undefined,
-      selector: selector || undefined,
-      code_snippet: codeSnippet || undefined,
-      screenshots: screenshots && screenshots.length ? screenshots : undefined,
-      tags: tagIds && tagIds.length ? tagIds : undefined,
-      severity_hint: severity,
-      assessment_id: effectiveAssessmentId || undefined,
-      wcag_version: wcagVersionForAi,
-    }),
-    applySuggestions: (json) =>
-      applyAiSuggestionsNonDestructive(json, {
+    getContext: () => {
+      const v = getValues();
+      return {
+        description: aiPrompt || v.description || "",
+        url: v.url || undefined,
+        selector: v.selector || undefined,
+        code_snippet: v.code_snippet || undefined,
+        screenshots: (v.screenshots && v.screenshots.length ? v.screenshots : undefined) as string[] | undefined,
+        tags: (v.tag_ids && v.tag_ids.length ? v.tag_ids : undefined) as string[] | undefined,
+        severity_hint: v.severity,
+        assessment_id: effectiveAssessmentId || undefined,
+        wcag_version: wcagVersionForAi,
+      };
+    },
+    applySuggestions: (json) => {
+      const v = getValues();
+      return applyAiSuggestionsNonDestructive(json, {
         current: {
-          title,
-          description,
-          suggested_fix: suggestedFix,
-          impact,
-          severity: severity,
+          title: v.title,
+          description: v.description,
+          suggested_fix: v.suggested_fix,
+          impact: v.impact,
+          severity: v.severity as Severity,
           criteriaKeys: criteriaCodes,
         },
         set: {
@@ -436,7 +453,8 @@ export function IssueForm({
           setSeverity: setSeverityFromString,
           setCriteriaKeys: setCriteriaCodes,
         },
-      }),
+      });
+    },
   });
 
   const handleAiAssist = (e: React.FormEvent) => {
@@ -491,20 +509,21 @@ export function IssueForm({
       ]);
 
       // Build Update payload: only include fields we currently edit
+      const v = getValues();
       const updatePayload = {
         title: (title || "").trim() || undefined,
-        description: (description || "").trim() || undefined,
-        severity: severity || undefined,
+        description: (v.description || "").trim() || undefined,
+        severity: v.severity || undefined,
         status: status || undefined,
-        suggested_fix: (suggestedFix || "").trim() || undefined,
-        impact: (impact || "").trim() || undefined,
-        url: (url || "").trim() || undefined,
-        selector: (selector || "").trim() || undefined,
-        code_snippet: codeSnippet || undefined,
+        suggested_fix: (v.suggested_fix || "").trim() || undefined,
+        impact: (v.impact || "").trim() || undefined,
+        url: (v.url || "").trim() || undefined,
+        selector: (v.selector || "").trim() || undefined,
+        code_snippet: v.code_snippet || undefined,
         screenshots: combinedScreenshots.length
           ? combinedScreenshots
           : undefined,
-        tag_ids: (tagIds || []).length ? tagIds : undefined,
+        tag_ids: (v.tag_ids || []).length ? v.tag_ids : undefined,
         criteria: criteriaCodes.length
           ? criteriaCodes.map((key) => {
               const { version, code } = parseCriteriaKey(key);
@@ -735,7 +754,7 @@ export function IssueForm({
             error={tagsError as Error | undefined}
             options={tagOptions}
             selected={tagIds}
-            onSelectedChangeAction={(arr) => setTagIds(arr)}
+            onSelectedChangeAction={React.useCallback((arr: string[]) => setTagIds(arr), [])}
           />
         </div>
 
@@ -748,12 +767,13 @@ export function IssueForm({
             // Show newly uploaded URLs in the "Uploaded" section
             screenshots={uploadedUrls}
             // Show existing images (edit mode) with ability to remove
-            existingImages={existingImages.filter(
-              (u) => !imagesToRemove.includes(u),
+            existingImages={React.useMemo(
+              () => existingImages.filter((u) => !imagesToRemove.includes(u)),
+              [existingImages, imagesToRemove]
             )}
-            onRemoveExistingImage={(url) =>
-              setImagesToRemove((prev) => dedupeStrings([...(prev || []), url]))
-            }
+            onRemoveExistingImage={React.useCallback((url: string) => {
+              setImagesToRemove((prev) => dedupeStrings([...(prev || []), url]));
+            }, [])}
           />
         </div>
       </form>
