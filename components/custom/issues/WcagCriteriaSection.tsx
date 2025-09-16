@@ -81,4 +81,4 @@ export function WcagCriteriaSection({
   );
 }
 
-export default WcagCriteriaSection;
+export default React.memo(WcagCriteriaSection);

@@ -57,4 +57,4 @@ export function TagsSection({
   );
 }
 
-export default TagsSection;
+export default React.memo(TagsSection);

@@ -258,4 +258,4 @@ export function CoreFields({
   );
 }
 
-export default CoreFields;
+export default React.memo(CoreFields);

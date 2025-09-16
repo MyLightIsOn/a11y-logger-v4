@@ -205,4 +205,4 @@ export function AttachmentsSection({
   );
 }
 
-export default AttachmentsSection;
+export default React.memo(AttachmentsSection);
