@@ -13,6 +13,7 @@ import { Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -265,6 +266,13 @@ export default function VpatEditorSkeletonPage() {
       });
   }, [wcagCriteria]);
 
+  // UI: hide criteria with zero issues
+  const [hideZeroIssues, setHideZeroIssues] = useState<boolean>(false);
+  const filteredCriteria = useMemo(() => {
+    if (!hideZeroIssues) return criteria;
+    return criteria.filter((c) => (issuesCountByCode.get(c.code) ?? 0) > 0);
+  }, [criteria, issuesCountByCode, hideZeroIssues]);
+
   // Hydrate local state from persisted drafts once (or when drafts change if not yet edited)
   useEffect(() => {
     if (!hydrated && draftRows) {
@@ -401,6 +409,22 @@ export default function VpatEditorSkeletonPage() {
 
           {/* Criteria table */}
           <div className="rounded-lg border overflow-hidden">
+            <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="toggle-hide-zero-issues"
+                  checked={hideZeroIssues}
+                  onCheckedChange={(v) => setHideZeroIssues(Boolean(v))}
+                  aria-label="Hide criteria with zero issues"
+                />
+                <Label htmlFor="toggle-hide-zero-issues" className="text-sm">
+                  Hide criteria with 0 issues
+                </Label>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Showing {filteredCriteria.length} of {criteria.length}
+              </div>
+            </div>
             {isCriteriaError && (
               <div className="p-3 text-sm text-red-700 bg-red-50 border-b">
                 {(criteriaError as Error)?.message ||
@@ -418,7 +442,7 @@ export default function VpatEditorSkeletonPage() {
                 </tr>
               </thead>
               <tbody>
-                {criteria.map((c) => {
+                {filteredCriteria.map((c) => {
                   const cid = typeof c.id === "string" ? c.id : "";
                   const local = cid ? rowState[cid] : undefined;
                   const conformance = local?.conformance ?? null;
@@ -594,7 +618,7 @@ export default function VpatEditorSkeletonPage() {
                     </tr>
                   );
                 })}
-                {criteria.length === 0 && (
+                {filteredCriteria.length === 0 && (
                   <tr>
                     <td
                       colSpan={5}
@@ -602,7 +626,9 @@ export default function VpatEditorSkeletonPage() {
                     >
                       {isLoadingCriteria
                         ? "Loading WCAG criteria…"
-                        : "No criteria available."}
+                        : hideZeroIssues
+                          ? "No criteria with issues to display."
+                          : "No criteria available."}
                     </td>
                   </tr>
                 )}
