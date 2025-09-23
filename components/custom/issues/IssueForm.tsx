@@ -23,7 +23,11 @@ import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
-import { parseCriteriaKey, dedupeStrings, statusOptions } from "@/lib/issues/constants";
+import {
+  parseCriteriaKey,
+  dedupeStrings,
+  statusOptions,
+} from "@/lib/issues/constants";
 import {
   Select,
   SelectContent,
@@ -222,7 +226,8 @@ export function IssueForm({
       return true;
     };
 
-    const anyUploads = (filesToUpload && filesToUpload.length > 0) ||
+    const anyUploads =
+      (filesToUpload && filesToUpload.length > 0) ||
       (uploadedUrls && uploadedUrls.length > 0);
 
     // Pull the latest values from the form without subscribing IssueForm to changes
@@ -239,13 +244,22 @@ export function IssueForm({
 
     if (mode === "create") {
       const anyText =
-        norm(title) || norm(_desc) || norm(_fix) || norm(_impact) ||
-        norm(_url) || norm(_selector) || norm(_code);
+        norm(title) ||
+        norm(_desc) ||
+        norm(_fix) ||
+        norm(_impact) ||
+        norm(_url) ||
+        norm(_selector) ||
+        norm(_code);
       const severityChanged = _severity !== "3"; // default is 3
       const tagsChanged = (_tagIds?.length ?? 0) > 0;
       const criteriaChanged = (criteriaCodes?.length ?? 0) > 0;
       return Boolean(
-        anyText || severityChanged || tagsChanged || criteriaChanged || anyUploads,
+        anyText ||
+          severityChanged ||
+          tagsChanged ||
+          criteriaChanged ||
+          anyUploads,
       );
     }
 
@@ -262,7 +276,9 @@ export function IssueForm({
     const selectorChanged = norm(_selector) !== norm(init.selector);
     const codeChanged = norm(_code) !== norm(init.code_snippet);
 
-    const initTagIds = Array.isArray(init.tags) ? init.tags.map((t) => t.id) : [];
+    const initTagIds = Array.isArray(init.tags)
+      ? init.tags.map((t) => t.id)
+      : [];
     const tagsChanged = !arrEq(_tagIds || [], initTagIds);
 
     const initCriteriaCodes = Array.isArray(init.criteria)
@@ -276,19 +292,41 @@ export function IssueForm({
     const imagesChanged = removedChanged || anyUploads;
 
     return (
-      titleChanged || descChanged || sevChanged || fixChanged || impactChanged ||
-      urlChanged || selectorChanged || codeChanged || tagsChanged || criteriaChanged || imagesChanged
+      titleChanged ||
+      descChanged ||
+      sevChanged ||
+      fixChanged ||
+      impactChanged ||
+      urlChanged ||
+      selectorChanged ||
+      codeChanged ||
+      tagsChanged ||
+      criteriaChanged ||
+      imagesChanged
     );
-  }, [mode, title, criteriaCodes, filesToUpload, uploadedUrls, existingImages, imagesToRemove, initialData, getValues]);
+  }, [
+    mode,
+    title,
+    criteriaCodes,
+    filesToUpload,
+    uploadedUrls,
+    existingImages,
+    imagesToRemove,
+    initialData,
+    getValues,
+  ]);
 
-  const isSubmitting = (mode === "edit" ? updateIssue.isPending : createIssue.isPending) || uploading;
+  const isSubmitting =
+    (mode === "edit" ? updateIssue.isPending : createIssue.isPending) ||
+    uploading;
 
   // Warn on unload (refresh, closing tab, typing URL) when there are unsaved changes
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       if (isDirty && !isSubmitting) {
         e.preventDefault();
-        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        e.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
       }
     };
     window.addEventListener("beforeunload", handler);
@@ -300,13 +338,20 @@ export function IssueForm({
     const onClick = (e: MouseEvent) => {
       if (!isDirty || isSubmitting) return;
       // Ignore modified clicks
-      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (
+        e.defaultPrevented ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      )
+        return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const anchor = target.closest('a[href]') as HTMLAnchorElement | null;
+      const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
       if (!anchor) return;
       // Only intercept same-origin, same-tab navigations
-      const href = anchor.getAttribute('href');
+      const href = anchor.getAttribute("href");
       if (!href) return;
       const url = new URL(anchor.href, window.location.href);
       if (anchor.target && anchor.target !== "_self") return;
@@ -317,8 +362,8 @@ export function IssueForm({
       setPendingHref(url.toString());
       setShowUnsavedConfirm(true);
     };
-    document.addEventListener('click', onClick, true);
-    return () => document.removeEventListener('click', onClick, true);
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
   }, [isDirty, isSubmitting]);
 
   // Pre-populate when in edit mode and initialData is provided
@@ -341,7 +386,9 @@ export function IssueForm({
     setValue("code_snippet", initialData.code_snippet ?? "", {
       shouldValidate: false,
     });
-    setValue("status", (initialData.status as IssueStatus) ?? "open", { shouldValidate: false });
+    setValue("status", (initialData.status as IssueStatus) ?? "open", {
+      shouldValidate: false,
+    });
 
     if (mode === "edit") {
       // In edit mode, store existing images separately for enhanced image management
@@ -389,10 +436,10 @@ export function IssueForm({
     // Ignore anything else (keeps current severity stable)
   };
   const setStatusFromString = (v: string) => {
-      if (v === "open" || v === "closed" || v === "archive") {
-        setValue("status", v as IssueStatus, { shouldValidate: false });
-      }
-    };
+    if (v === "open" || v === "closed" || v === "archive") {
+      setValue("status", v as IssueStatus, { shouldValidate: false });
+    }
+  };
   const setSuggestedFix = (v: string) =>
     setValue("suggested_fix", v, { shouldValidate: false });
   const setImpact = (v: string) =>
@@ -427,8 +474,12 @@ export function IssueForm({
         url: v.url || undefined,
         selector: v.selector || undefined,
         code_snippet: v.code_snippet || undefined,
-        screenshots: (v.screenshots && v.screenshots.length ? v.screenshots : undefined) as string[] | undefined,
-        tags: (v.tag_ids && v.tag_ids.length ? v.tag_ids : undefined) as string[] | undefined,
+        screenshots: (v.screenshots && v.screenshots.length
+          ? v.screenshots
+          : undefined) as string[] | undefined,
+        tags: (v.tag_ids && v.tag_ids.length ? v.tag_ids : undefined) as
+          | string[]
+          | undefined,
         severity_hint: v.severity,
         assessment_id: effectiveAssessmentId || undefined,
         wcag_version: wcagVersionForAi,
@@ -591,8 +642,99 @@ export function IssueForm({
         onSubmit={rhfHandleSubmit(onSubmitRHF)}
       >
         <div className="p-6 w-full md:w-2/3">
-          {/* Assessment selection */}
+          {mode === "create" && (
+            <AIAssistPanel
+              aiPrompt={aiPrompt}
+              onAiPromptChangeAction={setAiPrompt}
+              aiBusy={aiBusy}
+              onGenerateAction={handleAiAssist}
+            />
+          )}
+
+          <CoreFields
+            title={title}
+            onTitleChangeAction={setTitle}
+            description={description || ""}
+            onDescriptionChangeAction={setDescription}
+            url={url || ""}
+            onUrlChangeAction={setUrl}
+            severity={severity}
+            onSeverityChangeAction={setSeverityFromString}
+            impact={impact || ""}
+            onImpactChangeAction={setImpact}
+            suggestedFix={suggestedFix || ""}
+            onSuggestedFixChangeAction={setSuggestedFix}
+            selector={selector || ""}
+            onSelectorChangeAction={setSelector}
+            codeSnippet={codeSnippet || ""}
+            onCodeSnippetChangeAction={setCodeSnippet}
+            errors={errors}
+          />
+
+          {/* Status field */}
           <section className="bg-card rounded-lg p-4 border border-border mb-4">
+            <label htmlFor="status" className="block text-xl font-bold">
+              Status
+            </label>
+            <p id="status-help" className="text-sm text-gray-500 mb-1">
+              Choose the current status of this issue.
+            </p>
+            <Select
+              value={status || "open"}
+              onValueChange={setStatusFromString}
+            >
+              <SelectTrigger
+                id="status"
+                className="w-full py-6 text-lg"
+                aria-invalid={!!errors?.status}
+                aria-describedby={`status-help${errors?.status ? " status-error" : ""}`}
+              >
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors?.status && (
+              <p
+                id="status-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                {String(errors.status.message)}
+              </p>
+            )}
+            <div className="mb-6" />
+          </section>
+
+          <WcagCriteriaSection
+            isLoading={wcagLoading}
+            error={wcagError as Error | undefined}
+            options={wcagOptions}
+            selected={criteriaCodes}
+            onSelectedChangeAction={setCriteriaCodes}
+            disabled={!effectiveWcagVersion}
+            version={effectiveWcagVersion ?? null}
+            errors={errors}
+          />
+
+          <TagsSection
+            isLoading={tagsLoading}
+            error={tagsError as Error | undefined}
+            options={tagOptions}
+            selected={tagIds}
+            onSelectedChangeAction={React.useCallback(
+              (arr: string[]) => setTagIds(arr),
+              [],
+            )}
+          />
+
+          {/* Assessment selection */}
+          <section className="bg-card rounded-lg p-4 border border-border">
             <label htmlFor="severity" className="block text-xl font-bold">
               Assessment <span className={"text-destructive"}>*</span>
             </label>
@@ -674,88 +816,6 @@ export function IssueForm({
               </>
             )}
           </section>
-
-          {mode === "create" && (
-            <AIAssistPanel
-              aiPrompt={aiPrompt}
-              onAiPromptChangeAction={setAiPrompt}
-              aiBusy={aiBusy}
-              onGenerateAction={handleAiAssist}
-            />
-          )}
-
-          <CoreFields
-            title={title}
-            onTitleChangeAction={setTitle}
-            description={description || ""}
-            onDescriptionChangeAction={setDescription}
-            url={url || ""}
-            onUrlChangeAction={setUrl}
-            severity={severity}
-            onSeverityChangeAction={setSeverityFromString}
-            impact={impact || ""}
-            onImpactChangeAction={setImpact}
-            suggestedFix={suggestedFix || ""}
-            onSuggestedFixChangeAction={setSuggestedFix}
-            selector={selector || ""}
-            onSelectorChangeAction={setSelector}
-            codeSnippet={codeSnippet || ""}
-            onCodeSnippetChangeAction={setCodeSnippet}
-            errors={errors}
-          />
-
-
-          {/* Status field */}
-          <section className="bg-card rounded-lg p-4 border border-border mb-4">
-            <label htmlFor="status" className="block text-xl font-bold">
-              Status
-            </label>
-            <p id="status-help" className="text-sm text-gray-500 mb-1">
-              Choose the current status of this issue.
-            </p>
-            <Select value={status || "open"} onValueChange={setStatusFromString}>
-              <SelectTrigger
-                id="status"
-                className="w-full py-6 text-lg"
-                aria-invalid={!!errors?.status}
-                aria-describedby={`status-help${errors?.status ? " status-error" : ""}`}
-              >
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors?.status && (
-              <p id="status-error" className="text-sm text-red-600 mt-1" role="alert">
-                {String(errors.status.message)}
-              </p>
-            )}
-            <div className="mb-6" />
-          </section>
-
-          <WcagCriteriaSection
-            isLoading={wcagLoading}
-            error={wcagError as Error | undefined}
-            options={wcagOptions}
-            selected={criteriaCodes}
-            onSelectedChangeAction={setCriteriaCodes}
-            disabled={!effectiveWcagVersion}
-            version={effectiveWcagVersion ?? null}
-            errors={errors}
-          />
-
-          <TagsSection
-            isLoading={tagsLoading}
-            error={tagsError as Error | undefined}
-            options={tagOptions}
-            selected={tagIds}
-            onSelectedChangeAction={React.useCallback((arr: string[]) => setTagIds(arr), [])}
-          />
         </div>
 
         <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
@@ -769,10 +829,12 @@ export function IssueForm({
             // Show existing images (edit mode) with ability to remove
             existingImages={React.useMemo(
               () => existingImages.filter((u) => !imagesToRemove.includes(u)),
-              [existingImages, imagesToRemove]
+              [existingImages, imagesToRemove],
             )}
             onRemoveExistingImage={React.useCallback((url: string) => {
-              setImagesToRemove((prev) => dedupeStrings([...(prev || []), url]));
+              setImagesToRemove((prev) =>
+                dedupeStrings([...(prev || []), url]),
+              );
             }, [])}
           />
         </div>
@@ -813,7 +875,8 @@ export function IssueForm({
           setPendingHref(null);
         }}
         onConfirm={() => {
-          const target = pendingHref ?? (mode === "edit" ? `/issues/${issueId}` : "/issues");
+          const target =
+            pendingHref ?? (mode === "edit" ? `/issues/${issueId}` : "/issues");
           try {
             const u = new URL(target, window.location.href);
             const path = `${u.pathname}${u.search}${u.hash}`;
@@ -848,7 +911,8 @@ export function IssueForm({
           variant="outline"
           onClick={(e) => {
             e.preventDefault();
-            const cancelTarget = mode === "edit" ? `/issues/${issueId}` : "/issues";
+            const cancelTarget =
+              mode === "edit" ? `/issues/${issueId}` : "/issues";
             if (isSubmitting) return;
             if (isDirty) {
               setPendingHref(cancelTarget);

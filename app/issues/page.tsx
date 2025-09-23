@@ -128,9 +128,9 @@ export default function Page() {
           return (
             <div className="flex flex-wrap gap-1">
               {items.length > 0 ? (
-                items.slice(0, 3).map((it) => (
+                items.slice(0, 3).map((it, index) => (
                   <Badge
-                    key={it.code}
+                    key={it.code + index}
                     variant="outline"
                     className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
                     title={
