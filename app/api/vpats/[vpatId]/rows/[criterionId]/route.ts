@@ -10,7 +10,7 @@ import type { SaveVpatRowRequest, VpatRowDraft } from "@/types/vpat";
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { vpatId: UUID; criterionId: UUID } },
+  ctx: { params: Promise<{ vpatId: UUID; criterionId: UUID }> },
 ) {
   try {
     const supabase = await createClient();
@@ -24,8 +24,9 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = params.vpatId as UUID;
-    const criterionId = params.criterionId as UUID;
+    const { vpatId: rawVpatId, criterionId: rawCriterionId } = await ctx.params;
+    const vpatId = (rawVpatId as string).split(":")[0] as UUID;
+    let criterionId = (rawCriterionId as string).split(":")[0] as UUID;
 
     // Ensure VPAT exists and is accessible (RLS will also enforce)
     const { data: vpatCheck, error: vpatErr } = await supabase
@@ -34,13 +35,30 @@ export async function PUT(
       .eq("id", vpatId)
       .single();
 
+    // If client passed the draft row id by mistake, translate it to wcag_criterion_id
+    if (vpatCheck) {
+      const { data: draftById, error: draftByIdErr } = await supabase
+        .from("vpat_row_draft")
+        .select("id,wcag_criterion_id")
+        .eq("id", criterionId)
+        .eq("vpat_id", vpatId)
+        .maybeSingle();
+      if (!draftByIdErr && draftById && draftById.wcag_criterion_id) {
+        criterionId = (draftById as { wcag_criterion_id: UUID })
+          .wcag_criterion_id as UUID;
+      }
+    }
+    console.log("vpatCheck Done <---------------------------------");
+
     if (vpatErr) throw vpatErr;
     if (!vpatCheck) {
       return NextResponse.json({ error: "VPAT not found" }, { status: 404 });
     }
+    console.log("Parsing <---------------------------------");
 
     // Parse body
     const body: SaveVpatRowRequest = await request.json();
+    console.log("Parsing Done <---------------------------------");
 
     // Normalize optional arrays to either array or null (undefined -> null keeps value cleared on upsert)
     const payload = {
@@ -84,4 +102,22 @@ export async function PUT(
       { status: 500 },
     );
   }
+}
+
+// Handle CORS preflight or generic OPTIONS for this route
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: "PUT, POST, OPTIONS",
+    },
+  });
+}
+
+// Support POST as an alternative to PUT for clients/environments that disallow PUT
+export async function POST(
+  request: NextRequest,
+  ctx: { params: Promise<{ vpatId: UUID; criterionId: UUID }> },
+) {
+  return PUT(request, ctx);
 }

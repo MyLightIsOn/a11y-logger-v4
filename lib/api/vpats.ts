@@ -29,12 +29,6 @@ export class VpatsApiService extends BaseApiService {
     return super.get<VpatListResponse>(this.basePath);
   }
 
-  // Deprecated: List VPATs scoped to a project (kept for compatibility). Ignores filter and returns all.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async listByProject(_projectId: UUID): Promise<ApiResponse<VpatListResponse>> {
-    return this.listAll();
-  }
-
   // Get a single VPAT (draft metadata)
   async getVpat(vpatId: UUID): Promise<ApiResponse<Vpat>> {
     return super.get<Vpat>(`${this.basePath}/${vpatId}`);
@@ -59,15 +53,19 @@ export class VpatsApiService extends BaseApiService {
     criterionId: UUID,
     payload: SaveVpatRowRequest,
   ): Promise<ApiResponse<VpatRowDraft>> {
-    return this.put<VpatRowDraft>(
-      `${this.basePath}/${vpatId}/rows/${criterionId}`,
+    const vId = encodeURIComponent(String(vpatId));
+    const cId = encodeURIComponent(String(criterionId));
+    return this.post<VpatRowDraft>(
+      `${this.basePath}/${vId}/rows/${cId}`,
       payload,
     );
   }
 
   // Validate a draft VPAT (stubbed on server initially)
   async validate(vpatId: UUID): Promise<ApiResponse<ValidateVpatResponse>> {
-    return this.post<ValidateVpatResponse>(`${this.basePath}/${vpatId}:validate`);
+    return this.post<ValidateVpatResponse>(
+      `${this.basePath}/${vpatId}:validate`,
+    );
   }
 
   // Generate a single row via AI with no-overwrite guard
@@ -75,14 +73,21 @@ export class VpatsApiService extends BaseApiService {
     vpatId: UUID,
     criterionId: UUID,
   ): Promise<ApiResponse<GenerateVpatRowResponse>> {
-    return this.post<GenerateVpatRowResponse>(`${this.basePath}/${vpatId}/rows/${criterionId}:generate`);
+    return this.post<GenerateVpatRowResponse>(
+      `${this.basePath}/${vpatId}/rows/${criterionId}:generate`,
+    );
   }
 
   // Get project-scoped issues summary for a VPAT (counts by WCAG code)
   async getIssuesSummary(
     vpatId: UUID,
-  ): Promise<ApiResponse<{ data: Array<{ code: string; count: number }>; total: number }>> {
-    return super.get<{ data: Array<{ code: string; count: number }>; total: number }>(`${this.basePath}/${vpatId}/issues-summary`);
+  ): Promise<
+    ApiResponse<{ data: Array<{ code: string; count: number }>; total: number }>
+  > {
+    return super.get<{
+      data: Array<{ code: string; count: number }>;
+      total: number;
+    }>(`${this.basePath}/${vpatId}/issues-summary`);
   }
 
   // List published versions for a VPAT
@@ -96,8 +101,23 @@ export class VpatsApiService extends BaseApiService {
   }
 
   // Publish the current draft into a new version
-  async publish(vpatId: UUID): Promise<ApiResponse<{ version_id: UUID; version_number: number; published_at: string }>> {
-    return this.post<{ version_id: UUID; version_number: number; published_at: string }>(`${this.basePath}/${vpatId}:publish`);
+  async publish(vpatId: UUID): Promise<
+    ApiResponse<{
+      version_id: UUID;
+      version_number: number;
+      published_at: string;
+    }>
+  > {
+    return this.post<{
+      version_id: UUID;
+      version_number: number;
+      published_at: string;
+    }>(`${this.basePath}/${vpatId}:publish`);
+  }
+
+  // Unpublish: revert VPAT to draft status
+  async unpublish(vpatId: UUID): Promise<ApiResponse<unknown>> {
+    return this.post<unknown>(`${this.basePath}/${vpatId}:unpublish`);
   }
 
   // Get issue IDs for a specific WCAG code within VPAT's project
@@ -105,7 +125,9 @@ export class VpatsApiService extends BaseApiService {
     vpatId: UUID,
     code: string,
   ): Promise<ApiResponse<{ data: string[]; count: number }>> {
-    return super.get<{ data: string[]; count: number }>(`${this.basePath}/${vpatId}/criteria/${encodeURIComponent(code)}/issues`);
+    return super.get<{ data: string[]; count: number }>(
+      `${this.basePath}/${vpatId}/criteria/${encodeURIComponent(code)}/issues`,
+    );
   }
 }
 

@@ -3,13 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Settings } from "lucide-react";
+// Removed per-row actions dropdown in favor of a simple Generate button
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -26,12 +20,19 @@ import {
   useVpatDraftRows,
   useSaveVpatRow,
   useGenerateVpatRow,
+  usePublishVpat,
+  useUnpublishVpat,
+  useUpdateVpat,
 } from "@/lib/query/use-vpat-queries";
 import { useVpatIssuesSummary } from "@/lib/query/use-vpat-queries";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
 import Link from "next/link";
 import { useVpatIssuesByCriterion } from "@/lib/query/use-vpat-queries";
-import { IssueHeader, CoreFieldsDisplay, AttachmentsDisplay } from "@/components/custom/issues/IssueDetailPage";
+import {
+  IssueHeader,
+  CoreFieldsDisplay,
+  AttachmentsDisplay,
+} from "@/components/custom/issues/IssueDetailPage";
 import { useIssueQuery } from "@/lib/query/use-issue-query";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import type { UUID } from "@/types/common";
@@ -100,10 +101,14 @@ export default function VpatEditorSkeletonPage() {
   // Save row mutation
   const saveRowMutation = useSaveVpatRow(vpatId as UUID);
   const generateRowMutation = useGenerateVpatRow(vpatId as UUID);
-  const [savingId, setSavingId] = useState<string | null>(null);
+  const publishMutation = usePublishVpat(vpatId);
+  const unpublishMutation = useUnpublishVpat(vpatId);
+  const updateVpatMutation = useUpdateVpat(vpatId);
   const [generatingId, setGeneratingId] = useState<string | null>(null);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [rowWarnings, setRowWarnings] = useState<Record<string, string>>({});
+  const [savingAll, setSavingAll] = useState<boolean>(false);
+  const [publishing, setPublishing] = useState<boolean>(false);
 
   // Issues Drawer state
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -115,13 +120,16 @@ export default function VpatEditorSkeletonPage() {
   const [slideIndex, setSlideIndex] = useState<number>(0);
 
   const selectedCode = drawerCriterion?.code ?? null;
-  const { data: issuesForCode } = useVpatIssuesByCriterion(vpatId, selectedCode);
+  const { data: issuesForCode } = useVpatIssuesByCriterion(
+    vpatId,
+    selectedCode,
+  );
 
   const closeDrawer = () => {
     setDrawerOpen(false);
     setDrawerCriterion(null);
     setSlideIndex(0);
-  }
+  };
   const [dismissedWarnings, setDismissedWarnings] = useState<
     Record<string, boolean>
   >({});
@@ -144,40 +152,6 @@ export default function VpatEditorSkeletonPage() {
       };
     }
     return { valid: true };
-  };
-
-  const handleSave = async (criterionId: string) => {
-    if (!criterionId) return;
-    const local = rowState[criterionId] ?? { conformance: null, remarks: "" };
-    // Validate before save
-    const v = validateRow(local);
-    if (!v.valid) {
-      setRowErrors((prev) => ({
-        ...prev,
-        [criterionId]: v.message || "Invalid row",
-      }));
-      return;
-    }
-    try {
-      setSavingId(criterionId);
-      await saveRowMutation.mutateAsync({
-        criterionId: criterionId as UUID,
-        payload: {
-          conformance: local.conformance,
-          remarks: local.remarks,
-        },
-      });
-      setRowErrors((prev) => ({ ...prev, [criterionId]: "" }));
-    } catch (e) {
-      // surface error minimally now; richer toasts can be added later
-      console.error(e);
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  const handleClear = (criterionId: string) => {
-    handleChange(criterionId, { conformance: null, remarks: "" });
   };
 
   const handleGenerate = async (criterionId: string) => {
@@ -358,10 +332,111 @@ export default function VpatEditorSkeletonPage() {
     });
   };
 
+  const isMetaDirty = vpat
+    ? title !== vpat.title || (description ?? "") !== (vpat.description ?? "")
+    : false;
+  const dirtyRowIds = useMemo(() => {
+    return (criteria || [])
+      .map((c) => c.id)
+      .filter((id): id is string => Boolean(id))
+      .filter((id) => getRowStatus(id) === "Edited");
+  }, [criteria, rowState, draftRows]);
+  const canSaveAll =
+    dirtyRowIds.length > 0 || (isMetaDirty && vpat?.status === "draft");
+
+  const handleSaveAll = async () => {
+    try {
+      setSavingAll(true);
+      // Save edited rows
+      const tasks: Promise<unknown>[] = [];
+      for (const id of dirtyRowIds) {
+        const local = rowState[id] ?? { conformance: null, remarks: "" };
+        const v = validateRow(local);
+        if (!v.valid) {
+          setRowErrors((prev) => ({
+            ...prev,
+            [id]: v.message || "Invalid row",
+          }));
+          continue;
+        }
+        tasks.push(
+          saveRowMutation.mutateAsync({
+            criterionId: id as UUID,
+            payload: { conformance: local.conformance, remarks: local.remarks },
+          }),
+        );
+      }
+      // Update metadata if allowed and dirty
+      if (vpat && vpat.status === "draft" && isMetaDirty) {
+        tasks.push(updateVpatMutation.mutateAsync({ title, description }));
+      }
+      if (tasks.length > 0) {
+        await Promise.allSettled(tasks);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSavingAll(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    try {
+      setPublishing(true);
+      await publishMutation.mutateAsync();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const handleUnpublish = async () => {
+    try {
+      setPublishing(true);
+      await unpublishMutation.mutateAsync();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   return (
     <div className={"p-6 space-y-6 " + (drawerOpen ? "pr-[34rem]" : "")}>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">VPAT Editor</h1>
+        {vpat && (
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              onClick={handleSaveAll}
+              disabled={!canSaveAll || savingAll}
+              aria-label="Save all changes"
+            >
+              {savingAll ? "Saving…" : "Save"}
+            </Button>
+            {vpat.status === "published" ? (
+              <Button
+                variant="outline"
+                onClick={handleUnpublish}
+                disabled={publishing}
+                aria-label="Unpublish VPAT"
+              >
+                {publishing ? "Working…" : "Unpublish"}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                onClick={handlePublish}
+                disabled={publishing}
+                aria-label="Publish VPAT"
+              >
+                {publishing ? "Publishing…" : "Publish"}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {isError && (
@@ -449,11 +524,6 @@ export default function VpatEditorSkeletonPage() {
                   const remarks = local?.remarks ?? "";
                   const status = cid ? getRowStatus(cid) : "Empty";
                   const errorMsg = cid ? rowErrors[cid] || "" : "";
-                  const canSave =
-                    !!cid &&
-                    savingId !== cid &&
-                    status !== "Drafted" &&
-                    validateRow({ conformance, remarks }).valid;
                   return (
                     <tr
                       key={`${c.code}-${cid || "noid"}`}
@@ -536,7 +606,11 @@ export default function VpatEditorSkeletonPage() {
                             "text-2xl text-center font-semibold flex items-center justify-center gap-2 w-full min-h-full underline"
                           }
                           onClick={() => {
-                            setDrawerCriterion({ code: c.code, name: c.name, level: c.level });
+                            setDrawerCriterion({
+                              code: c.code,
+                              name: c.name,
+                              level: c.level,
+                            });
                             setDrawerOpen(true);
                             setSlideIndex(0);
                           }}
@@ -572,46 +646,20 @@ export default function VpatEditorSkeletonPage() {
                               </div>
                             )}
                           <div className="flex items-center gap-2">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  aria-label="Actions menu"
-                                  disabled={!cid}
-                                >
-                                  <Settings className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className="bg-white dark:bg-card-dark"
-                              >
-                                <DropdownMenuItem
-                                  onClick={() => cid && handleSave(cid)}
-                                  disabled={!canSave}
-                                >
-                                  {savingId === cid ? "Saving…" : "Save"}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => cid && handleClear(cid)}
-                                  disabled={
-                                    !cid ||
-                                    (conformance === null && remarks === "")
-                                  }
-                                >
-                                  Clear
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => cid && handleGenerate(cid)}
-                                  disabled={!cid || generatingId === cid}
-                                >
-                                  {generatingId === cid
-                                    ? "Generating…"
-                                    : "Generate"}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button
+                              variant="outline"
+                              onClick={() => cid && handleGenerate(cid)}
+                              disabled={!cid || generatingId === cid}
+                              aria-label={
+                                cid
+                                  ? `Generate remarks for ${c.code}`
+                                  : "Generate"
+                              }
+                            >
+                              {generatingId === cid
+                                ? "Generating…"
+                                : "Generate"}
+                            </Button>
                           </div>
                         </div>
                       </td>
@@ -653,7 +701,9 @@ export default function VpatEditorSkeletonPage() {
                 <h2 className="text-lg font-semibold">
                   {drawerCriterion.code} — {drawerCriterion.name} Issues
                 </h2>
-                <p className="text-xs text-muted-foreground">Level {drawerCriterion.level}</p>
+                <p className="text-xs text-muted-foreground">
+                  Level {drawerCriterion.level}
+                </p>
               </div>
               <button
                 className="text-sm underline"
@@ -668,13 +718,18 @@ export default function VpatEditorSkeletonPage() {
           <div className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm text-muted-foreground">
-                {issuesForCode?.length ?? 0} issue{(issuesForCode?.length ?? 0) === 1 ? "" : "s"}
+                {issuesForCode?.length ?? 0} issue
+                {(issuesForCode?.length ?? 0) === 1 ? "" : "s"}
               </div>
               <div className="flex items-center gap-2">
                 <button
                   className="px-2 py-1 border rounded disabled:opacity-50"
                   onClick={() => setSlideIndex((idx) => Math.max(0, idx - 1))}
-                  disabled={!issuesForCode || issuesForCode.length === 0 || slideIndex === 0}
+                  disabled={
+                    !issuesForCode ||
+                    issuesForCode.length === 0 ||
+                    slideIndex === 0
+                  }
                   aria-label="Previous issue"
                 >
                   Prev
@@ -688,10 +743,18 @@ export default function VpatEditorSkeletonPage() {
                   className="px-2 py-1 border rounded disabled:opacity-50"
                   onClick={() =>
                     setSlideIndex((idx) =>
-                      !issuesForCode ? 0 : Math.min(issuesForCode.length - 1, idx + 1),
+                      !issuesForCode
+                        ? 0
+                        : Math.min(issuesForCode.length - 1, idx + 1),
                     )
                   }
-                  disabled={!issuesForCode || issuesForCode.length === 0 || (issuesForCode ? slideIndex >= issuesForCode.length - 1 : true)}
+                  disabled={
+                    !issuesForCode ||
+                    issuesForCode.length === 0 ||
+                    (issuesForCode
+                      ? slideIndex >= issuesForCode.length - 1
+                      : true)
+                  }
                   aria-label="Next issue"
                 >
                   Next
@@ -702,7 +765,9 @@ export default function VpatEditorSkeletonPage() {
             {issuesForCode && issuesForCode.length > 0 ? (
               <IssueSlide issueId={issuesForCode[slideIndex]} />
             ) : (
-              <div className="text-sm text-muted-foreground">No issues for this criterion.</div>
+              <div className="text-sm text-muted-foreground">
+                No issues for this criterion.
+              </div>
             )}
           </div>
         </aside>
@@ -713,19 +778,31 @@ export default function VpatEditorSkeletonPage() {
 
 // Lightweight slide component reusing Issue Detail sections
 function IssueSlide({ issueId }: { issueId: string }) {
-  const { data, isLoading, error } = useIssueQuery({ id: issueId, includeCriteria: true });
+  const { data, isLoading, error } = useIssueQuery({
+    id: issueId,
+    includeCriteria: true,
+  });
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading issue…</div>;
-  if (error || !data) return <div className="text-sm text-red-600">Failed to load issue.</div>;
+  if (isLoading)
+    return <div className="text-sm text-muted-foreground">Loading issue…</div>;
+  if (error || !data)
+    return <div className="text-sm text-red-600">Failed to load issue.</div>;
 
   return (
     <div className="space-y-4">
       <div>
-        <Link href={`/issues/${data.id}`} className="underline text-base font-medium">
+        <Link
+          href={`/issues/${data.id}`}
+          className="underline text-base font-medium"
+        >
           {data.title}
         </Link>
         <div className="mt-2">
-          <IssueHeader title={data.title} severity={data.severity} status={data.status} />
+          <IssueHeader
+            title={data.title}
+            severity={data.severity}
+            status={data.status}
+          />
         </div>
       </div>
       <CoreFieldsDisplay
