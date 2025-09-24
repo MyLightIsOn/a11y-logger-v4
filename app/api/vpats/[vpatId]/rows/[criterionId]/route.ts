@@ -48,17 +48,14 @@ export async function PUT(
           .wcag_criterion_id as UUID;
       }
     }
-    console.log("vpatCheck Done <---------------------------------");
 
     if (vpatErr) throw vpatErr;
     if (!vpatCheck) {
       return NextResponse.json({ error: "VPAT not found" }, { status: 404 });
     }
-    console.log("Parsing <---------------------------------");
 
     // Parse body
     const body: SaveVpatRowRequest = await request.json();
-    console.log("Parsing Done <---------------------------------");
 
     // Normalize optional arrays to either array or null (undefined -> null keeps value cleared on upsert)
     const payload = {
