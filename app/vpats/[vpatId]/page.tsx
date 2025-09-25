@@ -109,6 +109,7 @@ export default function VpatEditorSkeletonPage() {
   const [rowWarnings, setRowWarnings] = useState<Record<string, string>>({});
   const [savingAll, setSavingAll] = useState<boolean>(false);
   const [publishing, setPublishing] = useState<boolean>(false);
+  const [exportingPdf, setExportingPdf] = useState<boolean>(false);
 
   // Issues Drawer state
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -402,6 +403,32 @@ export default function VpatEditorSkeletonPage() {
     }
   };
 
+  const handleExportPdf = async () => {
+    if (!vpat?.id) return;
+    try {
+      setExportingPdf(true);
+      const res = await fetch(`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+      const html = await res.text();
+      const win = window.open("", "_blank");
+      if (!win) {
+        console.error("Popup blocked. Please allow popups to export PDF.");
+        return;
+      }
+      // Write the HTML into the new window and trigger print when styles load
+      win.document.open();
+      const printScript = `\n<script>\n  (function(){\n    function doPrint(){\n      try { window.focus(); window.print(); } catch(e){}\n    }\n    if (document.readyState === 'complete') {\n      setTimeout(doPrint, 150);\n    } else {\n      window.addEventListener('load', function(){ setTimeout(doPrint, 150); }, { once: true });\n    }\n  })();\n<\/script>`;
+      win.document.write(html.replace(/<\/body>/i, `${printScript}</body>`));
+      win.document.close();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   return (
     <div className={"p-6 space-y-6 " + (drawerOpen ? "pr-[34rem]" : "")}>
       <div className="flex items-center justify-between">
@@ -409,15 +436,25 @@ export default function VpatEditorSkeletonPage() {
         {vpat && (
           <div className="flex items-center gap-2">
             {vpat.id && (
-              <Button variant="outline" asChild aria-label="Export HTML VPAT report">
-                <a
-                  href={`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <>
+                <Button variant="outline" asChild aria-label="Export HTML VPAT report">
+                  <a
+                    href={`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Export HTML
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf}
+                  aria-label="Export PDF VPAT report"
                 >
-                  Export HTML
-                </a>
-              </Button>
+                  {exportingPdf ? "Exporting…" : "Export PDF"}
+                </Button>
+              </>
             )}
             <Button
               variant="default"
