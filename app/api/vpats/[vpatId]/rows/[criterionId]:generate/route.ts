@@ -52,8 +52,6 @@ export async function POST(
       .select("id, code")
       .eq("id", criterionId)
       .single();
-    console.log(wcagErr);
-    console.log(wcagRow);
     if (wcagErr || !wcagRow) {
       return NextResponse.json(
         { error: "WCAG criterion not found" },

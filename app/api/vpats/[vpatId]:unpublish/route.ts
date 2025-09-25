@@ -49,3 +49,12 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: "POST, OPTIONS",
+    },
+  });
+}
