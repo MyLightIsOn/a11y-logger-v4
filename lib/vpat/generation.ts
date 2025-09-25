@@ -63,20 +63,22 @@ export function generateForCriterion(
 
   const ref = getWcagByCode();
   const criterion = ref.get(code);
-  const criterionLabel = criterion ? `${criterion.code} ${criterion.name}` : code;
+  const criterionLabel = criterion
+    ? `${criterion.code} ${criterion.name}`
+    : code;
 
   // Filter relevant issues:
   // - status must be open
   // - mapped to this criterion via criteria or criteria_codes
   const relevant = (input.issues || []).filter((iss) => {
     if (!iss || iss.status !== "open") return false;
-    const codesA = Array.isArray(iss.criteria_codes)
-      ? iss.criteria_codes
-      : [];
+    const codesA = Array.isArray(iss.criteria_codes) ? iss.criteria_codes : [];
     const codesB = Array.isArray(iss.criteria)
       ? iss.criteria.map((c) => c.code)
       : [];
-    const codes = new Set<string>([...codesA, ...codesB].map((s) => (s || "").trim()));
+    const codes = new Set<string>(
+      [...codesA, ...codesB].map((s) => (s || "").trim()),
+    );
     return codes.has(code);
   });
 
@@ -112,12 +114,14 @@ export function generateForCriterion(
     sentences.push(
       `Based on the current set of open issues, we did not identify functional barriers specific to ${criterionLabel}.`,
     );
-    sentences.push(
+    /*sentences.push(
       "This assessment is derived from mapped issues at the time of generation.",
-    );
+    );*/
   } else if (conformance === "Partially Supports") {
     const count = relevant.length;
-    const examples = titles.length ? ` Examples include: ${titles.join("; ")}.` : "";
+    const examples = titles.length
+      ? ` Examples include: ${titles.join("; ")}.`
+      : "";
     sentences.push(
       `${count} open issue${count === 1 ? "" : "s"} indicate minor limitations related to ${criterionLabel}.`,
     );
@@ -134,7 +138,9 @@ export function generateForCriterion(
     );
   } else {
     // Fallback for completeness; real logic above doesn't set Not Applicable here.
-    sentences.push(`This criterion is not applicable to the product functionality.`);
+    sentences.push(
+      `This criterion is not applicable to the product functionality.`,
+    );
   }
 
   // Trim and cap sentences to 2–5

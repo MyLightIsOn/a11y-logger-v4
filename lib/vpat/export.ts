@@ -126,3 +126,123 @@ function escapeMdMultiline(s: string): string {
 }
 
 export type { CriteriaDetail };
+
+
+export function toHtml(input: ToMarkdownInput): string {
+  const title = (input.title || "VPAT").trim();
+  const versionText = input.version_number != null ? `v${input.version_number}` : "vX";
+  const publishedText = input.published_at ? new Date(input.published_at).toISOString() : "YYYY-MM-DD";
+
+  const rows = Array.isArray(input.criteria_rows) ? input.criteria_rows.slice() : [];
+  rows.sort((a, b) => compareWcagCodes(a.code, b.code));
+
+  const byLevel: Record<"A" | "AA" | "AAA", CriteriaRow[]> = { A: [], AA: [], AAA: [] };
+  for (const r of rows) {
+    if (r && (r.level === "A" || r.level === "AA" || r.level === "AAA")) {
+      byLevel[r.level].push(r);
+    }
+  }
+
+  const scopeLine = renderScope(input.wcag_scope);
+
+  const escapeHtml = (s: string) => String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+  const renderIssues = (issues?: { title?: string; url?: string }[] | null) => {
+    if (!issues || issues.length === 0) return "";
+    return issues
+      .map((it) => {
+        const t = (it.title || "").trim();
+        const u = (it.url || "").trim();
+        if (t && u) return `<a href="${escapeHtml(u)}">${escapeHtml(t)}</a>`;
+        if (t) return escapeHtml(t);
+        if (u) return `<a href="${escapeHtml(u)}">${escapeHtml(u)}</a>`;
+        return "";
+      })
+      .filter(Boolean)
+      .join("<br/>");
+  };
+
+  const renderLevel = (level: "A" | "AA" | "AAA", rows: CriteriaRow[]) => {
+    const trs = rows.length
+      ? rows
+          .map((r) => {
+            const crit = `${r.code} ${r.name}`.trim();
+            const remarks = (r.remarks || "").trim().replace(/\n+/g, "<br/>");
+            const issuesHtml = renderIssues(r.issues);
+            return `<tr>
+  <td class="crit">${escapeHtml(crit)}</td>
+  <td class="conf">${escapeHtml(r.conformance)}</td>
+  <td class="remarks">${remarks}</td>
+  <td class="issues">${issuesHtml}</td>
+</tr>`;
+          })
+          .join("\n")
+      : `<tr><td colspan="4" class="empty">(no criteria)</td></tr>`;
+
+    return `
+<section>
+  <h2>WCAG Level ${level}</h2>
+  <table role="table" aria-label="WCAG Level ${level} criteria">
+    <thead>
+      <tr>
+        <th>Criterion</th>
+        <th>Conformance</th>
+        <th>Remarks/Explanation</th>
+        <th>Issues</th>
+      </tr>
+    </thead>
+    <tbody>
+${trs}
+    </tbody>
+  </table>
+</section>`;
+  };
+
+  const style = `
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; line-height: 1.5; }
+    header h1 { margin: 0; font-size: 1.8rem; }
+    header .meta { color: #666; margin-top: 0.25rem; }
+    section { margin-top: 1.75rem; }
+    h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; vertical-align: top; }
+    th { background: #f8f8f8; text-align: left; }
+    td.crit { width: 30%; }
+    td.conf { width: 15%; white-space: nowrap; }
+    td.remarks { width: 35%; }
+    td.issues { width: 20%; }
+    .empty { text-align: center; color: #777; font-style: italic; }
+    @media (prefers-color-scheme: dark) {
+      th { background: #222; }
+      th, td { border-color: #444; }
+      header .meta { color: #aaa; }
+    }
+  `;
+
+  const doc = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(title)} (${versionText})</title>
+  <style>${style}</style>
+</head>
+<body>
+  <header>
+    <h1>${escapeHtml(title)} <small style="font-weight:normal; color:#666;">(${versionText})</small></h1>
+    <div class="meta">Published: ${escapeHtml(publishedText)}${scopeLine ? ` · Scope: ${escapeHtml(scopeLine)}` : ""}</div>
+  </header>
+  ${renderLevel("A", byLevel.A)}
+  ${renderLevel("AA", byLevel.AA)}
+  ${renderLevel("AAA", byLevel.AAA)}
+</body>
+</html>`;
+
+  return doc;
+}

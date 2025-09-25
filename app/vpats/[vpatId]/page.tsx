@@ -408,6 +408,17 @@ export default function VpatEditorSkeletonPage() {
         <h1 className="text-2xl font-semibold">VPAT Editor</h1>
         {vpat && (
           <div className="flex items-center gap-2">
+            {vpat.id && (
+              <Button variant="outline" asChild aria-label="Export HTML VPAT report">
+                <a
+                  href={`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Export HTML
+                </a>
+              </Button>
+            )}
             <Button
               variant="default"
               onClick={handleSaveAll}
