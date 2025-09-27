@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { OpenAiServiceOptions } from "@/types/ai";
+import { serverEnv } from "@/lib/env";
 
 // Lightweight, reusable JSON-oriented model invocation wrapper (Phase 2 - Step 9)
 // - Configurable temperature, max tokens, model
@@ -94,7 +95,6 @@ export class ModelJsonClient {
   private readonly baseUrl: string;
 
   constructor(opts: OpenAiServiceOptions = {}) {
-    const { serverEnv } = require("@/lib/env");
     const key: string | undefined = serverEnv.OPEN_AI_KEY;
     if (!key) {
       throw new Error(

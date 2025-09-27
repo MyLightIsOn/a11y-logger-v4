@@ -8,6 +8,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 
+import { clientEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -548,7 +549,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
           uniqueOptions.push(option);
         }
       });
-      if (require("@/lib/env").clientEnv.NODE_ENV === "development" && duplicates.length > 0) {
+      if (clientEnv.NODE_ENV === "development" && duplicates.length > 0) {
         const action = deduplicateOptions
           ? "automatically removed"
           : "detected";
@@ -569,7 +570,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
     const getOptionByValue = React.useCallback(
       (value: string): MultiSelectOption | undefined => {
         const option = getAllOptions().find((option) => option.value === value);
-        if (!option && require("@/lib/env").clientEnv.NODE_ENV === "development") {
+        if (!option && clientEnv.NODE_ENV === "development") {
           console.warn(
             `MultiSelect: Option with value "${value}" not found in options list`,
           );

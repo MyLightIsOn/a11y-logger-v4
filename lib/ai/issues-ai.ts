@@ -8,6 +8,7 @@ import type {
   OpenAiServiceOptions,
   SeveritySuggestion,
 } from "@/types/ai";
+import { serverEnv } from "@/lib/env";
 
 // Zod schema for the AI JSON result
 const criterionRefSchema = z.object({
@@ -108,7 +109,6 @@ export class IssuesAiService {
   private readonly baseUrl: string;
 
   constructor(opts: OpenAiServiceOptions = {}) {
-    const { serverEnv } = require("@/lib/env");
     const key: string | undefined = serverEnv.OPEN_AI_KEY;
     if (!key) {
       throw new Error(

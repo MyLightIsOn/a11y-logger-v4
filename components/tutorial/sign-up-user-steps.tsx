@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { TutorialStep } from "./tutorial-step";
 import { ArrowUpRight } from "lucide-react";
+import { clientEnv } from "@/lib/env";
 
 export function SignUpUserSteps() {
   return (
     <ol className="flex flex-col gap-6">
-      {(require("@/lib/env").clientEnv.VERCEL_ENV === "preview" ||
-      require("@/lib/env").clientEnv.VERCEL_ENV === "production") ? (
+      {(clientEnv.VERCEL_ENV === "preview" || clientEnv.VERCEL_ENV === "production") ? (
         <TutorialStep title="Set up redirect urls">
           <p>It looks like this App is hosted on Vercel.</p>
           <p className="mt-4">
             This particular deployment is
             <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-              &quot;{require("@/lib/env").clientEnv.VERCEL_ENV}&quot;
+              &quot;{clientEnv.VERCEL_ENV}&quot;
             </span>{" "}
             on
             <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-              https://{require("@/lib/env").clientEnv.VERCEL_URL}
+              https://{clientEnv.VERCEL_URL}
             </span>
             .
           </p>
@@ -42,13 +42,13 @@ export function SignUpUserSteps() {
             <li>
               -{" "}
               <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-                {`https://${require("@/lib/env").clientEnv.VERCEL_PROJECT_PRODUCTION_URL}/**`}
+                {`https://${clientEnv.VERCEL_PROJECT_PRODUCTION_URL}/**`}
               </span>
             </li>
             <li>
               -{" "}
               <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-                {`https://${(require("@/lib/env").clientEnv.VERCEL_PROJECT_PRODUCTION_URL || "").replace(
+                {`https://${(clientEnv.VERCEL_PROJECT_PRODUCTION_URL || "").replace(
                   ".vercel.app",
                   "",
                 )}-*-[vercel-team-url].vercel.app/**`}
