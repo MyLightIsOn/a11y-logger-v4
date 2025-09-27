@@ -32,14 +32,23 @@ export type ToMarkdownInput = {
  */
 export function toMarkdown(input: ToMarkdownInput): string {
   const title = (input.title || "VPAT").trim();
-  const versionText = input.version_number != null ? `v${input.version_number}` : "vX";
-  const publishedText = input.published_at ? new Date(input.published_at).toISOString() : "YYYY-MM-DD";
+  const versionText =
+    input.version_number != null ? `v${input.version_number}` : "vX";
+  const publishedText = input.published_at
+    ? new Date(input.published_at).toISOString()
+    : "YYYY-MM-DD";
 
   // Prepare rows per level
-  const rows = Array.isArray(input.criteria_rows) ? input.criteria_rows.slice() : [];
+  const rows = Array.isArray(input.criteria_rows)
+    ? input.criteria_rows.slice()
+    : [];
   rows.sort((a, b) => compareWcagCodes(a.code, b.code));
 
-  const byLevel: Record<"A" | "AA" | "AAA", CriteriaRow[]> = { A: [], AA: [], AAA: [] };
+  const byLevel: Record<"A" | "AA" | "AAA", CriteriaRow[]> = {
+    A: [],
+    AA: [],
+    AAA: [],
+  };
   for (const r of rows) {
     if (r && (r.level === "A" || r.level === "AA" || r.level === "AAA")) {
       byLevel[r.level].push(r);
@@ -63,12 +72,19 @@ export function toMarkdown(input: ToMarkdownInput): string {
   parts.push("");
 
   // Ensure trailing newline for deterministic output
-  return parts.filter((p, i, arr) => !(p === "" && (i === 0 || arr[i - 1] === ""))).join("\n") + "\n";
+  return (
+    parts
+      .filter((p, i, arr) => !(p === "" && (i === 0 || arr[i - 1] === "")))
+      .join("\n") + "\n"
+  );
 }
 
 function renderScope(scope: WcagScope | undefined): string {
   if (!scope) return "";
-  const versions = Array.isArray(scope.versions) && scope.versions.length > 0 ? scope.versions.join(", ") : "2.2";
+  const versions =
+    Array.isArray(scope.versions) && scope.versions.length > 0
+      ? scope.versions.join(", ")
+      : "2.2";
   const levels: string[] = [];
   if (scope.levels?.A) levels.push("A");
   if (scope.levels?.AA) levels.push("AA");
@@ -77,7 +93,10 @@ function renderScope(scope: WcagScope | undefined): string {
   return `WCAG ${versions} · Levels ${levelsText}`;
 }
 
-function renderLevelSection(level: "A" | "AA" | "AAA", rows: CriteriaRow[]): string[] {
+function renderLevelSection(
+  level: "A" | "AA" | "AAA",
+  rows: CriteriaRow[],
+): string[] {
   const out: string[] = [];
   out.push(`## WCAG Level ${level}`);
   out.push("");
@@ -99,7 +118,9 @@ function renderLevelSection(level: "A" | "AA" | "AAA", rows: CriteriaRow[]): str
   return out;
 }
 
-function formatIssue(it: { title?: string; url?: string } | null | undefined): string {
+function formatIssue(
+  it: { title?: string; url?: string } | null | undefined,
+): string {
   if (!it) return "";
   const title = (it.title || "").trim();
   const url = (it.url || "").trim();
@@ -127,16 +148,24 @@ function escapeMdMultiline(s: string): string {
 
 export type { CriteriaDetail };
 
-
 export function toHtml(input: ToMarkdownInput): string {
   const title = (input.title || "VPAT").trim();
-  const versionText = input.version_number != null ? `v${input.version_number}` : "vX";
-  const publishedText = input.published_at ? new Date(input.published_at).toISOString() : "YYYY-MM-DD";
+  const versionText =
+    input.version_number != null ? `v${input.version_number}` : "vX";
+  const publishedText = input.published_at
+    ? new Date(input.published_at).toISOString()
+    : "YYYY-MM-DD";
 
-  const rows = Array.isArray(input.criteria_rows) ? input.criteria_rows.slice() : [];
+  const rows = Array.isArray(input.criteria_rows)
+    ? input.criteria_rows.slice()
+    : [];
   rows.sort((a, b) => compareWcagCodes(a.code, b.code));
 
-  const byLevel: Record<"A" | "AA" | "AAA", CriteriaRow[]> = { A: [], AA: [], AAA: [] };
+  const byLevel: Record<"A" | "AA" | "AAA", CriteriaRow[]> = {
+    A: [],
+    AA: [],
+    AAA: [],
+  };
   for (const r of rows) {
     if (r && (r.level === "A" || r.level === "AA" || r.level === "AAA")) {
       byLevel[r.level].push(r);
@@ -145,27 +174,13 @@ export function toHtml(input: ToMarkdownInput): string {
 
   const scopeLine = renderScope(input.wcag_scope);
 
-  const escapeHtml = (s: string) => String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-
-  const renderIssues = (issues?: { title?: string; url?: string }[] | null) => {
-    if (!issues || issues.length === 0) return "";
-    return issues
-      .map((it) => {
-        const t = (it.title || "").trim();
-        const u = (it.url || "").trim();
-        if (t && u) return `<a href="${escapeHtml(u)}">${escapeHtml(t)}</a>`;
-        if (t) return escapeHtml(t);
-        if (u) return `<a href="${escapeHtml(u)}">${escapeHtml(u)}</a>`;
-        return "";
-      })
-      .filter(Boolean)
-      .join("<br/>");
-  };
+  const escapeHtml = (s: string) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
 
   const renderLevel = (level: "A" | "AA" | "AAA", rows: CriteriaRow[]) => {
     const trs = rows.length

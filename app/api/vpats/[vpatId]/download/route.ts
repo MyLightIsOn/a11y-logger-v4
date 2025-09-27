@@ -39,7 +39,7 @@ export async function GET(
     // Fetch VPAT title and status (ensure it exists and is accessible)
     const { data: vpatRow, error: vpatErr } = await supabase
       .from("vpat")
-      .select("id, title, status")
+      .select("id, title, status, current_version_id")
       .eq("id", vpatId)
       .single();
     if (vpatErr || !vpatRow) {
@@ -47,6 +47,27 @@ export async function GET(
     }
 
     const title: string = (vpatRow as { title?: string }).title || "VPAT";
+
+    // Determine published metadata if available
+    let version_number: number | null = null;
+    let published_at: string | null = null;
+    const status: string | undefined = (vpatRow as { status?: string }).status;
+    const currentVersionId: UUID | undefined =
+      (vpatRow as { current_version_id?: UUID | null }).current_version_id ||
+      undefined;
+    if (status === "published" && currentVersionId) {
+      const { data: verRow, error: verErr } = await supabase
+        .from("vpat_version")
+        .select("version_number, published_at")
+        .eq("id", currentVersionId)
+        .single();
+      if (!verErr && verRow) {
+        version_number =
+          (verRow as { version_number?: number | null }).version_number ?? null;
+        published_at =
+          (verRow as { published_at?: string | null }).published_at ?? null;
+      }
+    }
 
     // Fetch WCAG criteria reference
     const { data: criteriaRows, error: critErr } = await supabase
@@ -109,38 +130,20 @@ export async function GET(
         ((draft?.conformance as ConformanceValue | null) ??
           "Not Evaluated") as ConformanceValue;
       const remarks: string | null = draft?.remarks ?? null;
-      // Filter URLs to include only likely issue links (avoid generic page URLs)
-      const rawUrls = Array.isArray(draft?.related_issue_urls)
-        ? draft!.related_issue_urls!
-        : null;
-      const filteredUrls = rawUrls
-        ? rawUrls.filter(
-            (url) =>
-              /\/(issues?|bugs|tickets)\//i.test(url) ||
-              /github\.com\/.+\/issues\//i.test(url) ||
-              /gitlab\.com\/.+\/issues\//i.test(url) ||
-              /bitbucket\.org\/.+\/issues\//i.test(url),
-          )
-        : null;
-      const issues =
-        filteredUrls && filteredUrls.length > 0
-          ? filteredUrls.map((url) => ({ url }))
-          : null;
       return {
         code: c.code,
         name: c.name,
         level: c.level,
         conformance,
         remarks,
-        issues,
       } satisfies CriteriaRow;
     });
 
     // Build HTML
     const html = toHtml({
       title,
-      version_number: null,
-      published_at: null,
+      version_number,
+      published_at,
       wcag_scope,
       criteria_rows,
     });
@@ -161,14 +164,6 @@ export async function GET(
         "Cache-Control": "no-store",
       },
     });
-
-    return NextResponse.json(
-      {
-        message:
-          "SUCCESS: HTML download initiated. Check your email for the download link.",
-      },
-      { status: 200 },
-    );
   } catch (error) {
     console.error("Error downloading VPAT draft as HTML:", error);
     return NextResponse.json(

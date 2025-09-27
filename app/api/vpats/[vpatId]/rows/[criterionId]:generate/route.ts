@@ -46,6 +46,14 @@ export async function POST(
     }
     const projectId = (vpatRow as { project_id: UUID }).project_id;
 
+    // Fetch project name for remarks substitution
+    const { data: projectRow } = await supabase
+      .from("projects")
+      .select("id, name")
+      .eq("id", projectId)
+      .maybeSingle();
+    const projectName = (projectRow as { name?: string } | null)?.name || undefined;
+
     // Resolve WCAG criterion code from id
     const { data: wcagRow, error: wcagErr } = await supabase
       .from("wcag_criteria")
@@ -133,6 +141,7 @@ export async function POST(
     // Call generator with injected issues for purity
     const suggestion = generateForCriterion({
       projectId,
+      projectName,
       criterionCode,
       issues,
     });
