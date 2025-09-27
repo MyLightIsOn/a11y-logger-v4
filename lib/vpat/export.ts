@@ -189,10 +189,10 @@ export function toHtml(input: ToMarkdownInput): string {
             const crit = `${r.code} ${r.name}`.trim();
             const remarks = (r.remarks || "").trim().replace(/\n+/g, "<br/>");
             return `<tr>
-  <td class="crit">${escapeHtml(crit)}</td>
-  <td class="conf">${escapeHtml(r.conformance)}</td>
-  <td class="remarks">${remarks}</td>
-</tr>`;
+                      <td class="crit">${escapeHtml(crit)}</td>
+                      <td class="conf">${escapeHtml(r.conformance)}</td>
+                      <td class="remarks">${remarks}</td>
+                    </tr>`;
           })
           .join("\n")
       : `<tr><td colspan="3" class="empty">(no criteria)</td></tr>`;
