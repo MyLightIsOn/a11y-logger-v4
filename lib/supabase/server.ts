@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { clientEnv } from "@/lib/env";
+import { hasEnvVars } from "@/lib/utils";
 
 /**
  * Especially important if using Fluid compute: Don't put this client in a
@@ -8,11 +9,16 @@ import { clientEnv } from "@/lib/env";
  * it.
  */
 export async function createClient() {
+  if (!hasEnvVars) {
+    throw new Error(
+      "Supabase server client cannot be created: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY are missing. Add them to your .env.local."
+    );
+  }
   const cookieStore = await cookies();
 
   return createServerClient(
-    clientEnv.NEXT_PUBLIC_SUPABASE_URL,
-    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY,
+    clientEnv.NEXT_PUBLIC_SUPABASE_URL!,
+    clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY!,
     {
       cookies: {
         getAll() {

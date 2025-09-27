@@ -32,11 +32,16 @@ const clientSchema = z.object({
   VERCEL_URL: z.string().optional(),
   VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
 
-  // Required by Supabase client usage
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url({ message: "Must be a valid URL" }),
+  // Supabase envs (client). Optional to allow app to boot without configuration in dev.
+  // Features depending on Supabase will throw a clear runtime message if missing.
+  NEXT_PUBLIC_SUPABASE_URL: z
+    .string()
+    .url({ message: "Must be a valid URL" })
+    .optional(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY: z
     .string()
-    .min(20, { message: "Expected a Supabase anon/publishable key" }),
+    .min(20, { message: "Expected a Supabase anon/publishable key" })
+    .optional(),
 
   // App routing base for public VPAT pages (safe default)
   NEXT_PUBLIC_PUBLIC_VPAT_BASE: z.string().default("/edge/public/vpats"),
