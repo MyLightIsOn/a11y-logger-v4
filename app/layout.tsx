@@ -5,9 +5,10 @@ import QueryClientContainer from "@/components/custom/query-client-container";
 import Header from "@/components/custom/layout/header";
 import Footer from "@/components/custom/layout/footer";
 import "./globals.css";
+import { serverEnv } from "@/lib/env";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
+const defaultUrl = serverEnv.VERCEL_URL
+  ? `https://${serverEnv.VERCEL_URL}`
   : "http://localhost:3000";
 
 export const metadata: Metadata = {

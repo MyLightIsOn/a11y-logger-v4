@@ -5,18 +5,18 @@ import { ArrowUpRight } from "lucide-react";
 export function SignUpUserSteps() {
   return (
     <ol className="flex flex-col gap-6">
-      {process.env.VERCEL_ENV === "preview" ||
-      process.env.VERCEL_ENV === "production" ? (
+      {(require("@/lib/env").clientEnv.VERCEL_ENV === "preview" ||
+      require("@/lib/env").clientEnv.VERCEL_ENV === "production") ? (
         <TutorialStep title="Set up redirect urls">
           <p>It looks like this App is hosted on Vercel.</p>
           <p className="mt-4">
             This particular deployment is
             <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-              &quot;{process.env.VERCEL_ENV}&quot;
+              &quot;{require("@/lib/env").clientEnv.VERCEL_ENV}&quot;
             </span>{" "}
             on
             <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-              https://{process.env.VERCEL_URL}
+              https://{require("@/lib/env").clientEnv.VERCEL_URL}
             </span>
             .
           </p>
@@ -42,13 +42,13 @@ export function SignUpUserSteps() {
             <li>
               -{" "}
               <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-                {`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/**`}
+                {`https://${require("@/lib/env").clientEnv.VERCEL_PROJECT_PRODUCTION_URL}/**`}
               </span>
             </li>
             <li>
               -{" "}
               <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-xs font-medium text-secondary-foreground border">
-                {`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL?.replace(
+                {`https://${(require("@/lib/env").clientEnv.VERCEL_PROJECT_PRODUCTION_URL || "").replace(
                   ".vercel.app",
                   "",
                 )}-*-[vercel-team-url].vercel.app/**`}

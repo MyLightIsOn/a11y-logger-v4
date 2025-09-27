@@ -34,7 +34,8 @@ export async function generateMetadata({ params }: { params: Promise<{ versionId
 async function fetchPublic(versionId: string, password?: string): Promise<{ status: number; data?: PublicPayload; error?: string }> {
   // The Edge Function path is configured in Vercel/Supabase; derive from env if available
   // Fallback to /edge/public/vpats/:id which can be proxied in dev.
-  const base = process.env.NEXT_PUBLIC_PUBLIC_VPAT_BASE || "/edge/public/vpats";
+  const { clientEnv } = await import("@/lib/env");
+  const base = clientEnv.NEXT_PUBLIC_PUBLIC_VPAT_BASE || "/edge/public/vpats";
   const url = new URL(`${base.replace(/\/$/, "")}/${encodeURIComponent(versionId)}`, typeof window === "undefined" ? "http://localhost" : window.location.origin);
   if (password) url.searchParams.set("password", password);
 

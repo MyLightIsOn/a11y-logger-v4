@@ -53,9 +53,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure env vars exist (server-only secrets)
-    const cloudName = process.env.CLOUDINARY_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const { serverEnv } = await import("@/lib/env");
+    const cloudName = serverEnv.CLOUDINARY_NAME;
+    const apiKey = serverEnv.CLOUDINARY_API_KEY;
+    const apiSecret = serverEnv.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
       console.error("Cloudinary env vars missing");

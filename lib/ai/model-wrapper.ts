@@ -94,7 +94,8 @@ export class ModelJsonClient {
   private readonly baseUrl: string;
 
   constructor(opts: OpenAiServiceOptions = {}) {
-    const key = process.env.OPEN_AI_KEY;
+    const { serverEnv } = require("@/lib/env");
+    const key: string | undefined = serverEnv.OPEN_AI_KEY;
     if (!key) {
       throw new Error(
         "OPEN_AI_KEY is not set. Please configure the environment variable for server-side AI features.",

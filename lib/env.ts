@@ -22,6 +22,16 @@ function formatZodError(err: ZodError): string {
 
 // Public (client-exposed) variables must start with NEXT_PUBLIC_
 const clientSchema = z.object({
+  // Build/runtime mode (safe to expose)
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
+
+  // Optional platform hints (non-secret)
+  VERCEL_ENV: z.enum(["development", "preview", "production"]).optional(),
+  VERCEL_URL: z.string().optional(),
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+
   // Required by Supabase client usage
   NEXT_PUBLIC_SUPABASE_URL: z.string().url({ message: "Must be a valid URL" }),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY: z

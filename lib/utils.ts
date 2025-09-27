@@ -16,6 +16,7 @@ export function formatDate(iso: string): string {
 }
 
 // This check can be removed, it is just for tutorial purposes
+import { clientEnv } from "@/lib/env";
 export const hasEnvVars =
-  process.env.NEXT_PUBLIC_SUPABASE_URL &&
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY;
+  !!clientEnv.NEXT_PUBLIC_SUPABASE_URL &&
+  !!clientEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY;
