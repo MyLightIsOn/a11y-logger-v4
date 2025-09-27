@@ -9,7 +9,7 @@ import type { VpatVersion } from "@/types/vpat";
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { versionId: UUID } },
+  ctx: { params: Promise<{ versionId: UUID }> },
 ) {
   try {
     const supabase = await createClient();
@@ -23,7 +23,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const versionId = params.versionId as UUID;
+    const { versionId: rawVersionId } = await ctx.params;
+    const versionId = (rawVersionId as string).split(":")[0] as UUID;
 
     const { data, error } = await supabase
       .from("vpat_version")

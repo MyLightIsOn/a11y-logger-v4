@@ -13,7 +13,7 @@ import {
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { versionId: UUID } },
+  ctx: { params: Promise<{ versionId: UUID }> },
 ) {
   try {
     const supabase = await createClient();
@@ -27,7 +27,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const versionId = params.versionId as UUID;
+    const { versionId: rawVersionId } = await ctx.params;
+    const versionId = (rawVersionId as string).split(":")[0] as UUID;
 
     const { searchParams } = new URL(request.url);
     const format = (searchParams.get("format") || "md").toLowerCase();

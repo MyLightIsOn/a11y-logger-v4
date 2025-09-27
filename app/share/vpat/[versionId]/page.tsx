@@ -26,8 +26,8 @@ type PublicPayload = {
   criteria_rows: PublicRow[];
 };
 
-export async function generateMetadata({ params }: { params: { versionId: string } }): Promise<Metadata> {
-  const versionId = params.versionId;
+export async function generateMetadata({ params }: { params: Promise<{ versionId: string }> }): Promise<Metadata> {
+  const { versionId } = await params;
   return { title: `Shared VPAT ${versionId}` };
 }
 
@@ -51,9 +51,10 @@ async function fetchPublic(versionId: string, password?: string): Promise<{ stat
   return { status, error: msg };
 }
 
-export default async function PublicVpatPage({ params, searchParams }: { params: { versionId: string }; searchParams: { [key: string]: string | string[] | undefined } }) {
-  const versionId = params.versionId;
-  const password = typeof searchParams?.password === "string" ? searchParams.password : undefined;
+export default async function PublicVpatPage({ params, searchParams }: { params: Promise<{ versionId: string }>; searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const { versionId } = await params;
+  const sp = await searchParams;
+  const password = typeof sp?.password === "string" ? sp.password : undefined;
 
   const initial = await fetchPublic(versionId, password);
 

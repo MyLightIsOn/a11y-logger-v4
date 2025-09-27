@@ -7,7 +7,7 @@ import bcrypt from "bcryptjs";
  * GET /api/vpat_versions/[versionId]:share
  * Returns current share settings for a VPAT version (owner-scoped; not public view).
  */
-export async function GET(_request: NextRequest, { params }: { params: { versionId: UUID } }) {
+export async function GET(_request: NextRequest, ctx: { params: Promise<{ versionId: UUID }> }) {
   try {
     const supabase = await createClient();
     const {
@@ -17,7 +17,8 @@ export async function GET(_request: NextRequest, { params }: { params: { version
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const versionId = params.versionId as UUID;
+    const { versionId: rawVersionId } = await ctx.params;
+    const versionId = (rawVersionId as string).split(":")[0] as UUID;
 
     // Ensure version exists (RLS enforces access)
     const { data: versionRow, error: verErr } = await supabase
@@ -56,7 +57,7 @@ export async function GET(_request: NextRequest, { params }: { params: { version
  * - If revoke is true => set revoked_at=now(), visibility='private', password_hash=null
  * - If visibility='password' and password provided => store bcrypt hash
  */
-export async function POST(request: NextRequest, { params }: { params: { versionId: UUID } }) {
+export async function POST(request: NextRequest, ctx: { params: Promise<{ versionId: UUID }> }) {
   try {
     const supabase = await createClient();
 
@@ -69,7 +70,8 @@ export async function POST(request: NextRequest, { params }: { params: { version
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const versionId = params.versionId as UUID;
+    const { versionId: rawVersionId } = await ctx.params;
+    const versionId = (rawVersionId as string).split(":")[0] as UUID;
 
     // Ensure version exists and belongs to user's project (RLS backed)
     const { data: versionRow, error: verErr } = await supabase

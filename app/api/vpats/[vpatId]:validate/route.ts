@@ -9,7 +9,10 @@ import type { ValidateVpatResponse, VpatRowDraft } from "@/types/vpat";
  * - Not Applicable requires remarks
  * - If conformance != Supports, remarks required (including Not Evaluated)
  */
-export async function POST(_request: NextRequest, { params }: { params: { vpatId: UUID } }) {
+export async function POST(
+  _request: NextRequest,
+  ctx: { params: Promise<{ vpatId: UUID }> },
+) {
   try {
     const supabase = await createClient();
 
@@ -22,7 +25,8 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = params.vpatId as UUID;
+    const { vpatId: rawVpatId } = await ctx.params;
+    const vpatId = (rawVpatId as string).split(":")[0] as UUID;
 
     // Ensure VPAT exists (RLS will scope access by project)
     const { data: vpatRow, error: vpatErr } = await supabase

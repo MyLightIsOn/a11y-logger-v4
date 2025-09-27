@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ import { vpatsApi } from "@/lib/api/vpats";
 import type { UUID } from "@/types/common";
 import type { Project } from "@/types/project";
 
-export default function CreateVpatPage() {
+function CreateVpatForm() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -151,5 +151,13 @@ export default function CreateVpatPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function CreateVpatPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading…</div>}>
+      <CreateVpatForm />
+    </Suspense>
   );
 }

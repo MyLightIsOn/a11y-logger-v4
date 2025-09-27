@@ -6,7 +6,10 @@ import type { UUID } from "@/types/common";
  * POST /api/vpats/[vpatId]:unpublish
  * Sets VPAT status back to 'draft' and clears current_version_id.
  */
-export async function POST(_request: NextRequest, { params }: { params: { vpatId: UUID } }) {
+export async function POST(
+  _request: NextRequest,
+  ctx: { params: Promise<{ vpatId: UUID }> },
+) {
   try {
     const supabase = await createClient();
 
@@ -19,7 +22,8 @@ export async function POST(_request: NextRequest, { params }: { params: { vpatId
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const vpatId = params.vpatId as UUID;
+    const { vpatId: rawVpatId } = await ctx.params;
+    const vpatId = (rawVpatId as string).split(":")[0] as UUID;
 
     // Ensure VPAT exists
     const { data: vpatRow, error: vpatErr } = await supabase

@@ -6,21 +6,36 @@ import { useQueryClient } from "@tanstack/react-query";
 /**
  * SSE event payloads from POST /api/vpats/{vpatId}:generate_batch
  */
-import type { BatchStartEvent, BatchRowEvent, BatchSkipEvent, BatchErrorEvent, BatchDoneEvent, BatchEvent, BatchProgressStatus, BatchProgressItem } from "@/types/vpat-batch";
-
+import type {
+  BatchStartEvent,
+  BatchRowEvent,
+  BatchSkipEvent,
+  BatchErrorEvent,
+  BatchEvent,
+  BatchProgressItem,
+} from "@/types/vpat-batch";
 
 /**
  * Hook to generate a batch of VPAT rows via SSE-like streaming from a POST endpoint.
  * - Exposes isRunning, progress map keyed by criterionId, counts, start, and abort.
  * - Cleans up on unmount.
  */
-export function useGenerateVpatBatch(vpatId: UUID): import("@/types/vpat-batch").UseGenerateVpatBatchResult {
+export function useGenerateVpatBatch(
+  vpatId: UUID,
+): import("@/types/vpat-batch").UseGenerateVpatBatchResult {
   const supabase = useMemo(() => createClient(), []);
   const qc = useQueryClient();
 
   const [isRunning, setIsRunning] = useState(false);
-  const [progress, setProgress] = useState<Map<string, BatchProgressItem>>(new Map());
-  const [counts, setCounts] = useState({ done: 0, total: 0, errors: 0, skipped: 0 });
+  const [progress, setProgress] = useState<Map<string, BatchProgressItem>>(
+    new Map(),
+  );
+  const [counts, setCounts] = useState({
+    done: 0,
+    total: 0,
+    errors: 0,
+    skipped: 0,
+  });
   const [lastEvent, setLastEvent] = useState<BatchEvent | undefined>(undefined);
   const [lastError, setLastError] = useState<string | undefined>(undefined);
 
@@ -70,14 +85,18 @@ export function useGenerateVpatBatch(vpatId: UUID): import("@/types/vpat-batch")
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+            ...(session?.access_token
+              ? { Authorization: `Bearer ${session.access_token}` }
+              : {}),
           },
           body: JSON.stringify({ criterionIds }),
           signal: controller.signal,
         });
 
         if (!res.ok || !res.body) {
-          throw new Error(`Batch request failed: ${res.status} ${res.statusText}`);
+          throw new Error(
+            `Batch request failed: ${res.status} ${res.statusText}`,
+          );
         }
 
         const reader = res.body.getReader();
@@ -89,14 +108,21 @@ export function useGenerateVpatBatch(vpatId: UUID): import("@/types/vpat-batch")
           switch (evt.type) {
             case "start": {
               // ensure total
-              setCounts((c) => ({ ...c, total: (evt as BatchStartEvent).total }));
+              setCounts((c) => ({
+                ...c,
+                total: (evt as BatchStartEvent).total,
+              }));
               break;
             }
             case "row": {
               const e = evt as BatchRowEvent;
               setProgress((prev) => {
                 const next = new Map(prev);
-                next.set(e.criterionId, { status: e.status, row: e.row, warning: e.warning });
+                next.set(e.criterionId, {
+                  status: e.status,
+                  row: e.row,
+                  warning: e.warning,
+                });
                 return next;
               });
               setCounts((c) => ({ ...c, done: c.done + 1 }));
@@ -108,10 +134,18 @@ export function useGenerateVpatBatch(vpatId: UUID): import("@/types/vpat-batch")
               const e = evt as BatchSkipEvent;
               setProgress((prev) => {
                 const next = new Map(prev);
-                next.set(e.criterionId, { status: "SKIPPED", row: e.row, warning: e.warning });
+                next.set(e.criterionId, {
+                  status: "SKIPPED",
+                  row: e.row,
+                  warning: e.warning,
+                });
                 return next;
               });
-              setCounts((c) => ({ ...c, done: c.done + 1, skipped: c.skipped + 1 }));
+              setCounts((c) => ({
+                ...c,
+                done: c.done + 1,
+                skipped: c.skipped + 1,
+              }));
               // Still invalidate to keep any timestamps up to date if server touched row
               void qc.invalidateQueries({ queryKey: ["vpat", "rows", vpatId] });
               break;
@@ -121,10 +155,17 @@ export function useGenerateVpatBatch(vpatId: UUID): import("@/types/vpat-batch")
               if (e.criterionId) {
                 setProgress((prev) => {
                   const next = new Map(prev);
-                  next.set(e.criterionId as UUID, { status: "ERROR", message: e.message });
+                  next.set(e.criterionId as UUID, {
+                    status: "ERROR",
+                    message: e.message,
+                  });
                   return next;
                 });
-                setCounts((c) => ({ ...c, done: c.done + 1, errors: c.errors + 1 }));
+                setCounts((c) => ({
+                  ...c,
+                  done: c.done + 1,
+                  errors: c.errors + 1,
+                }));
               } else {
                 setLastError(e.message);
               }
