@@ -9,7 +9,12 @@ import { hasEnvVars } from "@/lib/utils";
 export function UserProfileLink() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const supabase = useMemo(() => (hasEnvVars ? createClient() : null), []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -37,6 +42,10 @@ export function UserProfileLink() {
 
     return () => subscription.unsubscribe();
   }, [supabase]);
+
+  if (!mounted) {
+    return null;
+  }
 
   if (!supabase) {
     // If auth isn't configured, omit the profile UI entirely
