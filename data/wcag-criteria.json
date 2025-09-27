@@ -8,7 +8,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> provides meaningful text alternatives for non-text content. Decorative images are ignored via null alt or CSS background, and interactive controls expose accessible names."
   },
   {
     "code": "1.2.1",
@@ -19,7 +20,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not include prerecorded audio-only or video-only content in default functionality."
   },
   {
     "code": "1.2.2",
@@ -30,7 +32,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not include prerecorded multimedia; where providers embed media, captions are supported via platform capabilities."
   },
   {
     "code": "1.2.3",
@@ -41,7 +44,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not include prerecorded video requiring audio description or media alternatives in default functionality."
   },
   {
     "code": "1.2.4",
@@ -52,7 +56,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not include live audio or video by default; caption support is available where platforms provide it."
   },
   {
     "code": "1.2.5",
@@ -63,7 +68,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not include prerecorded multimedia in default experiences; where present, audio description is supported."
   },
   {
     "code": "1.3.1",
@@ -74,7 +80,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> conveys information and relationships programmatically using semantic HTML and WAI‑ARIA landmarks, roles, and states."
   },
   {
     "code": "1.3.2",
@@ -85,7 +92,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> is developed in a meaningful and correct reading sequence that can be programmatically determined."
   },
   {
     "code": "1.3.3",
@@ -96,7 +104,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> instructions are not conveyed by shape, size, visual location, orientation, or sound alone; text alternatives are provided."
   },
   {
     "code": "1.3.4",
@@ -106,7 +115,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not restrict use to a single display orientation; both portrait and landscape are supported where applicable."
   },
   {
     "code": "1.3.5",
@@ -116,7 +126,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> identifies common input purposes programmatically and visually labels inputs accordingly."
   },
   {
     "code": "1.4.1",
@@ -127,7 +138,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not rely on color alone to convey information, indicate actions, or distinguish elements."
   },
   {
     "code": "1.4.2",
@@ -138,7 +150,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> does not play audio automatically for more than 3 seconds in default experiences."
   },
   {
     "code": "1.4.3",
@@ -149,7 +162,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> provides text contrast that meets or exceeds the 4.5:1 (normal) and 3:1 (large) ratios in standard themes."
   },
   {
     "code": "1.4.4",
@@ -160,7 +174,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> content remains operable and readable when users resize text up to 200% without assistive tech."
   },
   {
     "code": "1.4.5",
@@ -171,7 +186,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> avoids images of text except for essential or customizable cases."
   },
   {
     "code": "1.4.10",
@@ -181,7 +197,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports reflow without loss of content or functionality at 320 CSS px width (1×) equivalent where applicable."
   },
   {
     "code": "1.4.11",
@@ -191,7 +208,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> provides sufficient contrast for non‑text UI components and graphical objects in standard themes."
   },
   {
     "code": "1.4.12",
@@ -201,7 +219,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> preserves content and functionality when users adjust text spacing per the referenced metrics."
   },
   {
     "code": "1.4.13",
@@ -211,7 +230,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> ensures additional content shown on hover or focus is dismissible, hoverable, and persistent as required."
   },
   {
     "code": "2.1.1",
@@ -222,7 +242,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> supports complete operation by keyboard alone, including standard navigation and activation."
   },
   {
     "code": "2.1.2",
@@ -233,7 +254,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> avoids keyboard traps; focus can move to and away from all interactive components using standard keys."
   },
   {
     "code": "2.1.4",
@@ -243,7 +265,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> does not use single‑character key shortcuts that cannot be turned off, remapped, or that are limited to component focus."
   },
   {
     "code": "2.2.1",
@@ -254,7 +277,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides mechanisms to extend or adjust time limits where applicable (for example, session timeouts)."
   },
   {
     "code": "2.2.2",
@@ -265,7 +289,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> avoids moving, blinking, or auto‑updating content that cannot be paused, stopped, or hidden."
   },
   {
     "code": "2.3.1",
@@ -276,7 +301,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> avoids flashing content above thresholds that could trigger photosensitive seizures."
   },
   {
     "code": "2.4.1",
@@ -287,7 +313,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides mechanisms to bypass repeated blocks of content, including landmarks and headings."
   },
   {
     "code": "2.4.2",
@@ -298,7 +325,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides descriptive, programmatically determinable page titles that indicate topic or purpose."
   },
   {
     "code": "2.4.3",
@@ -309,7 +337,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides a logical focus order that preserves meaning and operability."
   },
   {
     "code": "2.4.4",
@@ -320,7 +349,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> link purpose can be determined from link text alone or in context."
   },
   {
     "code": "2.4.5",
@@ -331,7 +361,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides multiple ways to locate pages, such as navigation, search, and contextual links."
   },
   {
     "code": "2.4.6",
@@ -342,7 +373,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> uses descriptive headings and labels to aid navigation and understanding."
   },
   {
     "code": "2.4.7",
@@ -353,7 +385,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides a visible focus indicator for all interactive components."
   },
   {
     "code": "2.4.11",
@@ -362,7 +395,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> ensures the item receiving focus is not fully obscured by other content in its default position."
   },
   {
     "code": "2.5.1",
@@ -372,7 +406,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> supports single‑pointer operation without path‑based or multipoint gestures."
   },
   {
     "code": "2.5.2",
@@ -382,7 +417,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> supports pointer cancellation per recommended patterns (up‑events, abort/cancel, or undo)."
   },
   {
     "code": "2.5.3",
@@ -392,7 +428,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> ensures the accessible name of a control contains the visible label text (label‑in‑name)."
   },
   {
     "code": "2.5.4",
@@ -402,7 +439,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> does not require device motion or user motion; any motion functionality has alternatives."
   },
   {
     "code": "2.5.7",
@@ -411,7 +449,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides alternatives to dragging movements; actions can be completed with single‑pointer activation."
   },
   {
     "code": "2.5.8",
@@ -420,7 +459,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides target sizes and spacing that meet minimum dimensions for pointer inputs where applicable."
   },
   {
     "code": "3.1.1",
@@ -431,7 +471,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> specifies the default human language for pages and key documents."
   },
   {
     "code": "3.1.2",
@@ -442,7 +483,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> identifies the human language of parts where content changes language."
   },
   {
     "code": "3.2.1",
@@ -453,7 +495,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> does not initiate unexpected context changes when components receive focus."
   },
   {
     "code": "3.2.2",
@@ -464,7 +507,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> does not trigger unexpected context changes when user input is provided."
   },
   {
     "code": "3.2.3",
@@ -475,7 +519,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides navigation components in a consistent relative order across pages."
   },
   {
     "code": "3.2.4",
@@ -486,7 +531,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> identifies components consistently for the same functionality across pages."
   },
   {
     "code": "3.2.6",
@@ -495,7 +541,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> presents help mechanisms in a consistent location and order across comparable pages."
   },
   {
     "code": "3.3.1",
@@ -506,7 +553,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> identifies input errors with clear, programmatic associations to the relevant fields."
   },
   {
     "code": "3.3.2",
@@ -517,7 +565,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides visible labels or instructions for user input, with programmatic associations."
   },
   {
     "code": "3.3.3",
@@ -528,7 +577,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides error suggestions to assist users in correcting input mistakes where feasible."
   },
   {
     "code": "3.3.4",
@@ -539,7 +589,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> validates and confirms legal, financial, or data submissions with review/cancel mechanisms."
   },
   {
     "code": "3.3.7",
@@ -548,7 +599,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> avoids requiring users to re‑enter information previously provided; mechanisms to reuse data are available."
   },
   {
     "code": "3.3.8",
@@ -557,7 +609,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides an authentication process that does not rely on cognitive function tests or includes accessible alternatives."
   },
   {
     "code": "4.1.1",
@@ -567,7 +620,8 @@
       "2.0",
       "2.1"
     ],
-    "principle": "Robust"
+    "principle": "Robust",
+    "supported_remarks": "For WCAG 2.0 and 2.1, this criterion is always ‘Supports’ per the September 2023 errata; it does not apply in WCAG 2.2."
   },
   {
     "code": "4.1.2",
@@ -578,7 +632,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Robust"
+    "principle": "Robust",
+    "supported_remarks": "<Project Name> exposes name, role, state, and value via semantic HTML or WAI‑ARIA for interactive components."
   },
   {
     "code": "4.1.3",
@@ -588,7 +643,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Robust"
+    "principle": "Robust",
+    "supported_remarks": "<Project Name> exposes status messages programmatically so assistive technologies can announce them without moving focus."
   },
   {
     "code": "1.2.6",
@@ -599,7 +655,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports sign language alternatives where applicable content is provided."
   },
   {
     "code": "1.2.7",
@@ -610,7 +667,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports extended audio description where applicable content is provided."
   },
   {
     "code": "1.2.8",
@@ -621,7 +679,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports full media alternatives for prerecorded multimedia where applicable."
   },
   {
     "code": "1.2.9",
@@ -632,7 +691,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports live audio‑only alternatives where applicable."
   },
   {
     "code": "1.4.6",
@@ -643,7 +703,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> can support enhanced contrast for text where theming allows."
   },
   {
     "code": "1.4.7",
@@ -654,7 +715,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> avoids audio backgrounds or provides mechanisms to reduce background audio to meet the criterion."
   },
   {
     "code": "1.4.8",
@@ -665,7 +727,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> supports user control of text presentation where applicable to meet visual presentation requirements."
   },
   {
     "code": "1.4.9",
@@ -676,7 +739,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Perceivable"
+    "principle": "Perceivable",
+    "supported_remarks": "<Project Name> avoids images of text without exception, except for essential cases."
   },
   {
     "code": "2.1.3",
@@ -687,7 +751,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> supports complete operation via keyboard without exceptions."
   },
   {
     "code": "2.2.3",
@@ -698,7 +763,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> does not impose timing that cannot be turned off where applicable."
   },
   {
     "code": "2.2.4",
@@ -709,7 +775,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> allows users to postpone or suppress interruptions where applicable."
   },
   {
     "code": "2.2.5",
@@ -720,7 +787,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> allows users to re‑authenticate without loss of data where applicable."
   },
   {
     "code": "2.2.6",
@@ -729,7 +797,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> informs users of timeouts that could result in loss of data, where applicable."
   },
   {
     "code": "2.3.2",
@@ -740,7 +809,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> does not include flashing content above thresholds (three flashes)."
   },
   {
     "code": "2.3.3",
@@ -750,7 +820,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides a mechanism to disable animation triggered by interactions where applicable."
   },
   {
     "code": "2.4.8",
@@ -761,7 +832,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides the user’s location within a set of pages where applicable."
   },
   {
     "code": "2.4.9",
@@ -772,7 +844,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> uses link text alone to identify purpose where feasible."
   },
   {
     "code": "2.4.10",
@@ -783,7 +856,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides section headings to organize content where appropriate."
   },
   {
     "code": "2.4.12",
@@ -792,7 +866,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> ensures the focused item is at least minimally unobscured (enhanced) as applicable."
   },
   {
     "code": "2.4.13",
@@ -801,7 +876,8 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides a highly visible focus appearance meeting minimum area and contrast thresholds where applicable."
   },
   {
     "code": "2.5.5",
@@ -811,7 +887,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> provides large pointer targets where possible, or spacing to meet the target size requirement."
   },
   {
     "code": "2.5.6",
@@ -821,7 +898,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Operable"
+    "principle": "Operable",
+    "supported_remarks": "<Project Name> allows concurrent input mechanisms without disabling others."
   },
   {
     "code": "3.1.3",
@@ -832,7 +910,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> explains unusual words and idioms where they appear in user‑facing content."
   },
   {
     "code": "3.1.4",
@@ -843,7 +922,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides expansions for abbreviations where used in user‑facing content."
   },
   {
     "code": "3.1.5",
@@ -854,7 +934,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> aims for lower secondary reading level for blocks of text or provides alternative support."
   },
   {
     "code": "3.1.6",
@@ -865,7 +946,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides pronunciation for words where needed to avoid ambiguity."
   },
   {
     "code": "3.2.5",
@@ -876,7 +958,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> changes occur only on user request in applicable interactions."
   },
   {
     "code": "3.3.5",
@@ -887,7 +970,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides help mechanisms, such as context help or contact support, for complex tasks where applicable."
   },
   {
     "code": "3.3.6",
@@ -898,7 +982,8 @@
       "2.1",
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> prevents errors for all submissions by providing review, confirmation, and reversal where feasible."
   },
   {
     "code": "3.3.9",
@@ -907,6 +992,7 @@
     "versions": [
       "2.2"
     ],
-    "principle": "Understandable"
+    "principle": "Understandable",
+    "supported_remarks": "<Project Name> provides authentication that avoids cognitive function tests or offers object/biometric alternatives where applicable."
   }
 ]

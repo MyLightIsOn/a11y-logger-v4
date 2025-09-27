@@ -10,6 +10,7 @@ export type WcagJsonEntry = {
   level: WcagLevel; // "A" | "AA" | "AAA"
   versions: string[]; // ["2.0","2.1","2.2"]
   principle: Principle;
+  supported_remarks?: string;
 };
 
 export type CriteriaDetail = {
@@ -18,6 +19,7 @@ export type CriteriaDetail = {
   level: WcagLevel;
   versions: ("2.0" | "2.1" | "2.2")[];
   principle: Principle;
+  supported_remarks?: string;
 };
 
 // Cache holders
@@ -43,6 +45,7 @@ function buildByCode(): Map<string, CriteriaDetail> {
           v === "2.0" || v === "2.1" || v === "2.2",
       ),
       principle: item.principle,
+      supported_remarks: item.supported_remarks,
     });
   });
   return map;

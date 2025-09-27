@@ -6,6 +6,7 @@ import { mapSeverityToBucket } from "@/lib/issues/constants";
 
 export type GenerateForCriterionInput = {
   projectId: UUID; // kept for signature parity and future use; logic remains pure
+  projectName?: string; // used for default Supported remarks substitution
   criterionCode: string; // e.g., "1.4.3"
   /**
    * Injected list of issues (already scoped to the project by the caller).
@@ -111,12 +112,21 @@ export function generateForCriterion(
   const sentences: string[] = [];
 
   if (conformance === "Supports") {
-    sentences.push(
-      `Based on the current set of open issues, we did not identify functional barriers specific to ${criterionLabel}.`,
-    );
-    /*sentences.push(
-      "This assessment is derived from mapped issues at the time of generation.",
-    );*/
+    const template = (criterion?.supported_remarks || "").trim();
+    if (template) {
+      const name = (input.projectName || "").trim();
+      const replaced = name
+        ? template.replace(/<Project Name>/g, name)
+        : template;
+      sentences.push(replaced);
+    } else {
+      sentences.push(
+        `Based on the current set of open issues, we did not identify functional barriers specific to ${criterionLabel}.`,
+      );
+      sentences.push(
+        "This assessment is derived from mapped issues at the time of generation.",
+      );
+    }
   } else if (conformance === "Partially Supports") {
     const count = relevant.length;
     const examples = titles.length
