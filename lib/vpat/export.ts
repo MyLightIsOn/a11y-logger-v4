@@ -173,16 +173,14 @@ export function toHtml(input: ToMarkdownInput): string {
           .map((r) => {
             const crit = `${r.code} ${r.name}`.trim();
             const remarks = (r.remarks || "").trim().replace(/\n+/g, "<br/>");
-            const issuesHtml = renderIssues(r.issues);
             return `<tr>
   <td class="crit">${escapeHtml(crit)}</td>
   <td class="conf">${escapeHtml(r.conformance)}</td>
   <td class="remarks">${remarks}</td>
-  <td class="issues">${issuesHtml}</td>
 </tr>`;
           })
           .join("\n")
-      : `<tr><td colspan="4" class="empty">(no criteria)</td></tr>`;
+      : `<tr><td colspan="3" class="empty">(no criteria)</td></tr>`;
 
     return `
 <section>
@@ -193,7 +191,6 @@ export function toHtml(input: ToMarkdownInput): string {
         <th>Criterion</th>
         <th>Conformance</th>
         <th>Remarks/Explanation</th>
-        <th>Issues</th>
       </tr>
     </thead>
     <tbody>
@@ -215,8 +212,7 @@ ${trs}
     th { background: #f8f8f8; text-align: left; }
     td.crit { width: 30%; }
     td.conf { width: 15%; white-space: nowrap; }
-    td.remarks { width: 35%; }
-    td.issues { width: 20%; }
+    td.remarks { width: 55%; }
     .empty { text-align: center; color: #777; font-style: italic; }
     @media (prefers-color-scheme: dark) {
       th { background: #222; }
