@@ -4,8 +4,6 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 
-let renderCount = 0;
-
 function IssueForm({ mode = "create" }) {
   const {
     register,
@@ -17,11 +15,12 @@ function IssueForm({ mode = "create" }) {
       description: "",
     },
   });
-  renderCount++;
+
   return (
     <div>
-      Issue Form
-      <div>{renderCount}</div>
+      <h2 className={"font-bold text-xl mb-4"}>
+        {mode === "create" ? "Create New Issue" : "Edit Issue"}
+      </h2>
       <form
         id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
         onSubmit={handleSubmit((data) => {

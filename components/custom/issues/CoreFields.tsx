@@ -2,43 +2,68 @@
 
 import React from "react";
 import { Input } from "@/components/ui/input";
-import type { CoreFieldsProps } from "@/types/issues-ui";
+import { Textarea } from "@/components/ui/textarea";
+import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { CreateIssueInput } from "@/lib/validation/issues";
+import { issueFormConfig } from "@/lib/issues/issue-form-config";
 
-export function CoreFields({ register, errors }: CoreFieldsProps) {
+type Props = {
+  errors: FieldErrors<CreateIssueInput>;
+  register: UseFormRegister<CreateIssueInput>;
+};
+
+export function CoreFields({ register, errors }: Props) {
   return (
     <>
       <section className="bg-card rounded-lg p-4 border border-border mb-4">
-        <label htmlFor="title" className="block text-xl font-bold">
-          Title <span className={"text-destructive"}>*</span>
-        </label>
-        <p id="title-help" className="text-sm text-gray-500 mb-1">
-          Provide a short title of the issue.
-        </p>
-        <Input
-          type="text"
-          id="title"
-          placeholder={"Example: Search button not focusable..."}
-          className="mt-1 block w-full"
-          required
-          aria-invalid={!!errors?.title}
-          aria-describedby={`title-help${errors?.title ? " title-error" : ""}`}
-          {...register("title", { required: "Title is required" })}
-        />
-        {errors?.title && (
-          <p
-            id="title-error"
-            className="text-sm mt-2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-            role="alert"
-          >
-            {String(errors.title.message)}
-          </p>
-        )}
-        {/*<input
-          type="text"text
-          placeholder="Title"
-          {...register("title", { required: "Title is required" })}
-        />
-        <p>{errors.title?.message}</p>*/}
+        {issueFormConfig.map((config) => {
+          const field = config.field as keyof CreateIssueInput;
+          return (
+            <section key={config.field}>
+              <label htmlFor={config.field} className="block text-xl font-bold">
+                {config.label}
+                {config.required && (
+                  <span className={"text-destructive"}>*</span>
+                )}
+              </label>
+              {config.type === "input" && (
+                <Input
+                  type="text"
+                  id={config.field}
+                  placeholder={config.placeholder}
+                  className="mt-1 block w-full mb-8"
+                  aria-invalid={!!errors?.[field]}
+                  aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
+                  {...register(field, {
+                    required: config.requiredError,
+                  })}
+                />
+              )}
+              {config.type === "textarea" && (
+                <Textarea
+                  id={config.field}
+                  placeholder={config.placeholder}
+                  className="mt-1 block w-full"
+                  rows={4}
+                  aria-invalid={!!errors?.[field]}
+                  aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
+                  {...register(field, {
+                    required: config.requiredError,
+                  })}
+                />
+              )}
+              {errors && errors[field] && (
+                <p
+                  id={`${config.field}-error`}
+                  className="text-sm mt-4 mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                  role="alert"
+                >
+                  {String(errors[field]?.message)}
+                </p>
+              )}
+            </section>
+          );
+        })}
       </section>
     </>
   );
