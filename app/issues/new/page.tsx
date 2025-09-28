@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
-import { IssueForm } from "@/components/custom/issues/IssueForm";
-
+import IssueForm from "@/components/custom/issues/IssueForm";
+import { OldIssueForm } from "@/components/custom/issues/OldIssueForm";
 function Page() {
   return (
     <div>
