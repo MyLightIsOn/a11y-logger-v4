@@ -20,4 +20,58 @@ export const issueFormConfig = [
     required: true,
     requiredError: "Issue description is required",
   },
+  {
+    type: "textarea",
+    field: "impact",
+    label: "User Impact",
+    subtext:
+      "Describe how this issue affects users, particularly those with disabilities.",
+    placeholder:
+      "Example: Screen reader users cannot understand the content or purpose of the banner image, missing important promotional information.",
+    ariaDescribedBy: "impact",
+    required: false,
+    requiredError: undefined,
+  },
+  {
+    type: "input",
+    field: "url",
+    label: "URL",
+    subtext: "Enter the URL of the page where the issue was found.",
+    placeholder: "Example: https://example.com/page-with-issue",
+    ariaDescribedBy: "url",
+    required: false,
+    requiredError: undefined,
+  },
+  {
+    type: "input",
+    field: "selector",
+    label: "Selector",
+    subtext: "Provide a CSS selector or DOM path for the affected element.",
+    placeholder:
+      "Example: #search-button or header nav .menu > li:nth-child(3) a",
+    ariaDescribedBy: "selector",
+    required: false,
+    requiredError: undefined,
+  },
+  {
+    type: "textarea",
+    field: "code_snippet",
+    label: "Code Snippet",
+    subtext: "Include a relevant HTML/JSX snippet that reproduces the issue.",
+    placeholder: 'Example:\n<button class="btn" aria-label="">...</button>',
+    ariaDescribedBy: "code_snippet",
+    required: false,
+    requiredError: undefined,
+  },
+  {
+    type: "textarea",
+    field: "suggested_fix",
+    label: "Suggested Fix",
+    subtext: "Provide a specific recommendation for how to fix this issue.",
+    placeholder:
+      'Example: Add descriptive alt text to the banner image: <img src="banner.jpg" alt="Company promotional banner showing our latest products">',
+    ariaDescribedBy: "suggested_fix",
+    required: false,
+    requiredError: undefined,
+  },
 ];

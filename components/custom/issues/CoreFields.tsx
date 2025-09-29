@@ -43,7 +43,7 @@ export function CoreFields({ register, errors }: Props) {
                 <Textarea
                   id={config.field}
                   placeholder={config.placeholder}
-                  className="mt-1 block w-full"
+                  className="mt-1 block w-full mb-8"
                   rows={4}
                   aria-invalid={!!errors?.[field]}
                   aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
