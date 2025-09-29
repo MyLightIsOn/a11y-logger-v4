@@ -26,6 +26,9 @@ export function CoreFields({ register, errors }: Props) {
                   <span className={"text-destructive"}>*</span>
                 )}
               </label>
+              <p id="severity-help" className="text-sm text-gray-500 mb-1">
+                {config.subtext}
+              </p>
               {config.type === "input" && (
                 <Input
                   type="text"
@@ -51,6 +54,25 @@ export function CoreFields({ register, errors }: Props) {
                     required: config.requiredError,
                   })}
                 />
+              )}
+              {config.type === "select" && (
+                <div
+                  className={
+                    "mb-8 bg-card border-border border rounded-md px-4 py-2 text-lg w-[190px]"
+                  }
+                >
+                  <select
+                    className={"bg-transparent w-full rounded-md"}
+                    {...register("severity")}
+                  >
+                    {config.selectOptions &&
+                      config.selectOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                  </select>
+                </div>
               )}
               {errors && errors[field] && (
                 <p

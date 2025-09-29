@@ -3,6 +3,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
+import { SubmitButton } from "@/components/custom/forms/submit-button";
 
 function IssueForm({ mode = "create" }) {
   const {
@@ -18,6 +19,7 @@ function IssueForm({ mode = "create" }) {
       selector: "",
       code_snippet: "",
       suggested_fix: "",
+      severity: "Select severity",
     },
   });
 
@@ -33,7 +35,9 @@ function IssueForm({ mode = "create" }) {
         })}
       >
         <CoreFields register={register} errors={errors} />
-        <input type="submit" />
+        <div className="flex justify-end mt-4">
+          <SubmitButton text={"Submit"} loadingText={"Saving..."} />
+        </div>
       </form>
     </div>
   );
