@@ -13,6 +13,11 @@ function IssueForm({ mode = "create" }) {
     defaultValues: {
       title: "",
       description: "",
+      impact: "",
+      url: "",
+      selector: "",
+      code_snippet: "",
+      suggested_fix: "",
     },
   });
 
