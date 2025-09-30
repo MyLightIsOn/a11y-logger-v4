@@ -1,7 +1,6 @@
 import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 import type { WcagVersion } from "@/types/issue";
-import type { Option } from "@/types/options";
 
 /** Props for the CoreFields client component */
 export type CoreFieldsProps = {
@@ -27,12 +26,23 @@ export type CoreFieldsProps = {
 
 /** Props for the WcagCriteriaSection client component */
 export type WcagCriteriaSectionProps = {
-  isLoading: boolean;
-  error: Error | null | undefined;
-  options: Option[];
+  // Loading and error states (can still be provided by parent)
+  isLoading?: boolean;
+  error?: Error | null;
+  // Raw criteria list used to compute options locally
+  allCriteria: Array<{
+    version: WcagVersion;
+    code: string;
+    name: string;
+    level: "A" | "AA" | "AAA";
+  }>;
+  // Selection handling
   selected: string[];
   onSelectedChangeAction: (arr: string[]) => void;
   disabled?: boolean;
-  version?: WcagVersion | null;
+  // Context for deriving options
+  version: WcagVersion | null;
+  wcagLevel?: "A" | "AA" | "AAA";
+  // RHF errors for aria-describedby
   errors: FieldErrors<CreateIssueInput>;
 };

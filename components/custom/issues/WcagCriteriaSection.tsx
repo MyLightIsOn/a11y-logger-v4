@@ -9,11 +9,12 @@ import type { WcagCriteriaSectionProps } from "@/types/issues-ui";
 export function WcagCriteriaSection({
   isLoading,
   error,
-  options,
+  allCriteria,
   selected,
   onSelectedChangeAction,
   disabled = false,
   version,
+  wcagLevel,
   errors,
 }: WcagCriteriaSectionProps) {
   const handleSelectedChange = React.useCallback(
@@ -22,6 +23,36 @@ export function WcagCriteriaSection({
     },
     [onSelectedChangeAction],
   );
+
+  // Compute options from provided criteria, version, and level
+  const computedOptions = React.useMemo(() => {
+    if (!allCriteria || !version) return [];
+
+    const dotAware = (a: string, b: string) => {
+      const pa = a.split(".").map(Number);
+      const pb = b.split(".").map(Number);
+      for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const da = pa[i] ?? 0;
+        const db = pb[i] ?? 0;
+        if (da !== db) return da - db;
+      }
+      return 0;
+    };
+
+    const allowedLevels = wcagLevel === "A" ? ["A"] : wcagLevel === "AA" ? ["A", "AA"] : wcagLevel === "AAA" ? ["A", "AA", "AAA"] : undefined;
+
+    return (allCriteria || [])
+      .filter((c) => {
+        const versionMatch = c.version === version;
+        const levelMatch = !allowedLevels || allowedLevels.includes(c.level);
+        return versionMatch && levelMatch;
+      })
+      .sort((c1, c2) => dotAware(c1.code, c2.code))
+      .map((c) => ({
+        value: `${c.version}|${c.code}`,
+        label: `${c.code} — ${c.name} (${c.level})`,
+      }));
+  }, [allCriteria, version, wcagLevel]);
 
   return (
     <section
@@ -55,7 +86,7 @@ export function WcagCriteriaSection({
 
       <MultiSelect
         id="criteria"
-        options={options}
+        options={computedOptions}
         defaultValue={selected}
         onValueChange={handleSelectedChange}
         placeholder={

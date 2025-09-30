@@ -4,12 +4,18 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
-import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import IssueFormAssessments from "@/components/custom/issues/IssueFormAssessments";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
+import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
+
+import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
+import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
+import type { WcagVersion } from "@/types/issue";
 
 function IssueForm({ mode = "create" }) {
   const [aiBusy, setAiBusy] = useState(false);
+
+  const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
 
   const {
     register,
@@ -34,7 +40,20 @@ function IssueForm({ mode = "create" }) {
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
 
+  // Load full criteria catalog and filter by the assessment's version
+  const {
+    data: allCriteria = [],
+    isLoading: wcagLoading,
+    error: wcagError,
+  } = useWcagCriteriaQuery();
+
   const selectedAssessment = watch("assessment_id");
+
+  // Derive assessment context for WCAG filtering
+  const assessmentObj = assessments.find((a) => a.id === selectedAssessment);
+  const effectiveWcagVersion = assessmentObj?.wcag_version as
+    | WcagVersion
+    | undefined;
 
   return (
     <div>
@@ -59,6 +78,17 @@ function IssueForm({ mode = "create" }) {
           })}
         >
           <CoreFields register={register} errors={errors} />
+          <WcagCriteriaSection
+            isLoading={wcagLoading}
+            error={wcagError as Error | undefined}
+            allCriteria={allCriteria}
+            selected={criteriaCodes}
+            onSelectedChangeAction={setCriteriaCodes}
+            disabled={!effectiveWcagVersion}
+            version={effectiveWcagVersion ?? null}
+            errors={errors}
+          />
+
           <div className="flex justify-end mt-4">
             <SubmitButton text={"Submit"} loadingText={"Saving..."} />
           </div>
