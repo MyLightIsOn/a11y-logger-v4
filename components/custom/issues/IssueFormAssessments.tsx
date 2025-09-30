@@ -17,7 +17,7 @@ function IssueFormAssessments({ register, assessments }: Props) {
       </p>
       <div
         className={
-          "mb-8 bg-card border-border border rounded-sm px-4 py-2 text-lg w-fit"
+          "bg-card border-border border rounded-sm px-4 py-2 text-lg w-fit"
         }
       >
         <select

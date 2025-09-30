@@ -8,10 +8,9 @@ import AiIcon from "@/components/custom/AiIcon";
 import type { AIAssistPanelProps } from "@/types/ai";
 
 export function AIAssistPanel({
-  aiPrompt,
-  onAiPromptChangeAction,
   aiBusy,
-  onGenerateAction,
+  setAiBusy,
+  register,
 }: AIAssistPanelProps) {
   return (
     <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
@@ -41,8 +40,8 @@ export function AIAssistPanel({
             : What is the expected behavoir?
           </li>
         </ol>
-        <p className={"flex items-center mb-4 text-sm"}>
-          <AlertTriangle className="h-10 w-10 fill-amber-200 mr-2 dark:stroke-black" />
+        <p className={"flex items-center mb-4"}>
+          <AlertTriangle className="7 w-7 fill-amber-200 mr-2 dark:stroke-black" />
           AI assistance will only fill in fields you&apos;ve left empty; it will
           not overwrite values you&apos;ve already entered.
         </p>
@@ -55,14 +54,11 @@ export function AIAssistPanel({
         AI Assistance Description
       </label>
       <Textarea
+        {...register("ai_assist")}
         id="aiAssistanceDescription"
-        value={aiPrompt}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-          onAiPromptChangeAction(e.target.value)
-        }
         rows={4}
         placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
-        className="mt-1 block w-full mb-4"
+        className="mt-1 block w-full mb-4 placeholder:text-gray-400"
         aria-describedby="ai-assist-help"
       />
       <p id="ai-assist-help" className="sr-only">
@@ -70,12 +66,12 @@ export function AIAssistPanel({
       </p>
       <Button
         className={"bg-button-background text-md gap-4"}
-        type="button"
-        onClick={onGenerateAction}
+        type="submit"
+        onClick={() => setAiBusy(true)}
         disabled={aiBusy}
         aria-describedby="ai-status"
       >
-        {aiBusy ? "Working..." : "Generate/Refine with AI"} <AiIcon />
+        {aiBusy ? "Working..." : "Generate with AI"} <AiIcon />
       </Button>
       <span id="ai-status" role="status" aria-live="polite" className="sr-only">
         {aiBusy ? "Generating suggestions from AI..." : ""}

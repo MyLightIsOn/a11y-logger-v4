@@ -1,14 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
-
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import IssueFormAssessments from "@/components/custom/issues/IssueFormAssessments";
+import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 
 function IssueForm({ mode = "create" }) {
+  const [aiBusy, setAiBusy] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -25,6 +27,7 @@ function IssueForm({ mode = "create" }) {
       suggested_fix: "",
       severity: undefined,
       assessment_id: undefined,
+      ai_assist: "",
     },
   });
 
@@ -39,6 +42,14 @@ function IssueForm({ mode = "create" }) {
         {mode === "create" ? "Create New Issue" : "Edit Issue"}
       </h2>
       <IssueFormAssessments register={register} assessments={assessments} />
+
+      {selectedAssessment && (
+        <AIAssistPanel
+          register={register}
+          aiBusy={aiBusy}
+          setAiBusy={setAiBusy}
+        />
+      )}
 
       {selectedAssessment && (
         <form
