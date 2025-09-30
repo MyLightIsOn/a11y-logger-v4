@@ -5,10 +5,14 @@ import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
 
+import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
+import IssueFormAssessments from "@/components/custom/issues/IssueFormAssessments";
+
 function IssueForm({ mode = "create" }) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -19,26 +23,36 @@ function IssueForm({ mode = "create" }) {
       selector: "",
       code_snippet: "",
       suggested_fix: "",
-      severity: "Select severity",
+      severity: undefined,
+      assessment_id: undefined,
     },
   });
+
+  // Load assessments to resolve the selected assessment's WCAG version for AI context
+  const { data: assessments = [] } = useAssessmentsQuery();
+
+  const selectedAssessment = watch("assessment_id");
 
   return (
     <div>
       <h2 className={"font-bold text-xl mb-4"}>
         {mode === "create" ? "Create New Issue" : "Edit Issue"}
       </h2>
-      <form
-        id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
-        onSubmit={handleSubmit((data) => {
-          console.log(data);
-        })}
-      >
-        <CoreFields register={register} errors={errors} />
-        <div className="flex justify-end mt-4">
-          <SubmitButton text={"Submit"} loadingText={"Saving..."} />
-        </div>
-      </form>
+      <IssueFormAssessments register={register} assessments={assessments} />
+
+      {selectedAssessment && (
+        <form
+          id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
+          onSubmit={handleSubmit((data) => {
+            console.log(data);
+          })}
+        >
+          <CoreFields register={register} errors={errors} />
+          <div className="flex justify-end mt-4">
+            <SubmitButton text={"Submit"} loadingText={"Saving..."} />
+          </div>
+        </form>
+      )}
     </div>
   );
 }

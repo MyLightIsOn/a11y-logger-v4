@@ -58,13 +58,17 @@ export function CoreFields({ register, errors }: Props) {
               {config.type === "select" && (
                 <div
                   className={
-                    "mb-8 bg-card border-border border rounded-md px-4 py-2 text-lg w-[190px]"
+                    "mb-8 bg-card border-border border rounded-md px-4 py-2 text-lg w-[250px]"
                   }
                 >
                   <select
                     className={"bg-transparent w-full rounded-md"}
                     {...register("severity")}
                   >
+                    <option value={config.placeholder}>
+                      {config.placeholder}
+                    </option>
+                    /
                     {config.selectOptions &&
                       config.selectOptions.map((opt) => (
                         <option key={opt} value={opt}>
