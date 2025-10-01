@@ -15,12 +15,11 @@ import type { WcagVersion } from "@/types/issue";
 function IssueForm({ mode = "create" }) {
   const [aiBusy, setAiBusy] = useState(false);
 
-  const [criteriaCodes, setCriteriaCodes] = useState<string[]>([]);
-
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -82,11 +81,11 @@ function IssueForm({ mode = "create" }) {
             isLoading={wcagLoading}
             error={wcagError as Error | undefined}
             allCriteria={allCriteria}
-            selected={criteriaCodes}
-            onSelectedChangeAction={setCriteriaCodes}
             disabled={!effectiveWcagVersion}
             version={effectiveWcagVersion ?? null}
             errors={errors}
+            watch={watch}
+            setValue={setValue}
           />
 
           <div className="flex justify-end mt-4">

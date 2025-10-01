@@ -36,13 +36,12 @@ export type WcagCriteriaSectionProps = {
     name: string;
     level: "A" | "AA" | "AAA";
   }>;
-  // Selection handling
-  selected: string[];
-  onSelectedChangeAction: (arr: string[]) => void;
   disabled?: boolean;
   // Context for deriving options
   version: WcagVersion | null;
   wcagLevel?: "A" | "AA" | "AAA";
-  // RHF errors for aria-describedby
+  // RHF wiring
   errors: FieldErrors<CreateIssueInput>;
+  watch: (name: keyof CreateIssueInput) => unknown;
+  setValue: (name: keyof CreateIssueInput, value: unknown, options?: { shouldValidate?: boolean; shouldDirty?: boolean; shouldTouch?: boolean }) => void;
 };

@@ -10,18 +10,42 @@ export function WcagCriteriaSection({
   isLoading,
   error,
   allCriteria,
-  selected,
-  onSelectedChangeAction,
   disabled = false,
   version,
   wcagLevel,
   errors,
+  watch,
+  setValue,
 }: WcagCriteriaSectionProps) {
+  // Derive selected values from RHF's criteria field
+  const criteriaVal = watch("criteria") as unknown;
+  const selectedValues = React.useMemo(() => {
+    const arr = Array.isArray(criteriaVal)
+      ? (criteriaVal as Array<{ version?: string; code?: string }>)
+      : [];
+    return arr
+      .map((c) => {
+        const v = typeof c?.version === "string" ? c.version : undefined;
+        const code = typeof c?.code === "string" ? c.code : undefined;
+        if (v && code) return `${v}|${code}`;
+        return undefined;
+      })
+      .filter(Boolean) as string[];
+  }, [criteriaVal]);
+
   const handleSelectedChange = React.useCallback(
     (arr: unknown[]) => {
-      onSelectedChangeAction(arr as string[]);
+      const next = (Array.isArray(arr) ? arr : []) as string[];
+      const mapped = next
+        .map((v) => {
+          const [ver, code] = (v || "").split("|", 2);
+          if (ver && code) return { version: ver, code };
+          return undefined;
+        })
+        .filter(Boolean) as Array<{ version: string; code: string }>;
+      setValue("criteria", mapped, { shouldValidate: true, shouldDirty: true });
     },
-    [onSelectedChangeAction],
+    [setValue],
   );
 
   // Compute options from provided criteria, version, and level
@@ -39,7 +63,14 @@ export function WcagCriteriaSection({
       return 0;
     };
 
-    const allowedLevels = wcagLevel === "A" ? ["A"] : wcagLevel === "AA" ? ["A", "AA"] : wcagLevel === "AAA" ? ["A", "AA", "AAA"] : undefined;
+    const allowedLevels =
+      wcagLevel === "A"
+        ? ["A"]
+        : wcagLevel === "AA"
+          ? ["A", "AA"]
+          : wcagLevel === "AAA"
+            ? ["A", "AA", "AAA"]
+            : undefined;
 
     return (allCriteria || [])
       .filter((c) => {
@@ -80,14 +111,14 @@ export function WcagCriteriaSection({
       )}
       {error && <ErrorAlert message={normalizeErrorMessage(error)} />}
 
-      <p className="text-sm text-gray-500 mb-1">
+      <p id="criteria-help" className="text-sm text-gray-500 mb-1">
         Select one or more criteria that apply to this issue.
       </p>
 
       <MultiSelect
         id="criteria"
         options={computedOptions}
-        defaultValue={selected}
+        defaultValue={selectedValues}
         onValueChange={handleSelectedChange}
         placeholder={
           disabled
