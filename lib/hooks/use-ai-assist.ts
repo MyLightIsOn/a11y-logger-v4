@@ -136,8 +136,15 @@ export function applyAiSuggestionsNonDestructive(
   if (ai.suggested_fix && !current.suggested_fix)
     set.setSuggestedFix(ai.suggested_fix);
   if (ai.impact && !current.impact) set.setImpact(ai.impact);
-  if (ai.severity && (current.severity ?? "3") === "3")
-    set.setSeverity(String(ai.severity));
+  // Apply severity only if the current severity is effectively the default (unset)
+  if (ai.severity) {
+    const cur = current.severity;
+    const isValid = cur === "1" || cur === "2" || cur === "3" || cur === "4";
+    const effectiveCurrent = isValid ? (cur as "1" | "2" | "3" | "4") : "3";
+    if (effectiveCurrent === "3") {
+      set.setSeverity(String(ai.severity));
+    }
+  }
 
   if (Array.isArray(ai.criteria)) {
     const newKeys = ai.criteria
