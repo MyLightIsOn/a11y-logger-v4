@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
@@ -13,13 +13,12 @@ import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import type { WcagVersion } from "@/types/issue";
 
 function IssueForm({ mode = "create" }) {
-  const [aiBusy, setAiBusy] = useState(false);
-
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -33,6 +32,7 @@ function IssueForm({ mode = "create" }) {
       severity: undefined,
       assessment_id: undefined,
       ai_assist: "",
+      criteria: [],
     },
   });
 
@@ -54,6 +54,7 @@ function IssueForm({ mode = "create" }) {
     | WcagVersion
     | undefined;
 
+
   return (
     <div>
       <h2 className={"font-bold text-xl mb-4"}>
@@ -62,20 +63,19 @@ function IssueForm({ mode = "create" }) {
       <IssueFormAssessments register={register} assessments={assessments} />
 
       {selectedAssessment && (
-        <AIAssistPanel
-          register={register}
-          aiBusy={aiBusy}
-          setAiBusy={setAiBusy}
-        />
-      )}
-
-      {selectedAssessment && (
         <form
           id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
           onSubmit={handleSubmit((data) => {
             console.log(data);
           })}
         >
+          <AIAssistPanel
+            watch={watch}
+            getValues={getValues}
+            setValue={setValue}
+            assessments={assessments}
+          />
+
           <CoreFields register={register} errors={errors} />
           <WcagCriteriaSection
             isLoading={wcagLoading}

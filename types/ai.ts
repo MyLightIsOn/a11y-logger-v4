@@ -22,7 +22,7 @@ export interface GenerateIssueInsightsInput {
 export interface GenerateIssueInsightsOutput {
   title: string;
   description: string; // refined
-  severity_suggestion: SeveritySuggestion;
+  severity: SeveritySuggestion;
   criteria: CriterionRef[]; // validated against allowlist
   suggested_fix: string;
   impact: string;
@@ -38,11 +38,15 @@ export type OpenAiServiceOptions = {
 };
 
 // UI component props for the AI Assist panel
+import type { UseFormGetValues, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import type { CreateIssueInput } from "@/lib/validation/issues";
+
 export type AIAssistPanelProps = {
-  aiPrompt: string;
-  onAiPromptChangeAction: (value: string) => void;
-  aiBusy: boolean;
-  onGenerateAction: (e: React.FormEvent) => void;
-  aiError?: unknown | null;
-  aiMessage?: string | null;
+  watch: UseFormWatch<CreateIssueInput>;
+  getValues: UseFormGetValues<CreateIssueInput>;
+  setValue: UseFormSetValue<CreateIssueInput>;
+  assessments: Array<{
+    id: string;
+    wcag_version?: import("@/types/issue").WcagVersion;
+  }>;
 };

@@ -26,7 +26,7 @@ export const issueFormConfig = [
     label: "Severity",
     subtext: "Provide a detailed description of the issue.",
     placeholder: "Select severity",
-    selectOptions: ["1 - Critical", "2 - Severe", "3 - Medium", "4 - Low"],
+    selectOptions: ["1", "2", "3", "4"],
     ariaDescribedBy: "severity",
     required: true,
     requiredError: "Issue severity is required",

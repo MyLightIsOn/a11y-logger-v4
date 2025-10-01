@@ -136,8 +136,8 @@ export function applyAiSuggestionsNonDestructive(
   if (ai.suggested_fix && !current.suggested_fix)
     set.setSuggestedFix(ai.suggested_fix);
   if (ai.impact && !current.impact) set.setImpact(ai.impact);
-  if (ai.severity_suggestion && (current.severity ?? "3") === "3")
-    set.setSeverity(String(ai.severity_suggestion));
+  if (ai.severity && (current.severity ?? "3") === "3")
+    set.setSeverity(String(ai.severity));
 
   if (Array.isArray(ai.criteria)) {
     const newKeys = ai.criteria

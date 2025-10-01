@@ -7,11 +7,96 @@ import { AlertTriangle } from "lucide-react";
 import AiIcon from "@/components/custom/AiIcon";
 import type { AIAssistPanelProps } from "@/types/ai";
 
+import {
+  useAiAssist,
+  applyAiSuggestionsNonDestructive,
+} from "@/lib/hooks/use-ai-assist";
+
 export function AIAssistPanel({
-  aiBusy,
-  setAiBusy,
-  register,
+  watch,
+  getValues,
+  setValue,
+  assessments,
 }: AIAssistPanelProps) {
+  // Determine effective WCAG version from selected assessment
+  const selectedAssessment = watch("assessment_id") as unknown as
+    | string
+    | undefined;
+  const assessmentObj = (assessments || []).find(
+    (a) => a.id === selectedAssessment,
+  );
+  const effectiveWcagVersion = assessmentObj?.wcag_version;
+
+  const { aiPrompt, setAiPrompt, aiBusy, aiError, aiMessage, generate } =
+    useAiAssist({
+      getContext: () => {
+        const v = getValues();
+        return {
+          description: (
+            aiPrompt ||
+            v.ai_assist ||
+            v.description ||
+            ""
+          ).toString(),
+          url: v.url || undefined,
+          selector: v.selector || undefined,
+          code_snippet: v.code_snippet || undefined,
+          wcag_version: effectiveWcagVersion,
+        };
+      },
+      applySuggestions: (json) => {
+        const v = getValues();
+        const criteriaArr = (
+          Array.isArray(v.criteria) ? v.criteria : []
+        ) as Array<{ version?: string; code?: string }>;
+        const currentKeys = criteriaArr
+          .map((c) =>
+            c?.version && c?.code ? `${c.version}|${c.code}` : undefined,
+          )
+          .filter(Boolean) as string[];
+
+        return applyAiSuggestionsNonDestructive(json, {
+          current: {
+            title: v.title,
+            description: v.description,
+            suggested_fix: v.suggested_fix,
+            impact: v.impact,
+            severity: v.severity,
+            criteriaKeys: currentKeys,
+          },
+          set: {
+            setTitle: (val) => setValue("title", val, { shouldDirty: true }),
+            setDescription: (val) =>
+              setValue("description", val, { shouldDirty: true }),
+            setSuggestedFix: (val) =>
+              setValue("suggested_fix", val, { shouldDirty: true }),
+            setImpact: (val) => setValue("impact", val, { shouldDirty: true }),
+            setSeverity: (val) =>
+              setValue("severity", val, { shouldDirty: true }),
+            setCriteriaKeys: (updater) => {
+              const nextKeys = updater(currentKeys);
+              const mapped = nextKeys
+                .map((k) => {
+                  const [ver, code] = (k || "").split("|", 2);
+                  if (ver && code) return { version: ver, code };
+                  return undefined;
+                })
+                .filter(Boolean) as Array<{ version: string; code: string }>;
+              setValue("criteria", mapped, {
+                shouldDirty: true,
+                shouldValidate: true,
+              });
+            },
+          },
+        });
+      },
+    });
+
+  const handleGenerate = (e: React.FormEvent) => {
+    e.preventDefault();
+    void generate();
+  };
+
   return (
     <div className="mb-4 bg-tags/80 dark:bg-tags/10 p-6 rounded-md border-button-background border">
       <div className={"text-md font-medium text-gray-700 dark:text-white mb-4"}>
@@ -54,20 +139,34 @@ export function AIAssistPanel({
         AI Assistance Description
       </label>
       <Textarea
-        {...register("ai_assist")}
         id="aiAssistanceDescription"
         rows={4}
         placeholder="Example: The search button on the homepage is not operable via keyboard. It should be focusable and activated using the Enter key."
         className="mt-1 block w-full mb-4 placeholder:text-gray-400"
         aria-describedby="ai-assist-help"
+        value={aiPrompt}
+        onChange={(e) => {
+          setAiPrompt(e.target.value);
+          setValue("ai_assist", e.target.value as any, { shouldDirty: true });
+        }}
       />
       <p id="ai-assist-help" className="sr-only">
         Enter an issue description to help the AI generate suggestions.
       </p>
+      {aiError && (
+        <p className="text-sm mt-2 mb-2 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+          {String(aiError)}
+        </p>
+      )}
+      {aiMessage && (
+        <p className="text-sm text-gray-700 mb-2" aria-live="polite">
+          {aiMessage}
+        </p>
+      )}
       <Button
         className={"bg-button-background text-md gap-4"}
-        type="submit"
-        onClick={() => setAiBusy(true)}
+        type="button"
+        onClick={handleGenerate}
         disabled={aiBusy}
         aria-describedby="ai-status"
       >

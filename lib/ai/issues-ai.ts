@@ -22,7 +22,7 @@ const aiInsightsSchema = z
   .object({
     title: z.string().min(1).max(200),
     description: z.string().min(1).max(5000),
-    severity_suggestion: z.enum(["1", "2", "3", "4"]),
+    severity: z.enum(["1", "2", "3", "4"]),
     criteria: z.array(criterionRefSchema).default([]),
     suggested_fix: z.string().min(1).max(5000),
     impact: z.string().min(1).max(5000),
@@ -37,7 +37,7 @@ Return only strict JSON matching this TypeScript type (no markdown, no extra tex
 {
   "title": string,                    // short, WCAG-friendly, mention what is wrong in the title. e.g., "Missing alt text"
   "description": string,              // refined interpretation, do not include impact
-  "severity_suggestion": "1"|"2"|"3"|"4", // 1=highest impact, 4=lowest
+  "severity": "1"|"2"|"3"|"4", // 1=highest impact, 4=lowest
   "criteria": Array<{ code: string; version: "2.0"|"2.1"|"2.2" }>,
   "suggested_fix": string,            // practical remediation; include code examples if helpful
   "impact": string,                   // up to ~100 words explaining why it matters
@@ -232,7 +232,7 @@ export class IssuesAiService {
       const out: GenerateIssueInsightsOutput = {
         title: parsed.title,
         description: parsed.description,
-        severity_suggestion: parsed.severity_suggestion as SeveritySuggestion,
+        severity: parsed.severity as SeveritySuggestion,
         criteria: deduped,
         suggested_fix: parsed.suggested_fix,
         impact: parsed.impact,
