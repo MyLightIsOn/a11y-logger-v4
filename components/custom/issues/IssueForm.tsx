@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
@@ -38,9 +38,10 @@ function IssueForm({ mode = "create" }) {
       selector: "",
       code_snippet: "",
       suggested_fix: "",
-      severity: undefined,
+      severity: "3",
+      status: "open",
+      // Only include keys defined by CreateIssueInput
       assessment_id: undefined,
-      ai_assist: "",
       criteria: [],
       tag_ids: [],
       screenshots: [],
@@ -103,7 +104,7 @@ function IssueForm({ mode = "create" }) {
 
   const router = useRouter();
   const createIssue = useCreateIssueMutation();
-  const onSubmit = async (form: CreateIssueInput) => {
+  const onSubmit: SubmitHandler<CreateIssueInput> = async (form) => {
     let uploadResult: string[] | undefined = undefined;
     if (filesToUpload && filesToUpload.length > 0) {
       uploadResult = await upload().then((urls) => {

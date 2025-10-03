@@ -1,4 +1,4 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
+import type { FieldErrors, UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 import type { WcagVersion } from "@/types/issue";
 
@@ -42,6 +42,6 @@ export type WcagCriteriaSectionProps = {
   wcagLevel?: "A" | "AA" | "AAA";
   // RHF wiring
   errors: FieldErrors<CreateIssueInput>;
-  watch: (name: keyof CreateIssueInput) => unknown;
-  setValue: (name: keyof CreateIssueInput, value: unknown, options?: { shouldValidate?: boolean; shouldDirty?: boolean; shouldTouch?: boolean }) => void;
+  watch: UseFormWatch<CreateIssueInput>;
+  setValue: UseFormSetValue<CreateIssueInput>;
 };
