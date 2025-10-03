@@ -41,10 +41,8 @@ export function useFileUploads(opts: UseFileUploadsOptions = {}) {
         .map((it) => it.url)
         .filter((u): u is string => typeof u === "string" && u.length > 0);
 
-      let mergedOut: string[] = [];
       setUploadedUrls((prev) => {
         const merged = dedupeStrings([...(prev || []), ...urls]);
-        mergedOut = merged;
         onUploaded?.(merged);
         return merged;
       });
