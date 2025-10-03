@@ -8,8 +8,8 @@ export type UseFileUploadsOptions = {
   onUploaded?: (urls: string[]) => void;
 };
 
-// Expected shape of the uploads API response
-type UploadApiItem = { url: string };
+// Expected shape of the uploads API response (normalized by our API)
+type UploadApiItem = { url?: string; public_id?: string; format?: string };
 type UploadApiResponse = { data?: UploadApiItem[] };
 
 export function useFileUploads(opts: UseFileUploadsOptions = {}) {
@@ -48,18 +48,19 @@ export function useFileUploads(opts: UseFileUploadsOptions = {}) {
         onUploaded?.(merged);
         return merged;
       });
+
       setFilesToUpload(null);
-      return mergedOut;
+      return urls;
     } catch (e: unknown) {
       console.error("Upload error", e);
-      const message = e instanceof Error ? e.message : "Failed to upload images";
+      const message =
+        e instanceof Error ? e.message : "Failed to upload images";
       setUploadError(message);
       return undefined;
     } finally {
       setUploading(false);
     }
   }, [filesToUpload, folder, onUploaded]);
-
   return {
     filesToUpload,
     setFilesToUpload,
