@@ -66,7 +66,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
       router.push("/issues");
     }
   };
-
+  console.log(issue);
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-4 flex justify-between items-center">

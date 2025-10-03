@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
 import { SubmitButton } from "@/components/custom/forms/submit-button";
 import IssueFormAssessments from "@/components/custom/issues/IssueFormAssessments";
@@ -16,6 +17,9 @@ import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import type { WcagVersion } from "@/types/issue";
 import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
 import { useFileUploads } from "@/lib/hooks/use-file-uploads";
+import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
+import { normalizeCreateIssuePayload } from "@/lib/issues/constants";
+import type { CreateIssueInput } from "@/lib/validation/issues";
 
 function IssueForm({ mode = "create" }) {
   const {
@@ -25,7 +29,7 @@ function IssueForm({ mode = "create" }) {
     setValue,
     getValues,
     formState: { errors },
-  } = useForm({
+  } = useForm<CreateIssueInput>({
     defaultValues: {
       title: "",
       description: "",
@@ -47,7 +51,7 @@ function IssueForm({ mode = "create" }) {
   const { data: assessments = [] } = useAssessmentsQuery();
 
   // Uploads for attachments
-  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls } =
+  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls, upload } =
     useFileUploads({
       folder: "a11y-logger/issues",
       onUploaded: (urls) => setValue("screenshots", urls, { shouldDirty: true }),
@@ -91,6 +95,58 @@ function IssueForm({ mode = "create" }) {
     | WcagVersion
     | undefined;
 
+  const router = useRouter();
+  const createIssue = useCreateIssueMutation();
+
+  const onSubmit = async (form: CreateIssueInput) => {
+    // Upload pending files first so screenshots are included in one save
+    let uploadResult: string[] | undefined = undefined;
+    if (filesToUpload && filesToUpload.length > 0) {
+      uploadResult = await upload();
+      if (uploadError) return; // abort on upload error; UI shows error in AttachmentsSection
+      if (uploadResult && uploadResult.length) {
+        setValue("screenshots", uploadResult, { shouldDirty: true });
+      }
+    }
+
+    const latestScreenshots =
+      (uploadResult && uploadResult.length
+        ? uploadResult
+        : uploadedUrls && uploadedUrls.length
+          ? uploadedUrls
+          : (form.screenshots as string[] | undefined)) || [];
+
+    const assessmentId = form.assessment_id || selectedAssessment || "";
+    if (!assessmentId) {
+      // Assessment is required to create issue
+      return;
+    }
+
+    const payload = normalizeCreateIssuePayload({
+      title: form.title || "",
+      description: form.description,
+      severity: form.severity as unknown as string,
+      status: "open",
+      suggested_fix: form.suggested_fix,
+      impact: form.impact,
+      url: form.url,
+      selector: form.selector,
+      code_snippet: form.code_snippet,
+      screenshots: latestScreenshots,
+      tag_ids: (form.tag_ids as unknown as string[]) || [],
+      criteria: Array.isArray(form.criteria)
+        ? (form.criteria as Array<{ version: WcagVersion; code: string }>)
+        : [],
+      assessment_id: assessmentId,
+    });
+
+    createIssue.mutate(payload, {
+      onSuccess: () => {
+        router.push("/issues");
+      },
+    });
+  };
+
   return (
     <div>
       <h2 className={"font-bold text-xl mb-4"}>
@@ -101,9 +157,7 @@ function IssueForm({ mode = "create" }) {
       {selectedAssessment && (
         <form
           id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
-          onSubmit={handleSubmit((data) => {
-            console.log(data);
-          })}
+          onSubmit={handleSubmit(onSubmit)}
         >
           <div className="flex flex-wrap">
             <div className="p-6 w-full md:w-2/3">
