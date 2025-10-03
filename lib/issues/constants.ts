@@ -62,10 +62,20 @@ export function mapSeverityToBucket(
   input: unknown,
 ): "Critical" | "High" | "Medium" | "Low" {
   // Normalize input to string
-  if (input === "Critical" || input === "High" || input === "Medium" || input === "Low") {
+  if (
+    input === "Critical" ||
+    input === "High" ||
+    input === "Medium" ||
+    input === "Low"
+  ) {
     return input;
   }
-  const n = typeof input === "number" ? String(input) : typeof input === "string" ? input.trim() : "";
+  const n =
+    typeof input === "number"
+      ? String(input)
+      : typeof input === "string"
+        ? input.trim()
+        : "";
   switch (n) {
     case "1":
       return "Critical";
@@ -116,6 +126,7 @@ export function isCriteriaKey(key: string): boolean {
 
 /** Array dedupers */
 export function dedupeStrings(arr: string[]): string[] {
+  console.log("dedupeStrings", arr);
   return Array.from(new Set(arr));
 }
 

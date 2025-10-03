@@ -51,11 +51,17 @@ function IssueForm({ mode = "create" }) {
   const { data: assessments = [] } = useAssessmentsQuery();
 
   // Uploads for attachments
-  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls, upload } =
-    useFileUploads({
-      folder: "a11y-logger/issues",
-      onUploaded: (urls) => setValue("screenshots", urls, { shouldDirty: true }),
-    });
+  const {
+    filesToUpload,
+    setFilesToUpload,
+    uploading,
+    uploadError,
+    uploadedUrls,
+    upload,
+  } = useFileUploads({
+    folder: "a11y-logger/issues",
+    onUploaded: (urls) => setValue("screenshots", urls, { shouldDirty: true }),
+  });
 
   // Load tags for the Tags multiselect
   const {
@@ -97,31 +103,23 @@ function IssueForm({ mode = "create" }) {
 
   const router = useRouter();
   const createIssue = useCreateIssueMutation();
-
   const onSubmit = async (form: CreateIssueInput) => {
-    // Upload pending files first so screenshots are included in one save
     let uploadResult: string[] | undefined = undefined;
     if (filesToUpload && filesToUpload.length > 0) {
-      uploadResult = await upload();
+      uploadResult = await upload().then((urls) => {
+        return urls;
+      });
       if (uploadError) return; // abort on upload error; UI shows error in AttachmentsSection
       if (uploadResult && uploadResult.length) {
         setValue("screenshots", uploadResult, { shouldDirty: true });
       }
     }
 
-    const latestScreenshots =
-      (uploadResult && uploadResult.length
-        ? uploadResult
-        : uploadedUrls && uploadedUrls.length
-          ? uploadedUrls
-          : (form.screenshots as string[] | undefined)) || [];
-
     const assessmentId = form.assessment_id || selectedAssessment || "";
     if (!assessmentId) {
       // Assessment is required to create issue
       return;
     }
-
     const payload = normalizeCreateIssuePayload({
       title: form.title || "",
       description: form.description,
@@ -132,7 +130,7 @@ function IssueForm({ mode = "create" }) {
       url: form.url,
       selector: form.selector,
       code_snippet: form.code_snippet,
-      screenshots: latestScreenshots,
+      screenshots: uploadResult || [],
       tag_ids: (form.tag_ids as unknown as string[]) || [],
       criteria: Array.isArray(form.criteria)
         ? (form.criteria as Array<{ version: WcagVersion; code: string }>)
