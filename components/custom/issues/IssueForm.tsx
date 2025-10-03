@@ -14,6 +14,8 @@ import type { Option } from "@/types/options";
 import { useWcagCriteriaQuery } from "@/lib/query/use-wcag-criteria-query";
 import { useAssessmentsQuery } from "@/lib/query/use-assessments-query";
 import type { WcagVersion } from "@/types/issue";
+import AttachmentsSection from "@/components/custom/issues/AttachmentsSection";
+import { useFileUploads } from "@/lib/hooks/use-file-uploads";
 
 function IssueForm({ mode = "create" }) {
   const {
@@ -37,11 +39,19 @@ function IssueForm({ mode = "create" }) {
       ai_assist: "",
       criteria: [],
       tag_ids: [],
+      screenshots: [],
     },
   });
 
   // Load assessments to resolve the selected assessment's WCAG version for AI context
   const { data: assessments = [] } = useAssessmentsQuery();
+
+  // Uploads for attachments
+  const { filesToUpload, setFilesToUpload, uploading, uploadError, uploadedUrls } =
+    useFileUploads({
+      folder: "a11y-logger/issues",
+      onUploaded: (urls) => setValue("screenshots", urls, { shouldDirty: true }),
+    });
 
   // Load tags for the Tags multiselect
   const {
@@ -67,7 +77,6 @@ function IssueForm({ mode = "create" }) {
     [setValue],
   );
 
-  // Load full criteria catalog and filter by the assessment's version
   const {
     data: allCriteria = [],
     isLoading: wcagLoading,
@@ -96,36 +105,49 @@ function IssueForm({ mode = "create" }) {
             console.log(data);
           })}
         >
-          <AIAssistPanel
-            watch={watch}
-            getValues={getValues}
-            setValue={setValue}
-            assessments={assessments}
-          />
+          <div className="flex flex-wrap">
+            <div className="p-6 w-full md:w-2/3">
+              <AIAssistPanel
+                watch={watch}
+                getValues={getValues}
+                setValue={setValue}
+                assessments={assessments}
+              />
 
-          <CoreFields register={register} errors={errors} />
+              <CoreFields register={register} errors={errors} />
 
-          <WcagCriteriaSection
-            isLoading={wcagLoading}
-            error={wcagError as Error | undefined}
-            allCriteria={allCriteria}
-            disabled={!effectiveWcagVersion}
-            version={effectiveWcagVersion ?? null}
-            errors={errors}
-            watch={watch}
-            setValue={setValue}
-          />
+              <WcagCriteriaSection
+                isLoading={wcagLoading}
+                error={wcagError as Error | undefined}
+                allCriteria={allCriteria}
+                disabled={!effectiveWcagVersion}
+                version={effectiveWcagVersion ?? null}
+                errors={errors}
+                watch={watch}
+                setValue={setValue}
+              />
 
-          <TagsSection
-            isLoading={tagsLoading}
-            error={tagsError}
-            options={tagOptions}
-            selected={selectedTagIds}
-            onSelectedChangeAction={onTagsChange}
-          />
+              <TagsSection
+                isLoading={tagsLoading}
+                error={tagsError}
+                options={tagOptions}
+                selected={selectedTagIds}
+                onSelectedChangeAction={onTagsChange}
+              />
 
-          <div className="flex justify-end mt-4">
-            <SubmitButton text={"Submit"} loadingText={"Saving..."} />
+              <div className="flex justify-end mt-4">
+                <SubmitButton text={"Submit"} loadingText={"Saving..."} />
+              </div>
+            </div>
+            <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
+              <AttachmentsSection
+                filesToUpload={filesToUpload}
+                onFilesChangeAction={setFilesToUpload}
+                uploading={uploading}
+                uploadError={uploadError}
+                screenshots={uploadedUrls}
+              />
+            </div>
           </div>
         </form>
       )}
