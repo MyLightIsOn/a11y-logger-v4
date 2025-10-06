@@ -145,7 +145,7 @@ function IssueForm({ mode = "create" }) {
       },
     });
   };
-
+  console.log(mode);
   return (
     <div>
       <h2 className={"font-bold text-xl mb-4"}>

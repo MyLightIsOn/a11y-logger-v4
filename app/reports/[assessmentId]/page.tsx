@@ -20,8 +20,12 @@ export default function ReportDetailsPage() {
   const [error, setError] = React.useState<string | undefined>(undefined);
 
   // Fetch assessment issues to compute stats for charts (per planning step 18)
-  const { issues, stats, isLoading: isAssessmentLoading, error: assessError } =
-    useAssessmentDetails(assessmentId);
+  const {
+    issues,
+    stats,
+    isLoading: isAssessmentLoading,
+    error: assessError,
+  } = useAssessmentDetails(assessmentId);
 
   React.useEffect(() => {
     const load = async () => {
@@ -31,7 +35,10 @@ export default function ReportDetailsPage() {
       try {
         // Prefer sessionStorage (hand-off from generation)
         const key = `report:${assessmentId}`;
-        const cached = typeof window !== "undefined" ? window.sessionStorage.getItem(key) : null;
+        const cached =
+          typeof window !== "undefined"
+            ? window.sessionStorage.getItem(key)
+            : null;
         if (cached) {
           setReport(JSON.parse(cached) as Report);
           setLoading(false);
@@ -42,7 +49,9 @@ export default function ReportDetailsPage() {
         if (res.success && res.data) {
           setReport(res.data as Report);
         } else {
-          setError(res.error || "Report not found. Try generating a report first.");
+          setError(
+            res.error || "Report not found. Try generating a report first.",
+          );
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load report");
@@ -61,7 +70,10 @@ export default function ReportDetailsPage() {
       Medium: stats?.medium ?? 0,
       Low: stats?.low ?? 0,
       Total:
-        (stats?.critical ?? 0) + (stats?.high ?? 0) + (stats?.medium ?? 0) + (stats?.low ?? 0),
+        (stats?.critical ?? 0) +
+        (stats?.high ?? 0) +
+        (stats?.medium ?? 0) +
+        (stats?.low ?? 0),
     } as const;
   }, [stats?.critical, stats?.high, stats?.medium, stats?.low]);
 
@@ -70,7 +82,8 @@ export default function ReportDetailsPage() {
     const ref = getWcagByCode();
     const issuesByCode = new Map<string, Set<string>>();
     for (const issue of issues || []) {
-      const codes = (issue as { criteria_codes?: string[] }).criteria_codes || [];
+      const codes =
+        (issue as { criteria_codes?: string[] }).criteria_codes || [];
       for (const raw of codes) {
         const code = typeof raw === "string" ? raw.trim() : "";
         if (!/^\d+\.\d+\.\d+$/.test(code)) continue;
@@ -89,7 +102,9 @@ export default function ReportDetailsPage() {
           count: set.size,
         };
       })
-      .sort((a, b) => (a.criterion < b.criterion ? -1 : a.criterion > b.criterion ? 1 : 0));
+      .sort((a, b) =>
+        a.criterion < b.criterion ? -1 : a.criterion > b.criterion ? 1 : 0,
+      );
 
     return { byWcag: wcagRows };
   }, [issues]);
@@ -98,13 +113,14 @@ export default function ReportDetailsPage() {
   const pageError = error || assessError?.message;
 
   const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
-  const { save, isPending: isSaving, error: saveError } = useSaveReport(
-    assessmentId,
-    () => {
-      setSaveMessage("Report saved successfully.");
-      setTimeout(() => setSaveMessage(null), 4000);
-    },
-  );
+  const {
+    save,
+    isPending: isSaving,
+    error: saveError,
+  } = useSaveReport(assessmentId, () => {
+    setSaveMessage("Report saved successfully.");
+    setTimeout(() => setSaveMessage(null), 4000);
+  });
 
   const handleSave = React.useCallback(() => {
     if (!report || !assessmentId) return;
@@ -119,8 +135,12 @@ export default function ReportDetailsPage() {
           <Button variant="outline" onClick={() => router.back()}>
             Back
           </Button>
-          {saveMessage && <span className="text-green-600 text-sm">{saveMessage}</span>}
-          {saveError && <span className="text-red-600 text-sm">{saveError.message}</span>}
+          {saveMessage && (
+            <span className="text-green-600 text-sm">{saveMessage}</span>
+          )}
+          {saveError && (
+            <span className="text-red-600 text-sm">{saveError.message}</span>
+          )}
         </div>
         <h1 className="text-2xl font-bold">Report Details</h1>
         <div className="flex items-center gap-2">
@@ -147,7 +167,9 @@ export default function ReportDetailsPage() {
                 <CardTitle>Executive Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground whitespace-pre-wrap">{report.executive_summary.overview}</p>
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {report.executive_summary.overview}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h3 className="font-semibold mb-2">Top Risks</h3>
@@ -168,7 +190,9 @@ export default function ReportDetailsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">Estimated User Impact:</span>
-                  <Badge variant="outline">{report.executive_summary.estimated_user_impact}</Badge>
+                  <Badge variant="outline">
+                    {report.executive_summary.estimated_user_impact}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -180,9 +204,14 @@ export default function ReportDetailsPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {report.persona_summaries.map((p, idx) => (
-                    <div key={idx} className="p-4 border rounded-md dark:border-border">
+                    <div
+                      key={idx}
+                      className="p-4 border rounded-md dark:border-border"
+                    >
                       <h4 className="font-semibold mb-2">{p.persona}</h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{p.summary}</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {p.summary}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -212,17 +241,29 @@ export default function ReportDetailsPage() {
                 <CardTitle>WCAG by Criterion</CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Simple list as a fallback to a full recharts bar for minimal coupling */}
                 {byWcag.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No WCAG criteria linked yet.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No WCAG criteria linked yet.
+                  </p>
                 ) : (
                   <ul className="space-y-2 max-h-[420px] overflow-auto pr-2">
                     {byWcag.map((row) => (
-                      <li key={row.criterion} className="flex items-center justify-between gap-2">
-                        <span className="text-sm truncate" title={`${row.criterion} - ${row.name}`}>
+                      <li
+                        key={row.criterion}
+                        className="flex items-center justify-between gap-2"
+                      >
+                        <span
+                          className="text-md truncate"
+                          title={`${row.criterion} - ${row.name}`}
+                        >
                           {row.criterion} - {row.name}
                         </span>
-                        <Badge variant="secondary">{row.count}</Badge>
+                        <Badge
+                          variant="secondary"
+                          className={"text-black font-bold text-lg w-[35px]"}
+                        >
+                          {row.count}
+                        </Badge>
                       </li>
                     ))}
                   </ul>
