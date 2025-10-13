@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-// Removed per-row actions dropdown in favor of a simple Generate button
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import Loader from "@/components/custom/layout/loader";
 import {
   Select,
   SelectContent,
@@ -407,10 +407,13 @@ export default function VpatEditorSkeletonPage() {
     if (!vpat?.id) return;
     try {
       setExportingPdf(true);
-      const res = await fetch(`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const res = await fetch(
+        `/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`,
+        {
+          credentials: "include",
+          cache: "no-store",
+        },
+      );
       const html = await res.text();
       const win = window.open("", "_blank");
       if (!win) {
@@ -437,7 +440,11 @@ export default function VpatEditorSkeletonPage() {
           <div className="flex items-center gap-2">
             {vpat.id && (
               <>
-                <Button variant="outline" asChild aria-label="Export HTML VPAT report">
+                <Button
+                  variant="outline"
+                  asChild
+                  aria-label="Export HTML VPAT report"
+                >
                   <a
                     href={`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`}
                     target="_blank"
@@ -502,235 +509,251 @@ export default function VpatEditorSkeletonPage() {
 
       {!isLoading && vpat && (
         <div className="space-y-6">
-          {/* Header editable fields */}
-          <div className="rounded-lg border bg-card p-4 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="vpat-title">Title</Label>
-                <Input
-                  id="vpat-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="vpat-description">Description</Label>
-                <Input
-                  id="vpat-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
+          {savingAll ? (
+            <div
+              className="rounded-lg border bg-card p-10 min-h-[50vh] flex items-center justify-center"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader text="Saving VPAT…" />
             </div>
-            <div className="pt-1">
-              <div className="text-sm text-muted-foreground">
-                <strong>Scope</strong>: Placeholder summary (read-only). This
-                will display WCAG scope details in later milestones.
+          ) : (
+            <>
+              {/* Header editable fields */}
+              <div className="rounded-lg border bg-card p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="vpat-title">Title</Label>
+                    <Input
+                      id="vpat-title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vpat-description">Description</Label>
+                    <Input
+                      id="vpat-description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="pt-1">
+                  <div className="text-sm text-muted-foreground">
+                    <span className={"font-bold"}>Scope</span>: Placeholder
+                    summary (read-only). This will display WCAG scope details in
+                    later milestones.
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Criteria table */}
-          <div className="rounded-lg border overflow-hidden">
-            <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="toggle-hide-zero-issues"
-                  checked={hideZeroIssues}
-                  onCheckedChange={(v) => setHideZeroIssues(Boolean(v))}
-                  aria-label="Hide criteria with zero issues"
-                />
-                <Label htmlFor="toggle-hide-zero-issues" className="text-sm">
-                  Hide criteria with 0 issues
-                </Label>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Showing {filteredCriteria.length} of {criteria.length}
-              </div>
-            </div>
-            {isCriteriaError && (
-              <div className="p-3 text-sm text-red-700 bg-red-50 border-b">
-                {(criteriaError as Error)?.message ||
-                  "Failed to load WCAG criteria"}
-              </div>
-            )}
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr className="text-left">
-                  <th className="p-3 w-[22rem]">Criterion</th>
-                  <th className="p-3 w-[10rem]">Conformance</th>
-                  <th className="p-3">Remarks</th>
-                  <th className="p-3 w-[5rem] text-center">Issues</th>
-                  <th className="p-3 w-[5rem] text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCriteria.map((c) => {
-                  const cid = typeof c.id === "string" ? c.id : "";
-                  const local = cid ? rowState[cid] : undefined;
-                  const conformance = local?.conformance ?? null;
-                  const remarks = local?.remarks ?? "";
-                  const status = cid ? getRowStatus(cid) : "Empty";
-                  const errorMsg = cid ? rowErrors[cid] || "" : "";
-                  return (
-                    <tr
-                      key={`${c.code}-${cid || "noid"}`}
-                      className="border-t align-top"
+              {/* Criteria table */}
+              <div className="rounded-lg border overflow-hidden">
+                <div className="flex items-center justify-between p-3 border-b bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="toggle-hide-zero-issues"
+                      checked={hideZeroIssues}
+                      onCheckedChange={(v) => setHideZeroIssues(Boolean(v))}
+                      aria-label="Hide criteria with zero issues"
+                    />
+                    <Label
+                      htmlFor="toggle-hide-zero-issues"
+                      className="text-sm"
                     >
-                      <td className="p-3">
-                        <div className="font-medium">
-                          {c.code} — {c.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground flex items-center gap-2">
-                          <span>Level {c.level}</span>
-                          <span
-                            aria-live="polite"
-                            className={
-                              status === "Edited"
-                                ? "text-amber-600"
-                                : status === "Drafted"
-                                  ? "text-emerald-600"
-                                  : "text-muted-foreground"
-                            }
-                          >
-                            [{status}]
-                          </span>
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Select
-                          value={conformance ?? undefined}
-                          onValueChange={(val) =>
-                            cid &&
-                            handleChange(cid, {
-                              conformance: val as ConformanceValue,
-                            })
-                          }
-                          disabled={!cid}
+                      Hide criteria with 0 issues
+                    </Label>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Showing {filteredCriteria.length} of {criteria.length}
+                  </div>
+                </div>
+                {isCriteriaError && (
+                  <div className="p-3 text-sm text-red-700 bg-red-50 border-b">
+                    {(criteriaError as Error)?.message ||
+                      "Failed to load WCAG criteria"}
+                  </div>
+                )}
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50">
+                    <tr className="text-left">
+                      <th className="p-3 w-[22rem]">Criterion</th>
+                      <th className="p-3 w-[10rem]">Conformance</th>
+                      <th className="p-3">Remarks</th>
+                      <th className="p-3 w-[5rem] text-center">Issues</th>
+                      <th className="p-3 w-[5rem] text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCriteria.map((c) => {
+                      const cid = typeof c.id === "string" ? c.id : "";
+                      const local = cid ? rowState[cid] : undefined;
+                      const conformance = local?.conformance ?? null;
+                      const remarks = local?.remarks ?? "";
+                      const status = cid ? getRowStatus(cid) : "Empty";
+                      const errorMsg = cid ? rowErrors[cid] || "" : "";
+                      return (
+                        <tr
+                          key={`${c.code}-${cid || "noid"}`}
+                          className="border-t align-top"
                         >
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={cid ? "Select…" : "Loading…"}
-                            />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CONFORMANCE_OPTIONS.map((opt) => (
-                              <SelectItem key={opt} value={opt}>
-                                {opt}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-3">
-                        <div className="space-y-1">
-                          <Textarea
-                            placeholder="Add remarks…"
-                            className={`min-h-[3rem] ${errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                            aria-invalid={!!errorMsg}
-                            aria-describedby={
-                              errorMsg ? `${cid}-remarks-error` : undefined
-                            }
-                            value={remarks}
-                            onChange={(e) =>
-                              cid &&
-                              handleChange(cid, { remarks: e.target.value })
-                            }
-                            disabled={!cid}
-                          />
-                          {errorMsg && (
-                            <p
-                              id={`${cid}-remarks-error`}
-                              className="text-xs text-red-600"
-                            >
-                              {errorMsg}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <button
-                          className={
-                            "text-2xl text-center font-semibold flex items-center justify-center gap-2 w-full min-h-full underline"
-                          }
-                          onClick={() => {
-                            setDrawerCriterion({
-                              code: c.code,
-                              name: c.name,
-                              level: c.level,
-                            });
-                            setDrawerOpen(true);
-                            setSlideIndex(0);
-                          }}
-                          aria-label={`Open issues for ${c.code} ${c.name}`}
-                        >
-                          {issuesCountByCode.get(c.code) ?? 0}
-                        </button>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex flex-col gap-2 flex items-center justify-center">
-                          {cid &&
-                            rowWarnings[cid] &&
-                            !dismissedWarnings[cid] && (
-                              <div
-                                className="rounded border border-amber-300 bg-amber-50 text-amber-900 px-3 py-2 text-xs flex items-start justify-between gap-3"
-                                role="status"
+                          <td className="p-3">
+                            <div className="font-medium">
+                              {c.code} — {c.name}
+                            </div>
+                            <div className="text-xs text-muted-foreground flex items-center gap-2">
+                              <span>Level {c.level}</span>
+                              <span
                                 aria-live="polite"
+                                className={
+                                  status === "Edited"
+                                    ? "text-amber-600"
+                                    : status === "Drafted"
+                                      ? "text-emerald-600"
+                                      : "text-muted-foreground"
+                                }
                               >
-                                <span>{rowWarnings[cid]}</span>
-                                <button
-                                  type="button"
-                                  className="text-amber-900/70 hover:text-amber-900"
-                                  aria-label="Dismiss warning"
-                                  onClick={() =>
-                                    setDismissedWarnings((prev) => ({
-                                      ...prev,
-                                      [cid]: true,
-                                    }))
+                                [{status}]
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <Select
+                              value={conformance ?? undefined}
+                              onValueChange={(val) =>
+                                cid &&
+                                handleChange(cid, {
+                                  conformance: val as ConformanceValue,
+                                })
+                              }
+                              disabled={!cid}
+                            >
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={cid ? "Select…" : "Loading…"}
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {CONFORMANCE_OPTIONS.map((opt) => (
+                                  <SelectItem key={opt} value={opt}>
+                                    {opt}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="p-3">
+                            <div className="space-y-1">
+                              <Textarea
+                                placeholder="Add remarks…"
+                                className={`min-h-[200px] ${errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                                aria-invalid={!!errorMsg}
+                                aria-describedby={
+                                  errorMsg ? `${cid}-remarks-error` : undefined
+                                }
+                                value={remarks}
+                                onChange={(e) =>
+                                  cid &&
+                                  handleChange(cid, { remarks: e.target.value })
+                                }
+                                disabled={!cid}
+                              />
+                              {errorMsg && (
+                                <p
+                                  id={`${cid}-remarks-error`}
+                                  className="text-xs text-red-600"
+                                >
+                                  {errorMsg}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <button
+                              className={
+                                "text-2xl text-center font-semibold flex items-center justify-center gap-2 w-full min-h-full underline"
+                              }
+                              onClick={() => {
+                                setDrawerCriterion({
+                                  code: c.code,
+                                  name: c.name,
+                                  level: c.level,
+                                });
+                                setDrawerOpen(true);
+                                setSlideIndex(0);
+                              }}
+                              aria-label={`Open issues for ${c.code} ${c.name}`}
+                            >
+                              {issuesCountByCode.get(c.code) ?? 0}
+                            </button>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex flex-col gap-2 flex items-center justify-center">
+                              {cid &&
+                                rowWarnings[cid] &&
+                                !dismissedWarnings[cid] && (
+                                  <div
+                                    className="rounded border border-amber-300 bg-amber-50 text-amber-900 px-3 py-2 text-xs flex items-start justify-between gap-3"
+                                    role="status"
+                                    aria-live="polite"
+                                  >
+                                    <span>{rowWarnings[cid]}</span>
+                                    <button
+                                      type="button"
+                                      className="text-amber-900/70 hover:text-amber-900"
+                                      aria-label="Dismiss warning"
+                                      onClick={() =>
+                                        setDismissedWarnings((prev) => ({
+                                          ...prev,
+                                          [cid]: true,
+                                        }))
+                                      }
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                )}
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => cid && handleGenerate(cid)}
+                                  disabled={!cid || generatingId === cid}
+                                  aria-label={
+                                    cid
+                                      ? `Generate remarks for ${c.code}`
+                                      : "Generate"
                                   }
                                 >
-                                  ×
-                                </button>
+                                  {generatingId === cid
+                                    ? "Generating…"
+                                    : "Generate"}
+                                </Button>
                               </div>
-                            )}
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => cid && handleGenerate(cid)}
-                              disabled={!cid || generatingId === cid}
-                              aria-label={
-                                cid
-                                  ? `Generate remarks for ${c.code}`
-                                  : "Generate"
-                              }
-                            >
-                              {generatingId === cid
-                                ? "Generating…"
-                                : "Generate"}
-                            </Button>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {filteredCriteria.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="p-4 text-sm text-muted-foreground"
-                    >
-                      {isLoadingCriteria
-                        ? "Loading WCAG criteria…"
-                        : hideZeroIssues
-                          ? "No criteria with issues to display."
-                          : "No criteria available."}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredCriteria.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="p-4 text-sm text-muted-foreground"
+                        >
+                          {isLoadingCriteria
+                            ? "Loading WCAG criteria…"
+                            : hideZeroIssues
+                              ? "No criteria with issues to display."
+                              : "No criteria available."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       )}
 
