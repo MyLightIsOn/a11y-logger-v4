@@ -32,16 +32,6 @@ export default function SideBar({
     }
   }, []);
 
-  // Persist to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("sidebar:collapsed", String(collapsed));
-    } catch (e) {
-      console.log(e);
-      // ignore
-    }
-  }, [collapsed]);
-
   return (
     <div
       className={
@@ -57,7 +47,10 @@ export default function SideBar({
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               aria-controls="nav"
               aria-expanded={!collapsed}
-              onClick={() => setCollapsed((c) => !c)}
+              onClick={() => {
+                localStorage.setItem("sidebar:collapsed", String(!collapsed));
+                setCollapsed(!collapsed);
+              }}
               className={`inline-flex ${collapsed ? "justify-center" : "justify-end"} w-full gap-2 rounded-md px-2 py-1 text-sm text-primary a11y-focus`}
             >
               {collapsed ? (
