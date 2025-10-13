@@ -7,67 +7,148 @@ import {
   User,
   Folder,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
 } from "lucide-react";
 import { LogoutButton } from "@/components/custom/logout-button";
+import { useEffect, useState } from "react";
 
 export default function SideBar({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("sidebar:collapsed");
+      if (saved != null) setCollapsed(saved === "true");
+    } catch (e) {
+      console.log(e);
+      // ignore
+    }
+  }, []);
+
+  // Persist to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("sidebar:collapsed", String(collapsed));
+    } catch (e) {
+      console.log(e);
+      // ignore
+    }
+  }, [collapsed]);
+
   return (
-    <div className="grid grid-cols-[240px_1fr] relative min-h-full">
+    <div
+      className={
+        `grid relative min-h-full ` +
+        (collapsed ? "grid-cols-[72px_1fr]" : "grid-cols-[240px_1fr]")
+      }
+    >
       <nav className="border-r bg-primary-foreground dark:bg-card">
         <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex items-center justify-between px-2 py-2 border-b border-gray-400">
+            <button
+              type="button"
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-controls="nav"
+              aria-expanded={!collapsed}
+              onClick={() => setCollapsed((c) => !c)}
+              className={`inline-flex ${collapsed ? "justify-center" : "justify-end"} w-full gap-2 rounded-md px-2 py-1 text-sm text-primary a11y-focus`}
+            >
+              {collapsed ? (
+                <ChevronRight className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+              ) : (
+                <ChevronLeft className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+              )}
+              <span className={"sr-only"}>
+                {collapsed ? "Expand" : "Collapse"}
+              </span>
+            </button>
+          </div>
+
           <div className="flex-1 overflow-auto py-2 relative">
             <nav
               id={"nav"}
-              className="grid items-start px-4 text-sm font-medium pt-4"
+              className={
+                "grid items-start text-sm font-medium pt-2 " +
+                (collapsed ? "px-1" : "px-4")
+              }
             >
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/dashboard"
+                title="Dashboard"
               >
-                <LayoutDashboardIcon className="h-4 w-4" />
-                Dashboard
+                <LayoutDashboardIcon
+                  className={collapsed ? "h-6 w-6" : "h-4 w-4"}
+                />
+                <span className={collapsed ? "sr-only" : ""}>Dashboard</span>
               </Link>
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/projects"
+                title="Projects"
               >
-                <Folder className="h-4 w-4" />
-                Projects
+                <Folder className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                <span className={collapsed ? "sr-only" : ""}>Projects</span>
               </Link>
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/assessments"
+                title="Assessments"
               >
-                <FileCheck className="h-4 w-4" />
-                Assessments
+                <FileCheck className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                <span className={collapsed ? "sr-only" : ""}>Assessments</span>
               </Link>
 
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/issues"
+                title="Issues"
               >
-                <AlertTriangle className="h-4 w-4" />
-                Issues
+                <AlertTriangle className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                <span className={collapsed ? "sr-only" : ""}>Issues</span>
               </Link>
 
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/vpats"
+                title="VPATs"
               >
-                <User className="h-4 w-4" />
-                VPATS
+                <ClipboardList className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                <span className={collapsed ? "sr-only" : ""}>VPATS</span>
               </Link>
 
               <Link
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus"
+                className={
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
+                  (collapsed ? "justify-center" : "")
+                }
                 href="/account"
+                title="Account"
               >
-                <User className="h-4 w-4" />
-                Account
+                <User className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                <span className={collapsed ? "sr-only" : ""}>Account</span>
               </Link>
             </nav>
             <div
