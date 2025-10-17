@@ -54,7 +54,12 @@ export default function RootLayout({
               </div>
             </div>
             <Header />
-            {children}
+            <main
+              id={"main"}
+              className="flex flex-col items-center justify-center -mt-[122px] pt-[65px] min-h-full w-full"
+            >
+              {children}
+            </main>
             <Footer />
           </QueryClientContainer>
         </ThemeProvider>

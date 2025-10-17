@@ -5,7 +5,7 @@ import DashboardAreaChart from "@/components/custom/dashboard/dashboard-area-cha
 
 export default function Page() {
   return (
-    <div className="flex flex-col max-w-screen-xl">
+    <div className="flex flex-col max-w-screen-xl pt-2">
       <div className="flex flex-1 pb-4">
         <div className="w-3/4 flex flex-col">
           <div className="pb-4">

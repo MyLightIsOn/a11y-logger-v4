@@ -2,11 +2,8 @@ import { Hero } from "@/components/custom/layout/hero";
 
 export default function Home() {
   return (
-    <main
-      id={"main"}
-      className="min-h-screen flex flex-col items-center justify-center"
-    >
+    <div>
       <Hero />
-    </main>
+    </div>
   );
 }
