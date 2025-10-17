@@ -40,9 +40,9 @@ export default function SideBar({
           (collapsed ? "grid-cols-[72px_1fr]" : "grid-cols-[240px_1fr]")
         }
       >
-        <nav className="border-r bg-primary-foreground dark:bg-card">
+        <nav className="border-r bg-primary-foreground dark:bg-card pt-[65px]">
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex items-center justify-between px-2 py-2 border-b border-gray-400">
+            <div className="flex items-center justify-between px-2">
               <button
                 type="button"
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -52,24 +52,26 @@ export default function SideBar({
                   localStorage.setItem("sidebar:collapsed", String(!collapsed));
                   setCollapsed(!collapsed);
                 }}
-                className={`inline-flex ${collapsed ? "justify-center" : "justify-end"} w-full gap-2 rounded-md px-2 py-1 text-sm text-primary a11y-focus`}
+                className={`inline-flex ${collapsed ? "justify-center" : "justify-end"} w-full rounded-md px-2 py-1 text-sm text-primary a11y-focus`}
               >
-                {collapsed ? (
-                  <ChevronRight className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                ) : (
-                  <ChevronLeft className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                )}
+                <div className={"border border-border rounded-sm p-1"}>
+                  {collapsed ? (
+                    <ChevronRight className={"h-6 w-6"} />
+                  ) : (
+                    <ChevronLeft className={"h-6 w-6"} />
+                  )}
+                </div>
                 <span className={"sr-only"}>
                   {collapsed ? "Expand" : "Collapse"}
                 </span>
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto py-2 relative">
+            <div className="flex-1 overflow-auto relative">
               <nav
                 id={"nav"}
                 className={
-                  "grid items-start text-sm font-medium pt-2 " +
+                  "grid items-start text-sm font-medium " +
                   (collapsed ? "px-1" : "px-4")
                 }
               >

@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
 import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
+import VPATForm from "@/app/vpats/[vpatId]/VPATForm";
 
 function Page() {
   const params = useParams();
@@ -14,7 +14,7 @@ function Page() {
   const [savingAll, setSavingAll] = useState<boolean>(false);
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
-
+  console.log(vpat);
   return (
     <div className={"min-h-full"}>
       {isLoading && (
@@ -44,10 +44,7 @@ function Page() {
               setExportingPdf={setExportingPdf}
             />
           </div>
-
-          <div className={"bg-card rounded-lg shadow-md border border-border"}>
-            Test
-          </div>
+          <VPATForm vpat={vpat} />
         </div>
       )}
     </div>
