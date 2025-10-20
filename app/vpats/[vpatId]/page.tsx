@@ -14,7 +14,7 @@ function Page() {
   const [savingAll, setSavingAll] = useState<boolean>(false);
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
-  console.log(vpat);
+
   return (
     <div className={"min-h-full"}>
       {isLoading && (
