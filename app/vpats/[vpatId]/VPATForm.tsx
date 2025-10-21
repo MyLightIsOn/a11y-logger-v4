@@ -2,13 +2,22 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { getAllWcagCriteria } from "@/lib/vpat/utils";
+import { Select } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+
+function sanitizeKey(code: string) {
+  // RHF uses dot-notation for nesting; replace dots with underscores in the field name
+  return code.replace(/\./g, "_");
+}
 
 function VpatForm({ vpat }) {
   const { register, reset, getValues } = useForm({
     defaultValues: {
       title: vpat?.title ?? "",
       description: vpat?.description ?? "",
+      criteria: vpat?.criteria ?? {},
     },
   });
 
@@ -75,19 +84,52 @@ function VpatForm({ vpat }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row) => (
-                    <tr key={`${row.code}`} className="border-t">
-                      <td className="p-3 align-top">
-                        <div className="font-medium">
-                          {row.code} — {row.name}
-                        </div>
-                      </td>
-                      <td className="p-3 align-top">{row.name}</td>
-                      <td className="p-3 align-top">{row.name}</td>
-                      <td className="p-3 align-top text-center">{row.name}</td>
-                      <td className="p-3 align-top text-center">{row.name}</td>
-                    </tr>
-                  ))}
+                  {rows.map((row) => {
+                    const key = sanitizeKey(row.code);
+
+                    return (
+                      <tr key={key} className="border-t">
+                        <td className="p-3 align-top">
+                          <div className="font-medium">
+                            {row.code} — {row.name}
+                          </div>
+                        </td>
+                        <td className="p-3 align-top">
+                          <select
+                            className="w-full border rounded px-3 py-3 bg-transparent"
+                            {...register(
+                              `criteria.${key}.conformance` as const,
+                            )}
+                          >
+                            <option value="">Select…</option>
+                            <option value="supports">Supports</option>
+                            <option value="partiallySupports">
+                              Partially supports
+                            </option>
+                            <option value="doesNotSupport">
+                              Does not support
+                            </option>
+                            <option value="notApplicable">
+                              Not applicable
+                            </option>
+                          </select>
+                        </td>
+                        <td className="p-3 align-top">
+                          <Textarea
+                            className="w-full border rounded px-2 py-1"
+                            rows={3}
+                            {...register(`criteria.${key}.remarks` as const)}
+                          />
+                        </td>
+                        <td className="p-3 align-top text-center">
+                          Issue Count Here
+                        </td>
+                        <td className="p-3 align-top text-center">
+                          <Button variant="outline">Generate</Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
