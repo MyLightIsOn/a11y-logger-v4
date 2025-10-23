@@ -33,7 +33,9 @@ export function compareWcagCodes(a: string, b: string): number {
 }
 
 /** Stable sort helper for lists that contain a `code` field. */
-export function sortCriteriaByCode<T extends { code: string }>(list: readonly T[]): T[] {
+export function sortCriteriaByCode<T extends { code: string }>(
+  list: readonly T[],
+): T[] {
   // copy to keep stable and non-mutating
   return [...list].sort((x, y) => compareWcagCodes(x.code, y.code));
 }
@@ -56,7 +58,11 @@ export function filterByMinVersion(
   criteria: readonly CriteriaDetail[],
   min: "2.0" | "2.1" | "2.2" = "2.0",
 ): CriteriaDetail[] {
-  const order: Record<"2.0" | "2.1" | "2.2", number> = { "2.0": 0, "2.1": 1, "2.2": 2 };
+  const order: Record<"2.0" | "2.1" | "2.2", number> = {
+    "2.0": 0,
+    "2.1": 1,
+    "2.2": 2,
+  };
   return criteria.filter((c) => {
     // if versions empty, assume newest per reference semantics elsewhere; include when min is lowest
     if (!c.versions || c.versions.length === 0) return min === "2.0";
@@ -71,7 +77,8 @@ export type CriterionForNext = { id: string; code: string };
 /** Determine if a persisted draft row is effectively empty (no conformance and no non-empty remarks). */
 export function isDraftRowEmpty(row: VpatRowDraft | undefined | null): boolean {
   if (!row) return true; // no row persisted yet is considered empty
-  const hasConformance = row.conformance !== null && row.conformance !== undefined;
+  const hasConformance =
+    row.conformance !== null && row.conformance !== undefined;
   const remarks = (row.remarks || "").trim();
   const hasRemarks = remarks.length > 0;
   return !hasConformance && !hasRemarks;
@@ -120,4 +127,62 @@ export function computeNextNEmpty(
     }
   }
   return out;
+}
+
+export function normalizeConformance(value: string | null | undefined): string {
+  if (!value) return "";
+  const v = value.trim().toLowerCase();
+  switch (v) {
+    case "supports":
+      return "supports";
+    case "partially supports":
+    case "partiallysupports":
+      return "partiallySupports";
+    case "does not support":
+    case "doesnotsupport":
+      return "doesNotSupport";
+    case "not applicable":
+    case "notapplicable":
+      return "notApplicable";
+    default:
+      // Unrecognized or "Not Evaluated" -> treat as empty selection
+      return "";
+  }
+}
+
+export function getCriteriaDefaults(
+  draftRows: readonly VpatRowDraft[] | undefined,
+  codeById: Map<string, string>,
+): Record<string, { conformance?: string; remarks?: string }> {
+  const sanitize = (code: string) => code.replace(/\./g, "_");
+  const out: Record<string, { conformance?: string; remarks?: string }> = {};
+  if (!draftRows || draftRows.length === 0) return out;
+  for (const row of draftRows) {
+    if (!row || !row.wcag_criterion_id) continue;
+    const code = codeById.get(row.wcag_criterion_id);
+    if (!code) continue;
+    const key = sanitize(code);
+    out[key] = {
+      conformance: normalizeConformance(row.conformance ?? null),
+      remarks: row.remarks ?? "",
+    };
+  }
+  return out;
+}
+
+export function getCodeById(
+  wcagCriteria:
+    | Array<{ id?: string | null; code?: string | null }>
+    | readonly { id?: string | null; code?: string | null }[]
+    | undefined,
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const c of wcagCriteria || []) {
+    const id = c?.id;
+    const code = c?.code;
+    if (typeof id === "string" && id && typeof code === "string" && code) {
+      map.set(id, code);
+    }
+  }
+  return map;
 }

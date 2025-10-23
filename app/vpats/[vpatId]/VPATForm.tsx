@@ -1,11 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getAllWcagCriteria } from "@/lib/vpat/utils";
-import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useVpatDraftRows } from "@/lib/query/use-vpat-queries";
+import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
+import {
+  getAllWcagCriteria,
+  getCriteriaDefaults,
+  getCodeById,
+} from "@/lib/vpat/utils";
 
 function sanitizeKey(code: string) {
   // RHF uses dot-notation for nesting; replace dots with underscores in the field name
@@ -13,29 +18,37 @@ function sanitizeKey(code: string) {
 }
 
 function VpatForm({ vpat }) {
-  const { register, reset, getValues } = useForm({
+  const { data: draftRows } = useVpatDraftRows(vpat?.id ?? null);
+  const { data: wcagCriteria } = useWcagCriteria();
+
+  // Build a map from criterion ID -> WCAG code for quick lookup
+  const codeById = useMemo(() => getCodeById(wcagCriteria), [wcagCriteria]);
+
+  // Compute criteria default values from DB rows when both datasets are available
+  const criteriaDefaults = useMemo(
+    () => getCriteriaDefaults(draftRows, codeById),
+    [draftRows, codeById],
+  );
+
+  const { register, reset } = useForm({
     defaultValues: {
       title: vpat?.title ?? "",
       description: vpat?.description ?? "",
-      criteria: vpat?.criteria ?? {},
+      criteria: criteriaDefaults,
     },
   });
 
   const criteriaArray = getAllWcagCriteria();
 
-  // Reset all currently registered fields based on incoming vpat without listing them one by one
+  // When vpat header or criteriaDefaults change, reset the form with the latest values
   useEffect(() => {
     if (!vpat) return;
-    const currentKeys = Object.keys(getValues());
-    const nextValues = currentKeys.reduce(
-      (acc, key) => {
-        acc[key] = vpat?.[key] ?? "";
-        return acc;
-      },
-      {} as Record<string, unknown>,
-    );
-    reset(nextValues);
-  }, [vpat, reset, getValues]);
+    reset({
+      title: vpat.title ?? "",
+      description: vpat.description ?? "",
+      criteria: criteriaDefaults,
+    });
+  }, [vpat, criteriaDefaults, reset]);
 
   return (
     <div>
@@ -68,10 +81,10 @@ function VpatForm({ vpat }) {
           return (
             <div
               key={level}
-              className="p-4 bg-card rounded-lg shadow-md border border-border"
+              className="bg-card rounded-lg shadow-md border border-border mb-4"
             >
               <table className="w-full border-collapse">
-                <caption className="text-left font-semibold p-3">
+                <caption className="text-left font-semibold p-4 text-xl">
                   {label}
                 </caption>
                 <thead className="bg-muted/50">
