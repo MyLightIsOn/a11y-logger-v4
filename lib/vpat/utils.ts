@@ -1,5 +1,6 @@
 import { getWcagByCode, type CriteriaDetail } from "@/lib/wcag/reference";
 import type { VpatRowDraft } from "@/types/vpat";
+import { camelToTitle } from "@/lib/utils";
 
 /**
  * Parse a WCAG criterion code (e.g., "1.4.13") into its numeric tuple [1,4,13].
@@ -220,4 +221,75 @@ export function buildCodeToIdMap(
     }
   }
   return map;
+}
+
+/**
+ * Build the imperative handle used by VPATForm to expose imperative actions (e.g., saveDraft) to parent components.
+ * This mirrors the pattern used by other VPAT utilities (buildCodeToIdMap, getCriteriaDefaults, etc.),
+ * centralizing the implementation and keeping the component lean.
+ *
+ * Responsibilities of saveDraft:
+ * - Read current form values via getValues.
+ * - Persist the VPAT title and description using updateVpat.mutateAsync.
+ * - Iterate through criteria values, map sanitized codes back to WCAG codes, then to criterion IDs via idByCode.
+ * - Persist each row using saveRow.mutateAsync, converting conformance to title case via camelToTitle and trimming values.
+ * - Swallow individual errors to avoid breaking the whole save pass; callers can observe global errors if desired.
+ */
+export function buildVpatFormHandle(options: {
+  getValues: () => {
+    title?: string;
+    description?: string | null;
+    criteria?: Record<string, { conformance?: string; remarks?: string }>;
+  };
+  updateVpat: { mutateAsync: (payload: { title: string; description: string | null }) => Promise<unknown> };
+  saveRow: {
+    mutateAsync: (args: {
+      criterionId: string;
+      payload: { conformance: string | null; remarks: string | null };
+    }) => Promise<unknown>;
+  };
+  idByCode: Map<string, string>;
+}) {
+  const { getValues, updateVpat, saveRow, idByCode } = options;
+  const { camelToTitle } = require("@/lib/utils");
+  return {
+    async saveDraft() {
+      const values = getValues();
+      // Update title/description first
+      const title = (values.title || "").trim();
+      const descriptionRaw = values.description ?? "";
+      const description = descriptionRaw.trim();
+      try {
+        await updateVpat.mutateAsync({
+          title,
+          description: description.length > 0 ? description : null,
+        });
+      } catch (e) {
+        // swallow here; caller can show global error if desired
+        console.error("Failed to update VPAT header", e);
+      }
+
+      // Save all criteria present in the form values (includes existing rows and any user-edited)
+      const entries = Object.entries(values.criteria || {});
+      for (const [sanitizedCode, data] of entries) {
+        const code = sanitizedCode.replace(/_/g, ".");
+        const criterionId = idByCode.get(code);
+        if (!criterionId) continue;
+        const conformance = (data?.conformance || "").trim();
+        const remarks = (data?.remarks || "").trim();
+        try {
+          await saveRow.mutateAsync({
+            criterionId: criterionId,
+            payload: {
+              conformance:
+                conformance.length > 0 ? camelToTitle(conformance) : null,
+              remarks: remarks.length > 0 ? remarks : null,
+            },
+          });
+        } catch (e) {
+          console.error(`Failed to save row for ${code}`, e);
+        }
+      }
+    },
+  } as { saveDraft: () => Promise<void> };
 }

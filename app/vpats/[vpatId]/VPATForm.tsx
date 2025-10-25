@@ -21,8 +21,8 @@ import {
   getCriteriaDefaults,
   getCodeById,
   buildCodeToIdMap,
+  buildVpatFormHandle,
 } from "@/lib/vpat/utils";
-import { camelToTitle } from "@/lib/utils";
 
 function sanitizeKey(code: string) {
   // RHF uses dot-notation for nesting; replace dots with underscores in the field name
@@ -31,6 +31,12 @@ function sanitizeKey(code: string) {
 
 export type VpatFormHandle = {
   saveDraft: () => Promise<void>;
+};
+
+type FormValues = {
+  title: string;
+  description?: string;
+  criteria: Record<string, { conformance?: string; remarks?: string }>;
 };
 
 const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
@@ -53,12 +59,6 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
     [draftRows, codeById],
   );
 
-  type FormValues = {
-    title: string;
-    description?: string;
-    criteria: Record<string, { conformance?: string; remarks?: string }>;
-  };
-
   const { register, reset, getValues, formState } = useForm<FormValues>({
     defaultValues: {
       title: vpat?.title ?? "",
@@ -70,46 +70,9 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   const updateVpat = useUpdateVpat(vpat?.id ?? null);
   const saveRow = useSaveVpatRow(vpat?.id);
 
-  useImperativeHandle(ref, () => ({
-    async saveDraft() {
-      const values = getValues();
-      // Update title/description first
-      const title = (values.title || "").trim();
-      const descriptionRaw = values.description ?? "";
-      const description = descriptionRaw.trim();
-      try {
-        await updateVpat.mutateAsync({
-          title,
-          description: description.length > 0 ? description : null,
-        });
-      } catch (e) {
-        // swallow here; caller can show global error if desired
-        console.error("Failed to update VPAT header", e);
-      }
-
-      // Save all criteria present in the form values (includes existing rows and any user-edited)
-      const entries = Object.entries(values.criteria || {});
-      for (const [sanitizedCode, data] of entries) {
-        const code = sanitizedCode.replace(/_/g, ".");
-        const criterionId = idByCode.get(code);
-        if (!criterionId) continue;
-        const conformance = (data?.conformance || "").trim();
-        const remarks = (data?.remarks || "").trim();
-        try {
-          await saveRow.mutateAsync({
-            criterionId: criterionId,
-            payload: {
-              conformance:
-                conformance.length > 0 ? camelToTitle(conformance) : null,
-              remarks: remarks.length > 0 ? remarks : null,
-            },
-          });
-        } catch (e) {
-          console.error(`Failed to save row for ${code}`, e);
-        }
-      }
-    },
-  }));
+  useImperativeHandle(ref, () =>
+    buildVpatFormHandle({ getValues, updateVpat, saveRow, idByCode }),
+  );
 
   const criteriaArray = getAllWcagCriteria();
 
