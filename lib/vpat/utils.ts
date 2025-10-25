@@ -129,6 +129,12 @@ export function computeNextNEmpty(
   return out;
 }
 
+/**
+ * Normalize a free-form conformance string into one of the internal enum-like values used by the app.
+ * - Accepts common variants and whitespace/casing differences.
+ * - Maps to: "supports" | "partiallySupports" | "doesNotSupport" | "notApplicable".
+ * - Any unrecognized value (including "Not Evaluated") becomes an empty string "" for "no selection".
+ */
 export function normalizeConformance(value: string | null | undefined): string {
   if (!value) return "";
   const v = value.trim().toLowerCase();
@@ -150,6 +156,11 @@ export function normalizeConformance(value: string | null | undefined): string {
   }
 }
 
+/**
+ * Build a defaults object for form initialization from existing draft rows.
+ * - Keys are WCAG codes sanitized for form field names (dots replaced with underscores, e.g., "1.4.13" -> "1_4_13").
+ * - Values contain normalized conformance and remarks strings suitable for pre-filling inputs.
+ */
 export function getCriteriaDefaults(
   draftRows: readonly VpatRowDraft[] | undefined,
   codeById: Map<string, string>,
@@ -170,6 +181,11 @@ export function getCriteriaDefaults(
   return out;
 }
 
+/**
+ * Build a Map of wcag_criterion_id -> code from a possibly sparse/partial list.
+ * - Ignores items with missing or non-string id/code values.
+ * - Safe to call with undefined; returns an empty Map in that case.
+ */
 export function getCodeById(
   wcagCriteria:
     | Array<{ id?: string | null; code?: string | null }>
@@ -182,6 +198,25 @@ export function getCodeById(
     const code = c?.code;
     if (typeof id === "string" && id && typeof code === "string" && code) {
       map.set(id, code);
+    }
+  }
+  return map;
+}
+
+/**
+ * Build a Map of WCAG code -> wcag_criterion_id for quick lookups by code string.
+ * - Accepts undefined or sparse inputs; invalid entries are skipped.
+ * - Inverse of getCodeById.
+ */
+export function buildCodeToIdMap(
+  wcagCriteria: Array<{ id?: string | null; code?: string | null }> | undefined,
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const c of wcagCriteria || []) {
+    const id = c?.id;
+    const code = c?.code;
+    if (typeof id === "string" && id && typeof code === "string" && code) {
+      map.set(code, id);
     }
   }
   return map;

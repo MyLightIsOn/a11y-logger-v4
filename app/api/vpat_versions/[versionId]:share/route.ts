@@ -7,7 +7,10 @@ import bcrypt from "bcryptjs";
  * GET /api/vpat_versions/[versionId]:share
  * Returns current share settings for a VPAT version (owner-scoped; not public view).
  */
-export async function GET(_request: NextRequest, ctx: { params: Promise<{ versionId: UUID }> }) {
+export async function GET(
+  _request: NextRequest,
+  ctx: { params: Promise<{ versionId: UUID }> },
+) {
   try {
     const supabase = await createClient();
     const {
@@ -27,7 +30,8 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ versio
       .eq("id", versionId)
       .maybeSingle();
     if (verErr) throw verErr;
-    if (!versionRow) return NextResponse.json({ error: "Not Found" }, { status: 404 });
+    if (!versionRow)
+      return NextResponse.json({ error: "Not Found" }, { status: 404 });
 
     const { data: shareRow, error: shareErr } = await supabase
       .from("vpat_share")
@@ -46,7 +50,10 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ versio
     );
   } catch (error) {
     console.error("Error fetching share settings:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -57,7 +64,10 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ versio
  * - If revoke is true => set revoked_at=now(), visibility='private', password_hash=null
  * - If visibility='password' and password provided => store bcrypt hash
  */
-export async function POST(request: NextRequest, ctx: { params: Promise<{ versionId: UUID }> }) {
+export async function POST(
+  request: NextRequest,
+  ctx: { params: Promise<{ versionId: UUID }> },
+) {
   try {
     const supabase = await createClient();
 
@@ -143,12 +153,20 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ versio
     }
 
     // Validate visibility
-    const visibility = (body.visibility ?? existingShare?.visibility ?? "private") as Visibility;
+    const visibility = (body.visibility ??
+      existingShare?.visibility ??
+      "private") as Visibility;
     if (!["private", "public", "password"].includes(visibility)) {
-      return NextResponse.json({ error: "Invalid visibility" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid visibility" },
+        { status: 400 },
+      );
     }
 
-    const showIssueLinks = typeof body.show_issue_links === "boolean" ? body.show_issue_links : existingShare?.show_issue_links ?? true;
+    const showIssueLinks =
+      typeof body.show_issue_links === "boolean"
+        ? body.show_issue_links
+        : (existingShare?.show_issue_links ?? true);
 
     let password_hash: string | null | undefined = undefined;
     if (visibility === "password") {
@@ -181,12 +199,14 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ versio
         .select("version_id, visibility, show_issue_links, revoked_at")
         .maybeSingle();
       if (insErr) throw insErr;
-      return NextResponse.json(inserted ?? {
-        version_id: versionId,
-        visibility,
-        show_issue_links: showIssueLinks,
-        revoked_at: null,
-      });
+      return NextResponse.json(
+        inserted ?? {
+          version_id: versionId,
+          visibility,
+          show_issue_links: showIssueLinks,
+          revoked_at: null,
+        },
+      );
     }
 
     const updatePayload: Record<string, unknown> = {
@@ -209,6 +229,9 @@ export async function POST(request: NextRequest, ctx: { params: Promise<{ versio
     return NextResponse.json(updated);
   } catch (error) {
     console.error("Error updating share settings:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

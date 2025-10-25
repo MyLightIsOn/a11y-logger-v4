@@ -50,7 +50,10 @@ export async function POST(
     return NextResponse.json(data, { status: 200 });
   } catch (error) {
     console.error("Error unpublishing VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 

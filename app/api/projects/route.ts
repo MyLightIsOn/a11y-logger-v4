@@ -109,7 +109,9 @@ export async function POST(request: NextRequest) {
     const projectId = (data as { id?: string })?.id;
     if (projectId) {
       // Handle tag_ids on create (optional)
-      const tag_ids_raw = Array.isArray(body?.tag_ids) ? body.tag_ids : undefined;
+      const tag_ids_raw = Array.isArray(body?.tag_ids)
+        ? body.tag_ids
+        : undefined;
       if (tag_ids_raw) {
         const tagIds: string[] = tag_ids_raw
           .map((t: unknown) => (typeof t === "string" ? t : undefined))
@@ -117,12 +119,18 @@ export async function POST(request: NextRequest) {
         const uniqueTagIds = Array.from(new Set(tagIds));
         if (uniqueTagIds.length > 0) {
           try {
-            const tagJoinRows = uniqueTagIds.map((tag_id) => ({ project_id: projectId, tag_id }));
+            const tagJoinRows = uniqueTagIds.map((tag_id) => ({
+              project_id: projectId,
+              tag_id,
+            }));
             const { error: tagsErr } = await supabase
               .from("projects_tags")
               .insert(tagJoinRows);
             if (tagsErr) {
-              console.error("Failed to insert project tags on create:", tagsErr);
+              console.error(
+                "Failed to insert project tags on create:",
+                tagsErr,
+              );
             }
           } catch (e) {
             console.error("Unhandled error inserting tags on create:", e);
@@ -141,10 +149,12 @@ export async function POST(request: NextRequest) {
         const uniqueAssessmentIds = Array.from(new Set(assessmentIds));
         if (uniqueAssessmentIds.length > 0) {
           try {
-            const assessmentJoinRows = uniqueAssessmentIds.map((assessment_id) => ({
-              project_id: projectId,
-              assessment_id,
-            }));
+            const assessmentJoinRows = uniqueAssessmentIds.map(
+              (assessment_id) => ({
+                project_id: projectId,
+                assessment_id,
+              }),
+            );
             const { error: assessErr } = await supabase
               .from("projects_assessments")
               .insert(assessmentJoinRows);
@@ -155,7 +165,10 @@ export async function POST(request: NextRequest) {
               );
             }
           } catch (e) {
-            console.error("Unhandled error inserting assessments on create:", e);
+            console.error(
+              "Unhandled error inserting assessments on create:",
+              e,
+            );
           }
         }
       }

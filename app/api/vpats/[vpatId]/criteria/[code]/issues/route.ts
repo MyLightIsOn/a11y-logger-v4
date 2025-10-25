@@ -49,7 +49,9 @@ export async function GET(
       new Set(
         ((paRows || []) as { assessment_id: string }[])
           .map((r) => r.assessment_id)
-          .filter((id): id is string => typeof id === "string" && id.length > 0),
+          .filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          ),
       ),
     );
 
@@ -69,7 +71,9 @@ export async function GET(
         new Set(
           ((joinRows || []) as { issue_id: string }[])
             .map((r) => r.issue_id)
-            .filter((id): id is string => typeof id === "string" && id.length > 0),
+            .filter(
+              (id): id is string => typeof id === "string" && id.length > 0,
+            ),
         ),
       );
     }
@@ -97,15 +101,23 @@ export async function GET(
 
     const matchedIds: string[] = [];
     for (const row of filtered || []) {
-      const codes = (row as { issue_criteria_agg?: Array<{ criteria_codes?: string[] }> }).issue_criteria_agg?.[0]?.criteria_codes || [];
+      const codes =
+        (row as { issue_criteria_agg?: Array<{ criteria_codes?: string[] }> })
+          .issue_criteria_agg?.[0]?.criteria_codes || [];
       if (codes.includes(code)) {
         matchedIds.push((row as { id: string }).id);
       }
     }
 
-    return NextResponse.json({ data: matchedIds, count: matchedIds.length }, { status: 200 });
+    return NextResponse.json(
+      { data: matchedIds, count: matchedIds.length },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error fetching issues by criterion for VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

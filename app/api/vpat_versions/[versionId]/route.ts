@@ -41,6 +41,9 @@ export async function GET(
     return NextResponse.json(data as VpatVersion, { status: 200 });
   } catch (error) {
     console.error("Error fetching VPAT version:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

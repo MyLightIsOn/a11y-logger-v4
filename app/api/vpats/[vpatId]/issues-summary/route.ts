@@ -49,7 +49,9 @@ export async function GET(
       new Set(
         ((paRows || []) as { assessment_id: string }[])
           .map((r) => r.assessment_id)
-          .filter((id): id is string => typeof id === "string" && id.length > 0),
+          .filter(
+            (id): id is string => typeof id === "string" && id.length > 0,
+          ),
       ),
     );
 
@@ -70,7 +72,9 @@ export async function GET(
         new Set(
           ((joinRows || []) as { issue_id: string }[])
             .map((r) => r.issue_id)
-            .filter((id): id is string => typeof id === "string" && id.length > 0),
+            .filter(
+              (id): id is string => typeof id === "string" && id.length > 0,
+            ),
         ),
       );
     }
@@ -98,18 +102,26 @@ export async function GET(
     // Aggregate criteria codes across all open issues for this project
     const counts = new Map<string, number>();
     for (const row of issuesWithCriteria || []) {
-      const codes = (row as { issue_criteria_agg?: Array<{ criteria_codes?: string[] }> }).issue_criteria_agg?.[0]?.criteria_codes || [];
+      const codes =
+        (row as { issue_criteria_agg?: Array<{ criteria_codes?: string[] }> })
+          .issue_criteria_agg?.[0]?.criteria_codes || [];
       for (const code of codes) {
         counts.set(code, (counts.get(code) || 0) + 1);
       }
     }
 
-    const summary = Array.from(counts.entries()).map(([code, count]) => ({ code, count }));
+    const summary = Array.from(counts.entries()).map(([code, count]) => ({
+      code,
+      count,
+    }));
     const total = summary.reduce((acc, it) => acc + it.count, 0);
 
     return NextResponse.json({ data: summary, total }, { status: 200 });
   } catch (error) {
     console.error("Error fetching issues summary for VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

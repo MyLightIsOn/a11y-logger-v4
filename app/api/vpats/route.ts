@@ -52,7 +52,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data as Vpat, { status: 201 });
   } catch (error) {
     console.error("Error creating VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -70,9 +73,7 @@ export async function GET() {
     }
 
     // Query from the current view for list cards
-    const { data, error } = await supabase
-      .from("v_vpat_current")
-      .select("*");
+    const { data, error } = await supabase.from("v_vpat_current").select("*");
 
     if (error) throw error;
 
@@ -85,6 +86,9 @@ export async function GET() {
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error listing VPATs:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

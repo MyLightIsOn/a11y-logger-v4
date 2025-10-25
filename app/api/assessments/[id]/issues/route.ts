@@ -65,23 +65,23 @@ export async function GET(
       }>;
     };
 
-    const issues: IssueRead[] = ((data as unknown as IssueRowWithJoin[] | null) || []).map(
-      (row) => {
-        const { issues_tags, issue_criteria_agg, ...rest } = row;
-        const base: IssueRead = {
-          ...(rest as IssueRead),
-          tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
-        };
+    const issues: IssueRead[] = (
+      (data as unknown as IssueRowWithJoin[] | null) || []
+    ).map((row) => {
+      const { issues_tags, issue_criteria_agg, ...rest } = row;
+      const base: IssueRead = {
+        ...(rest as IssueRead),
+        tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
+      };
 
-        // Include criteria information if available
-        if (issue_criteria_agg?.[0]) {
-          base.criteria_codes = issue_criteria_agg[0].criteria_codes || [];
-          base.criteria = issue_criteria_agg[0].criteria || [];
-        }
+      // Include criteria information if available
+      if (issue_criteria_agg?.[0]) {
+        base.criteria_codes = issue_criteria_agg[0].criteria_codes || [];
+        base.criteria = issue_criteria_agg[0].criteria || [];
+      }
 
-        return base;
-      },
-    );
+      return base;
+    });
 
     // Build severity stats. Severity values are "1" | "2" | "3" | "4"
     // Map to labels Critical, High, Medium, Low accordingly.

@@ -1,28 +1,51 @@
-import React, { useEffect, useMemo } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useVpatDraftRows } from "@/lib/query/use-vpat-queries";
+import {
+  useVpatDraftRows,
+  useSaveVpatRow,
+  useUpdateVpat,
+} from "@/lib/query/use-vpat-queries";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import {
   getAllWcagCriteria,
   getCriteriaDefaults,
   getCodeById,
+  buildCodeToIdMap,
 } from "@/lib/vpat/utils";
+import { camelToTitle } from "@/lib/utils";
 
 function sanitizeKey(code: string) {
   // RHF uses dot-notation for nesting; replace dots with underscores in the field name
   return code.replace(/\./g, "_");
 }
 
-function VpatForm({ vpat }) {
+export type VpatFormHandle = {
+  saveDraft: () => Promise<void>;
+};
+
+const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
+  { vpat },
+  ref,
+) {
   const { data: draftRows } = useVpatDraftRows(vpat?.id ?? null);
   const { data: wcagCriteria } = useWcagCriteria();
 
-  // Build a map from criterion ID -> WCAG code for quick lookup
+  // Build maps for code lookups
   const codeById = useMemo(() => getCodeById(wcagCriteria), [wcagCriteria]);
+  const idByCode = useMemo(
+    () => buildCodeToIdMap(wcagCriteria),
+    [wcagCriteria],
+  );
 
   // Compute criteria default values from DB rows when both datasets are available
   const criteriaDefaults = useMemo(
@@ -30,7 +53,13 @@ function VpatForm({ vpat }) {
     [draftRows, codeById],
   );
 
-  const { register, reset } = useForm({
+  type FormValues = {
+    title: string;
+    description?: string;
+    criteria: Record<string, { conformance?: string; remarks?: string }>;
+  };
+
+  const { register, reset, getValues, formState } = useForm<FormValues>({
     defaultValues: {
       title: vpat?.title ?? "",
       description: vpat?.description ?? "",
@@ -38,17 +67,74 @@ function VpatForm({ vpat }) {
     },
   });
 
+  const updateVpat = useUpdateVpat(vpat?.id ?? null);
+  const saveRow = useSaveVpatRow(vpat?.id);
+
+  useImperativeHandle(ref, () => ({
+    async saveDraft() {
+      const values = getValues();
+      // Update title/description first
+      const title = (values.title || "").trim();
+      const descriptionRaw = values.description ?? "";
+      const description = descriptionRaw.trim();
+      try {
+        await updateVpat.mutateAsync({
+          title,
+          description: description.length > 0 ? description : null,
+        });
+      } catch (e) {
+        // swallow here; caller can show global error if desired
+        console.error("Failed to update VPAT header", e);
+      }
+
+      // Save all criteria present in the form values (includes existing rows and any user-edited)
+      const entries = Object.entries(values.criteria || {});
+      for (const [sanitizedCode, data] of entries) {
+        const code = sanitizedCode.replace(/_/g, ".");
+        const criterionId = idByCode.get(code);
+        if (!criterionId) continue;
+        const conformance = (data?.conformance || "").trim();
+        const remarks = (data?.remarks || "").trim();
+        try {
+          await saveRow.mutateAsync({
+            criterionId: criterionId,
+            payload: {
+              conformance:
+                conformance.length > 0 ? camelToTitle(conformance) : null,
+              remarks: remarks.length > 0 ? remarks : null,
+            },
+          });
+        } catch (e) {
+          console.error(`Failed to save row for ${code}`, e);
+        }
+      }
+    },
+  }));
+
   const criteriaArray = getAllWcagCriteria();
 
-  // When vpat header or criteriaDefaults change, reset the form with the latest values
+  // When vpat header or criteriaDefaults change, reset the form with the latest values.
+  // To avoid blowing away in-progress user edits, only reset on the initial load
+  // or when the form is not dirty.
+  const didInit = useRef(false);
   useEffect(() => {
     if (!vpat) return;
-    reset({
+    const nextValues = {
       title: vpat.title ?? "",
       description: vpat.description ?? "",
       criteria: criteriaDefaults,
-    });
-  }, [vpat, criteriaDefaults, reset]);
+    } as const;
+
+    if (!didInit.current) {
+      reset(nextValues);
+      didInit.current = true;
+      return;
+    }
+
+    if (!formState.isDirty) {
+      reset(nextValues);
+    }
+  }, [vpat, criteriaDefaults, reset, formState.isDirty]);
 
   return (
     <div>
@@ -151,6 +237,6 @@ function VpatForm({ vpat }) {
       </form>
     </div>
   );
-}
+});
 
 export default VpatForm;

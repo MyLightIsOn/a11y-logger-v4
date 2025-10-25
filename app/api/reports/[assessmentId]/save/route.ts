@@ -93,10 +93,14 @@ export async function POST(
       if (ps?.persona && ps?.summary) personaMap.set(ps.persona, ps.summary);
     }
 
-    const summary_screen_reader = personaMap.get("Screen reader user (blind)") || null;
-    const summary_low_vision = personaMap.get("Low vision / magnification") || null;
-    const summary_color_blind = personaMap.get("Color vision deficiency") || null;
-    const summary_keyboard_only = personaMap.get("Keyboard-only / motor") || null;
+    const summary_screen_reader =
+      personaMap.get("Screen reader user (blind)") || null;
+    const summary_low_vision =
+      personaMap.get("Low vision / magnification") || null;
+    const summary_color_blind =
+      personaMap.get("Color vision deficiency") || null;
+    const summary_keyboard_only =
+      personaMap.get("Keyboard-only / motor") || null;
     const summary_cognitive = personaMap.get("Cognitive / attention") || null;
     const summary_dhh = personaMap.get("Deaf / hard of hearing") || null;
     const summary_exec = report.executive_summary?.overview || null;
@@ -107,8 +111,12 @@ export async function POST(
       .insert({
         assessment_id: assessmentId,
         user_id: user.id,
-        severity_counts: severity_counts as unknown as Record<string, unknown> | undefined,
-        wcag_breakdown: wcag_breakdown as unknown as Record<string, unknown> | undefined,
+        severity_counts: severity_counts as unknown as
+          | Record<string, unknown>
+          | undefined,
+        wcag_breakdown: wcag_breakdown as unknown as
+          | Record<string, unknown>
+          | undefined,
         summary_screen_reader,
         summary_low_vision,
         summary_color_blind,

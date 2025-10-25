@@ -19,3 +19,12 @@ export function formatDate(iso: string): string {
 export const hasEnvVars =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_OR_ANON_KEY;
+
+export function camelToTitle(word: string) {
+  return word
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (c: string) => c.toUpperCase());
+}

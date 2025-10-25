@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
 import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
-import VPATForm from "@/app/vpats/[vpatId]/VPATForm";
+import VPATForm, { VpatFormHandle } from "@/app/vpats/[vpatId]/VPATForm";
 
 function Page() {
   const params = useParams();
@@ -12,6 +12,7 @@ function Page() {
 
   const { data: vpat, isLoading, isError, error } = useVpatDraft(vpatId);
   const [savingAll, setSavingAll] = useState<boolean>(false);
+  const formRef = useRef<VpatFormHandle>(null);
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
 
@@ -39,12 +40,20 @@ function Page() {
             <Toolbar
               vpat={vpat}
               savingAll={savingAll}
-              setSavingAll={setSavingAll}
               exportingPdf={exportingPdf}
               setExportingPdf={setExportingPdf}
+              onSave={async () => {
+                if (savingAll) return;
+                setSavingAll(true);
+                try {
+                  await formRef.current?.saveDraft();
+                } finally {
+                  setSavingAll(false);
+                }
+              }}
             />
           </div>
-          <VPATForm vpat={vpat} />
+          <VPATForm ref={formRef} vpat={vpat} />
         </div>
       )}
     </div>

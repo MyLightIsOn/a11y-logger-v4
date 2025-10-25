@@ -50,7 +50,7 @@ export interface VpatRowDraft {
   id: UUID;
   vpat_id: UUID;
   wcag_criterion_id: UUID;
-  conformance?: ConformanceValue | null;
+  conformance?: ConformanceValue;
   remarks?: string | null;
   related_issue_ids?: UUID[] | null;
   related_issue_urls?: string[] | null;
@@ -83,7 +83,7 @@ export interface UpdateVpatRequest {
 }
 
 export interface SaveVpatRowRequest {
-  conformance: ConformanceValue | null;
+  conformance: ConformanceValue;
   remarks: string | null;
   related_issue_ids?: UUID[];
   related_issue_urls?: string[];
@@ -95,7 +95,11 @@ export interface ValidateVpatResponse {
     criterionId: UUID;
     code?: string;
     message: string;
-    field?: "conformance" | "remarks" | "related_issue_ids" | "related_issue_urls";
+    field?:
+      | "conformance"
+      | "remarks"
+      | "related_issue_ids"
+      | "related_issue_urls";
   }>;
 }
 

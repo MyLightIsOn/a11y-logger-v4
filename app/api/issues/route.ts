@@ -120,24 +120,23 @@ export async function GET(request: NextRequest) {
       }>;
     };
 
-    const transformedData: IssueRead[] = ((data as unknown as IssueRowWithJoin[] | null) || []).map(
-      (row) => {
-        const { issues_tags, issue_criteria_agg, ...rest } = row;
-        const transformed: IssueRead = {
-          ...(rest as IssueRead),
-          tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
-        };
+    const transformedData: IssueRead[] = (
+      (data as unknown as IssueRowWithJoin[] | null) || []
+    ).map((row) => {
+      const { issues_tags, issue_criteria_agg, ...rest } = row;
+      const transformed: IssueRead = {
+        ...(rest as IssueRead),
+        tags: issues_tags?.map((it: { tags: Tag }) => it.tags) || [],
+      };
 
-        // Include criteria information if requested and available
-        if (includeCriteria && issue_criteria_agg?.[0]) {
-          transformed.criteria_codes =
-            issue_criteria_agg[0].criteria_codes || [];
-          transformed.criteria = issue_criteria_agg[0].criteria || [];
-        }
+      // Include criteria information if requested and available
+      if (includeCriteria && issue_criteria_agg?.[0]) {
+        transformed.criteria_codes = issue_criteria_agg[0].criteria_codes || [];
+        transformed.criteria = issue_criteria_agg[0].criteria || [];
+      }
 
-        return transformed;
-      },
-    );
+      return transformed;
+    });
 
     return NextResponse.json({
       data: transformedData,

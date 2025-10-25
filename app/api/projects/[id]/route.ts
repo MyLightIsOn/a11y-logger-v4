@@ -5,7 +5,7 @@ import type { Assessment } from "@/types/assessment";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -34,7 +34,7 @@ export async function GET(
         projects_assessments(
           assessments(*)
         )
-      `
+      `,
       )
       .eq("id", id)
       .eq("user_id", user.id)
@@ -44,7 +44,7 @@ export async function GET(
       if (error.code === "PGRST116") {
         return NextResponse.json(
           { error: "Project not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
       throw error;
@@ -60,11 +60,10 @@ export async function GET(
     const transformed = row
       ? {
           ...row,
-          tags:
-            row.projects_tags?.map((pt: { tags: Tag }) => pt.tags) || [],
+          tags: row.projects_tags?.map((pt: { tags: Tag }) => pt.tags) || [],
           assessments:
             row.projects_assessments?.map(
-              (pa: { assessments: Assessment }) => pa.assessments
+              (pa: { assessments: Assessment }) => pa.assessments,
             ) || [],
         }
       : null;
@@ -74,14 +73,14 @@ export async function GET(
     console.error("Error fetching project:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -110,7 +109,7 @@ export async function PUT(
       if (fetchErr?.code === "PGRST116") {
         return NextResponse.json(
           { error: "Project not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
       throw fetchErr;
@@ -120,13 +119,16 @@ export async function PUT(
 
     const name = typeof body?.name === "string" ? body.name.trim() : undefined;
     const description =
-      typeof body?.description === "string" ? body.description.trim() : undefined;
+      typeof body?.description === "string"
+        ? body.description.trim()
+        : undefined;
 
     const updatePayload: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
     if (typeof name !== "undefined") updatePayload.name = name;
-    if (typeof description !== "undefined") updatePayload.description = description;
+    if (typeof description !== "undefined")
+      updatePayload.description = description;
 
     const { data, error } = await supabase
       .from("projects")
@@ -140,7 +142,7 @@ export async function PUT(
       if (error.code === "PGRST116") {
         return NextResponse.json(
           { error: "Project not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
       throw error;
@@ -161,15 +163,15 @@ export async function PUT(
         if (existingErr) throw existingErr;
 
         const existingTagIds = new Set(
-          (existingRows || []).map((r: { tag_id: string }) => r.tag_id)
+          (existingRows || []).map((r: { tag_id: string }) => r.tag_id),
         );
         const newSet = new Set(newTagIds);
 
         const toInsert: string[] = [...newSet].filter(
-          (tid) => !existingTagIds.has(tid)
+          (tid) => !existingTagIds.has(tid),
         );
         const toDelete: string[] = [...existingTagIds].filter(
-          (tid) => !newSet.has(tid)
+          (tid) => !newSet.has(tid),
         );
 
         if (toDelete.length > 0) {
@@ -184,7 +186,10 @@ export async function PUT(
         }
 
         if (toInsert.length > 0) {
-          const joinRows = toInsert.map((tag_id) => ({ project_id: id, tag_id }));
+          const joinRows = toInsert.map((tag_id) => ({
+            project_id: id,
+            tag_id,
+          }));
           const { error: insErr } = await supabase
             .from("projects_tags")
             .insert(joinRows);
@@ -214,12 +219,18 @@ export async function PUT(
         if (existingErr) throw existingErr;
 
         const existingIds = new Set(
-          (existingRows || []).map((r: { assessment_id: string }) => r.assessment_id)
+          (existingRows || []).map(
+            (r: { assessment_id: string }) => r.assessment_id,
+          ),
         );
         const newSet = new Set(newAssessmentIds);
 
-        const toInsert: string[] = [...newSet].filter((aid) => !existingIds.has(aid));
-        const toDelete: string[] = [...existingIds].filter((aid) => !newSet.has(aid));
+        const toInsert: string[] = [...newSet].filter(
+          (aid) => !existingIds.has(aid),
+        );
+        const toDelete: string[] = [...existingIds].filter(
+          (aid) => !newSet.has(aid),
+        );
 
         if (toDelete.length > 0) {
           const { error: delErr } = await supabase
@@ -254,14 +265,14 @@ export async function PUT(
     console.error("Error updating project:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -307,7 +318,7 @@ export async function DELETE(
     console.error("Unhandled error in DELETE /api/projects/[id]:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

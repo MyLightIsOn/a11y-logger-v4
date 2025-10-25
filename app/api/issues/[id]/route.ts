@@ -296,13 +296,15 @@ export async function PATCH(
               { status: 500 },
             );
           }
-          wcagRows = (wcagData ?? []) as { id: string; code: string; version: string }[];
+          wcagRows = (wcagData ?? []) as {
+            id: string;
+            code: string;
+            version: string;
+          }[];
         }
 
         // Filter to exact (version, code) pairs
-        const wanted = new Set(
-          criteria.map((c) => `${c.version}|${c.code}`),
-        );
+        const wanted = new Set(criteria.map((c) => `${c.version}|${c.code}`));
         const matched = wcagRows.filter((row) =>
           wanted.has(`${row.version}|${row.code}`),
         );
@@ -462,7 +464,6 @@ export async function PATCH(
   }
 }
 
-
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -492,7 +493,11 @@ export async function DELETE(
       .eq("id", id)
       .single();
 
-    if (issueErr || !issueRow || (issueRow as { user_id?: string }).user_id !== user.id) {
+    if (
+      issueErr ||
+      !issueRow ||
+      (issueRow as { user_id?: string }).user_id !== user.id
+    ) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
@@ -501,7 +506,10 @@ export async function DELETE(
     await supabase.from("issue_criteria").delete().eq("issue_id", id);
     await supabase.from("assessments_issues").delete().eq("issue_id", id);
 
-    const { error: delErr } = await supabase.from("issues").delete().eq("id", id);
+    const { error: delErr } = await supabase
+      .from("issues")
+      .delete()
+      .eq("id", id);
     if (delErr) {
       console.error("Error deleting issue:", delErr);
       return NextResponse.json({ error: "Failed to delete" }, { status: 500 });

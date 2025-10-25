@@ -127,7 +127,7 @@ export async function GET(
     const criteria_rows: CriteriaRow[] = uniqueCriteria.map((c) => {
       const draft = byCriterionId.get(c.id);
       const conformance: ConformanceValue =
-        ((draft?.conformance as ConformanceValue | null) ??
+        ((draft?.conformance as ConformanceValue) ??
           "Not Evaluated") as ConformanceValue;
       const remarks: string | null = draft?.remarks ?? null;
       return {

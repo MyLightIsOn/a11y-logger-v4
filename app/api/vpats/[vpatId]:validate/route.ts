@@ -55,10 +55,18 @@ export async function POST(
       const remarks = (r.remarks || "").trim();
 
       if (conf === "Not Applicable" && remarks.length === 0) {
-        issues.push({ criterionId, message: "Remarks are required when conformance is Not Applicable.", field: "remarks" });
+        issues.push({
+          criterionId,
+          message: "Remarks are required when conformance is Not Applicable.",
+          field: "remarks",
+        });
       }
       if (conf !== null && conf !== "Supports" && remarks.length === 0) {
-        issues.push({ criterionId, message: "Remarks are required unless conformance is Supports.", field: "remarks" });
+        issues.push({
+          criterionId,
+          message: "Remarks are required unless conformance is Supports.",
+          field: "remarks",
+        });
       }
     }
 
@@ -70,6 +78,9 @@ export async function POST(
     return NextResponse.json(resp, { status: 200 });
   } catch (error) {
     console.error("Error validating VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

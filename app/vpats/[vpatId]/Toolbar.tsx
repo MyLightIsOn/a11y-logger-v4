@@ -2,13 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 
-function Toolbar({
-  vpat,
-  savingAll,
-  setSavingAll,
-  exportingPdf,
-  setExportingPdf,
-}) {
+function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }) {
   return (
     <div className="flex gap-2">
       <Button variant="outline" asChild aria-label="Export HTML VPAT report">
@@ -30,20 +24,21 @@ function Toolbar({
       </Button>
       <Button
         variant="default"
-        onClick={() => console.log("saving")}
+        className={"bg-success dark:bg-success"}
+        onClick={onSave}
         disabled={savingAll}
         aria-label="Save all changes"
       >
         {savingAll ? "Saving…" : "Save"}
       </Button>
+
       <Button
-        className={"bg-success dark:bg-success"}
         variant="default"
         onClick={() => console.log("saving")}
         disabled={savingAll}
         aria-label="Publish"
       >
-        {savingAll ? "Publishing…" : "Publish"}
+        Generate VPAT
       </Button>
     </div>
   );

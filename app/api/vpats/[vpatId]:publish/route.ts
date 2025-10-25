@@ -46,7 +46,12 @@ export async function POST(
       .select("id, code, name, level");
     if (critErr) throw critErr;
 
-    type WcagRow = { id: UUID; code: string; name: string; level: "A" | "AA" | "AAA" };
+    type WcagRow = {
+      id: UUID;
+      code: string;
+      name: string;
+      level: "A" | "AA" | "AAA";
+    };
 
     // Fetch all draft rows for the VPAT
     const { data: draftRows, error: draftErr } = await supabase
@@ -57,7 +62,7 @@ export async function POST(
 
     type DraftRow = {
       wcag_criterion_id: UUID;
-      conformance: ConformanceValue | null;
+      conformance: ConformanceValue;
       remarks: string | null;
       related_issue_urls: string[] | null;
     };
@@ -79,7 +84,8 @@ export async function POST(
     const criteria_rows: CriteriaRow[] = ((criteriaRows || []) as WcagRow[])
       .map((c) => {
         const draft = byCriterionId.get(c.id);
-        const conformance: ConformanceValue = (draft?.conformance as ConformanceValue | null) ?? "Not Evaluated";
+        const conformance: ConformanceValue =
+          (draft?.conformance as ConformanceValue | null) ?? "Not Evaluated";
         const remarks: string | null = draft?.remarks ?? null;
         const issues = Array.isArray(draft?.related_issue_urls)
           ? draft!.related_issue_urls!.map((url) => ({ url }))
@@ -134,9 +140,15 @@ export async function POST(
       ])
       .select("id, version_number, published_at")
       .single();
-    if (insErr || !inserted) throw insErr || new Error("Failed to insert version");
+    if (insErr || !inserted)
+      throw insErr || new Error("Failed to insert version");
 
-    const newVersionId = (inserted as Pick<VpatVersion, "id"> & { version_number: number; published_at: string }).id as UUID;
+    const newVersionId = (
+      inserted as Pick<VpatVersion, "id"> & {
+        version_number: number;
+        published_at: string;
+      }
+    ).id as UUID;
 
     // Update vpat.current_version_id and status
     const { error: updErr } = await supabase
@@ -146,7 +158,8 @@ export async function POST(
     if (updErr) throw updErr;
 
     // Compute project metrics snapshot (Milestone 7 - step 31)
-    let metrics: Awaited<ReturnType<typeof computeProjectMetrics>> | null = null;
+    let metrics: Awaited<ReturnType<typeof computeProjectMetrics>> | null =
+      null;
     try {
       metrics = await computeProjectMetrics(projectId);
     } catch (e) {
@@ -169,10 +182,16 @@ export async function POST(
             },
           ]);
         if (pamErr) {
-          console.warn("Failed to insert project_accessibility_metrics snapshot:", pamErr);
+          console.warn(
+            "Failed to insert project_accessibility_metrics snapshot:",
+            pamErr,
+          );
         }
       } catch (e) {
-        console.warn("Unexpected error inserting project_accessibility_metrics snapshot:", e);
+        console.warn(
+          "Unexpected error inserting project_accessibility_metrics snapshot:",
+          e,
+        );
       }
     }
 
@@ -186,7 +205,10 @@ export async function POST(
     });
   } catch (error) {
     console.error("Error publishing VPAT:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 

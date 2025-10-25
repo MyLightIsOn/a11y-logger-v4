@@ -23,7 +23,10 @@ function buildSignature(params: Record<string, string>, apiSecret: string) {
   // Cloudinary requires parameters sorted alphabetically and concatenated as key=value pairs joined by &
   const keys = Object.keys(params).sort();
   const toSign = keys.map((k) => `${k}=${params[k]}`).join("&");
-  return crypto.createHash("sha1").update(toSign + apiSecret).digest("hex");
+  return crypto
+    .createHash("sha1")
+    .update(toSign + apiSecret)
+    .digest("hex");
 }
 
 // Normalize Cloudinary upload response to the contract in the plan
@@ -102,7 +105,9 @@ export async function POST(request: NextRequest) {
 
       if (size <= 0 || size > MAX_FILE_BYTES) {
         return NextResponse.json(
-          { error: `File too large (max ${Math.floor(MAX_FILE_BYTES / (1024 * 1024))}MB)` },
+          {
+            error: `File too large (max ${Math.floor(MAX_FILE_BYTES / (1024 * 1024))}MB)`,
+          },
           { status: 400 },
         );
       }
