@@ -71,7 +71,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   const saveRow = useSaveVpatRow(vpat?.id);
 
   useImperativeHandle(ref, () =>
-    buildVpatFormHandle({ getValues, updateVpat, saveRow, idByCode }),
+    buildVpatFormHandle({ getValues, updateVpat, saveRow, idByCode, originalCriteria: criteriaDefaults }),
   );
 
   const criteriaArray = getAllWcagCriteria();

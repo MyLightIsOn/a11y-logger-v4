@@ -1,7 +1,6 @@
 import { getWcagByCode, type CriteriaDetail } from "@/lib/wcag/reference";
-import type { VpatRowDraft } from "@/types/vpat";
 import { camelToTitle } from "@/lib/utils";
-
+import type { VpatRowDraft } from "@/types/vpat";
 /**
  * Parse a WCAG criterion code (e.g., "1.4.13") into its numeric tuple [1,4,13].
  * Returns null for invalid codes.
@@ -241,7 +240,12 @@ export function buildVpatFormHandle(options: {
     description?: string | null;
     criteria?: Record<string, { conformance?: string; remarks?: string }>;
   };
-  updateVpat: { mutateAsync: (payload: { title: string; description: string | null }) => Promise<unknown> };
+  updateVpat: {
+    mutateAsync: (payload: {
+      title: string;
+      description: string | null;
+    }) => Promise<unknown>;
+  };
   saveRow: {
     mutateAsync: (args: {
       criterionId: string;
@@ -249,9 +253,10 @@ export function buildVpatFormHandle(options: {
     }) => Promise<unknown>;
   };
   idByCode: Map<string, string>;
+  originalCriteria?: Record<string, { conformance?: string; remarks?: string }>;
 }) {
-  const { getValues, updateVpat, saveRow, idByCode } = options;
-  const { camelToTitle } = require("@/lib/utils");
+  const { getValues, updateVpat, saveRow, idByCode, originalCriteria } =
+    options;
   return {
     async saveDraft() {
       const values = getValues();
@@ -269,21 +274,40 @@ export function buildVpatFormHandle(options: {
         console.error("Failed to update VPAT header", e);
       }
 
-      // Save all criteria present in the form values (includes existing rows and any user-edited)
+      // Save only criteria that have changes compared to originalCriteria
       const entries = Object.entries(values.criteria || {});
       for (const [sanitizedCode, data] of entries) {
         const code = sanitizedCode.replace(/_/g, ".");
         const criterionId = idByCode.get(code);
         if (!criterionId) continue;
-        const conformance = (data?.conformance || "").trim();
-        const remarks = (data?.remarks || "").trim();
+        const currentConformance = (data?.conformance || "").trim();
+        const currentRemarks = (data?.remarks || "").trim();
+
+        const original = originalCriteria?.[sanitizedCode] || {
+          conformance: "",
+          remarks: "",
+        };
+        const originalConformance = (original?.conformance || "").trim();
+        const originalRemarks = (original?.remarks || "").trim();
+
+        // Compare normalized values: conformance normalized to RHF internal, remarks trimmed
+        const sameConformance =
+          normalizeConformance(currentConformance) ===
+          normalizeConformance(originalConformance);
+        const sameRemarks = currentRemarks === originalRemarks;
+        if (sameConformance && sameRemarks) {
+          continue; // skip unchanged rows
+        }
+
         try {
           await saveRow.mutateAsync({
             criterionId: criterionId,
             payload: {
               conformance:
-                conformance.length > 0 ? camelToTitle(conformance) : null,
-              remarks: remarks.length > 0 ? remarks : null,
+                currentConformance.length > 0
+                  ? camelToTitle(currentConformance)
+                  : null,
+              remarks: currentRemarks.length > 0 ? currentRemarks : null,
             },
           });
         } catch (e) {
