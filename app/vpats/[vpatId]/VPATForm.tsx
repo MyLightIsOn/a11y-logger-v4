@@ -83,18 +83,20 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
     [draftRows, codeById],
   );
 
-  const { register, reset, getValues, setValue, formState } = useForm<FormValues>({
-    defaultValues: {
-      title: vpat?.title ?? "",
-      description: vpat?.description ?? "",
-      criteria: criteriaDefaults,
-    },
-  });
+  const { register, reset, getValues, setValue, formState } =
+    useForm<FormValues>({
+      defaultValues: {
+        title: vpat?.title ?? "",
+        description: vpat?.description ?? "",
+        criteria: criteriaDefaults,
+      },
+    });
 
   const updateVpat = useUpdateVpat(vpat?.id ?? null);
   const saveRow = useSaveVpatRow(vpat?.id);
   const generateRowRemarks = useGenerateVpatRowRemarks(vpat?.id);
   const [busyCode, setBusyCode] = useState<string | null>(null);
+  const [busyAll, setBusyAll] = useState(false);
 
   useImperativeHandle(ref, () =>
     buildVpatFormHandle({
@@ -179,10 +181,44 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
 
             <Button
               variant="default"
-              onClick={() => console.log("saving")}
-              aria-label="Publish"
+              type="button"
+              disabled={busyAll}
+              aria-busy={busyAll}
+              onClick={async () => {
+                try {
+                  setBusyAll(true);
+                  const values = getValues();
+                  const targets = criteriaArray.filter((c) => {
+                    const key = sanitizeKey(c.code);
+                    const remarks = values?.criteria?.[key]?.remarks;
+                    return !remarks || String(remarks).trim().length === 0;
+                  });
+                  for (const c of targets) {
+                    const criterionId = idByCode.get(c.code);
+                    if (!criterionId) continue;
+                    try {
+                      setBusyCode(c.code);
+                      const res = await generateRowRemarks.mutateAsync({
+                        criterionId,
+                      });
+                      const key = sanitizeKey(c.code);
+                      const remarks = res?.remarks || "";
+                      if (typeof remarks === "string") {
+                        setValue(`criteria.${key}.remarks` as const, remarks);
+                      }
+                    } catch (e) {
+                      console.error("Failed to generate remarks for", c.code, e);
+                    } finally {
+                      setBusyCode(null);
+                    }
+                  }
+                } finally {
+                  setBusyAll(false);
+                }
+              }}
+              aria-label="Generate remarks for all empty criteria"
             >
-              Generate VPAT
+              {busyAll ? "Generating…" : "Generate All"}
             </Button>
           </div>
         </div>
@@ -281,13 +317,17 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
                                 const criterionId = idByCode.get(row.code);
                                 if (!criterionId) return;
                                 setBusyCode(row.code);
-                                const res = await generateRowRemarks.mutateAsync({
-                                  criterionId,
-                                });
+                                const res =
+                                  await generateRowRemarks.mutateAsync({
+                                    criterionId,
+                                  });
                                 const key = sanitizeKey(row.code);
                                 const remarks = res?.remarks || "";
                                 if (typeof remarks === "string") {
-                                  setValue(`criteria.${key}.remarks` as const, remarks);
+                                  setValue(
+                                    `criteria.${key}.remarks` as const,
+                                    remarks,
+                                  );
                                 }
                               } catch (e) {
                                 console.error("Failed to generate remarks", e);
@@ -296,7 +336,9 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
                               }
                             }}
                           >
-                            {busyCode === row.code ? "Generating…" : "Generate Row"}
+                            {busyCode === row.code
+                              ? "Generating…"
+                              : "Generate Row"}
                           </Button>
                         </td>
                       </tr>
