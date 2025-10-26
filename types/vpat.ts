@@ -108,3 +108,11 @@ export interface GenerateVpatRowResponse {
   row: VpatRowDraft | null;
   warning?: string;
 }
+
+export interface GenerateVpatRowRemarksResponse {
+  conformance: ConformanceValue;
+  remarks: string;
+  related_issue_ids: UUID[];
+  related_issue_urls: string[];
+  warning?: string;
+}

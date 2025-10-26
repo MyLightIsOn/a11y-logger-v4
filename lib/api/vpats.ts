@@ -68,13 +68,23 @@ export class VpatsApiService extends BaseApiService {
     );
   }
 
-  // Generate a single row via AI with no-overwrite guard
+  // Generate a single row via AI with no-overwrite guard (persistent)
   async generateRow(
     vpatId: UUID,
     criterionId: UUID,
   ): Promise<ApiResponse<GenerateVpatRowResponse>> {
     return this.post<GenerateVpatRowResponse>(
       `${this.basePath}/${vpatId}/rows/${criterionId}:generate`,
+    );
+  }
+
+  // Generate remarks for a single row WITHOUT saving
+  async generateRowRemarks(
+    vpatId: UUID,
+    criterionId: UUID,
+  ): Promise<ApiResponse<import("@/types/vpat").GenerateVpatRowRemarksResponse>> {
+    return this.post<import("@/types/vpat").GenerateVpatRowRemarksResponse>(
+      `${this.basePath}/${vpatId}/rows/${criterionId}/generate-remarks`,
     );
   }
 

@@ -17,6 +17,7 @@ import {
   useSaveVpatRow,
   useUpdateVpat,
   useVpatIssuesSummary,
+  useGenerateVpatRowRemarks,
 } from "@/lib/query/use-vpat-queries";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
 import IssuesDrawer, {
@@ -82,7 +83,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
     [draftRows, codeById],
   );
 
-  const { register, reset, getValues, formState } = useForm<FormValues>({
+  const { register, reset, getValues, setValue, formState } = useForm<FormValues>({
     defaultValues: {
       title: vpat?.title ?? "",
       description: vpat?.description ?? "",
@@ -92,6 +93,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
 
   const updateVpat = useUpdateVpat(vpat?.id ?? null);
   const saveRow = useSaveVpatRow(vpat?.id);
+  const generateRowRemarks = useGenerateVpatRowRemarks(vpat?.id);
+  const [busyCode, setBusyCode] = useState<string | null>(null);
 
   useImperativeHandle(ref, () =>
     buildVpatFormHandle({
@@ -268,7 +271,33 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
                           </button>
                         </td>
                         <td className="p-3 align-top text-center">
-                          <Button variant="outline">Generate</Button>
+                          <Button
+                            variant="outline"
+                            type="button"
+                            disabled={busyCode === row.code}
+                            aria-busy={busyCode === row.code}
+                            onClick={async () => {
+                              try {
+                                const criterionId = idByCode.get(row.code);
+                                if (!criterionId) return;
+                                setBusyCode(row.code);
+                                const res = await generateRowRemarks.mutateAsync({
+                                  criterionId,
+                                });
+                                const key = sanitizeKey(row.code);
+                                const remarks = res?.remarks || "";
+                                if (typeof remarks === "string") {
+                                  setValue(`criteria.${key}.remarks` as const, remarks);
+                                }
+                              } catch (e) {
+                                console.error("Failed to generate remarks", e);
+                              } finally {
+                                setBusyCode(null);
+                              }
+                            }}
+                          >
+                            {busyCode === row.code ? "Generating…" : "Generate Row"}
+                          </Button>
                         </td>
                       </tr>
                     );

@@ -8,6 +8,7 @@ import type {
   VpatVersion,
   SaveVpatRowRequest,
   GenerateVpatRowResponse,
+  GenerateVpatRowRemarksResponse,
 } from "@/types/vpat";
 
 // useVpatsList() — list all VPATs (draft and published) for the current user/context
@@ -84,7 +85,7 @@ export function useSaveVpatRow(vpatId: UUID) {
   });
 }
 
-// useGenerateVpatRow — mutation for single-row AI generate
+// useGenerateVpatRow — mutation for single-row AI generate (persistent on server)
 export function useGenerateVpatRow(vpatId: UUID) {
   const qc = useQueryClient();
   return useMutation({
@@ -101,6 +102,22 @@ export function useGenerateVpatRow(vpatId: UUID) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["vpat", "rows", vpatId] });
       void qc.invalidateQueries({ queryKey: ["vpat", vpatId] });
+    },
+  });
+}
+
+// useGenerateVpatRowRemarks — non-persistent generate for a single criterion
+export function useGenerateVpatRowRemarks(vpatId: UUID) {
+  return useMutation({
+    mutationKey: ["vpat", "generateRowRemarks", vpatId],
+    mutationFn: async (args: {
+      criterionId: UUID;
+    }): Promise<GenerateVpatRowRemarksResponse> => {
+      const { criterionId } = args;
+      const res = await vpatsApi.generateRowRemarks(vpatId, criterionId);
+      if (!res.success || !res.data)
+        throw new Error(res.error || "Failed to generate remarks");
+      return res.data;
     },
   });
 }
