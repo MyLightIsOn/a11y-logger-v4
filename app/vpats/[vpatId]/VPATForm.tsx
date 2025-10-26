@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import {
   useVpatDraftRows,
@@ -18,7 +19,9 @@ import {
   useVpatIssuesSummary,
 } from "@/lib/query/use-vpat-queries";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
-import IssuesDrawer, { type CriterionMeta } from "@/components/custom/vpat/IssuesDrawer";
+import IssuesDrawer, {
+  type CriterionMeta,
+} from "@/components/custom/vpat/IssuesDrawer";
 import {
   getAllWcagCriteria,
   getCriteriaDefaults,
@@ -47,7 +50,11 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   ref,
 ) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerCriterion, setDrawerCriterion] = useState<CriterionMeta | null>(null);
+  const [drawerCriterion, setDrawerCriterion] = useState<CriterionMeta | null>(
+    null,
+  );
+  // UI: hide criteria with zero issues
+  const [hideZeroIssues, setHideZeroIssues] = useState(false);
   const { data: draftRows } = useVpatDraftRows(vpat?.id ?? null);
   const { data: wcagCriteria } = useWcagCriteria();
   // Project-scoped issues summary for this VPAT
@@ -98,10 +105,19 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
 
   const criteriaArray = getAllWcagCriteria();
 
+  // Optionally filter out criteria with 0 issues (based on project-scoped summary)
+  const filteredCriteriaArray = useMemo(() => {
+    if (!hideZeroIssues) return criteriaArray;
+    return criteriaArray.filter(
+      (c) => (issuesCountByCode.get(c.code) ?? 0) > 0,
+    );
+  }, [criteriaArray, hideZeroIssues, issuesCountByCode]);
+
   // When vpat header or criteriaDefaults change, reset the form with the latest values.
   // To avoid blowing away in-progress user edits, only reset on the initial load
   // or when the form is not dirty.
   const didInit = useRef(false);
+
   useEffect(() => {
     if (!vpat) return;
     const nextValues = {
@@ -140,14 +156,40 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
           </div>
         </div>
 
+        <div>
+          <div className="flex items-center justify-between p-3 border rounded-md bg-muted/30 mb-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="toggle-hide-zero-issues"
+                checked={hideZeroIssues}
+                onCheckedChange={(v) => setHideZeroIssues(Boolean(v))}
+                aria-label="Hide criteria with zero issues"
+              />
+              <Label htmlFor="toggle-hide-zero-issues" className="text-sm">
+                Hide criteria with 0 issues
+              </Label>
+
+              <div className="text-xs text-muted-foreground">
+                Showing {filteredCriteriaArray.length} of {criteriaArray.length}
+              </div>
+            </div>
+
+            <Button
+              variant="default"
+              onClick={() => console.log("saving")}
+              aria-label="Publish"
+            >
+              Generate VPAT
+            </Button>
+          </div>
+        </div>
         {[
           { level: "A", label: "Table 1: Success Criteria, Level A" },
           { level: "AA", label: "Table 2: Success Criteria, Level AA" },
           { level: "AAA", label: "Table 3: Success Criteria, Level AAA" },
         ].map(({ level, label }) => {
-          const rows = criteriaArray.filter(
-            (row) =>
-              (row.level || row.level || "").toString().toUpperCase() === level,
+          const rows = filteredCriteriaArray.filter(
+            (row) => (row.level || "").toString().toUpperCase() === level,
           );
           return (
             <div

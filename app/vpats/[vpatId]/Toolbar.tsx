@@ -31,15 +31,6 @@ function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }) {
       >
         {savingAll ? "Saving…" : "Save"}
       </Button>
-
-      <Button
-        variant="default"
-        onClick={() => console.log("saving")}
-        disabled={savingAll}
-        aria-label="Publish"
-      >
-        Generate VPAT
-      </Button>
     </div>
   );
 }
