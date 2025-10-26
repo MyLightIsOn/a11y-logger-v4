@@ -20,7 +20,7 @@ export function AIAssistPanel({
 }: AIAssistPanelProps) {
   // Determine effective WCAG version from selected assessment
   const selectedAssessment = watch("assessment_id") as unknown as
-    | string
+    | import("@/types/common").UUID
     | undefined;
   const assessmentObj = (assessments || []).find(
     (a) => a.id === selectedAssessment,
@@ -34,7 +34,6 @@ export function AIAssistPanel({
         return {
           description: (
             aiPrompt ||
-            v.ai_assist ||
             v.description ||
             ""
           ).toString(),
@@ -72,20 +71,29 @@ export function AIAssistPanel({
               setValue("suggested_fix", val, { shouldDirty: true }),
             setImpact: (val) => setValue("impact", val, { shouldDirty: true }),
             setSeverity: (val) =>
-              setValue("severity", val, { shouldDirty: true }),
+              setValue("severity", val as import("@/types/common").Severity, { shouldDirty: true }),
             setCriteriaKeys: (updater) => {
               const nextKeys = updater(currentKeys);
               const mapped = nextKeys
                 .map((k) => {
                   const [ver, code] = (k || "").split("|", 2);
-                  if (ver && code) return { version: ver, code };
+                  const v = ver as import("@/types/issue").WcagVersion;
+                  if ((v === "2.0" || v === "2.1" || v === "2.2") && code)
+                    return { version: v, code };
                   return undefined;
                 })
                 .filter(Boolean) as Array<{ version: string; code: string }>;
-              setValue("criteria", mapped, {
-                shouldDirty: true,
-                shouldValidate: true,
-              });
+              setValue(
+                "criteria",
+                mapped as Array<{
+                  version: import("@/types/issue").WcagVersion;
+                  code: string;
+                }>,
+                {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                },
+              );
             },
           },
         });
@@ -147,7 +155,6 @@ export function AIAssistPanel({
         value={aiPrompt}
         onChange={(e) => {
           setAiPrompt(e.target.value);
-          setValue("ai_assist", e.target.value as any, { shouldDirty: true });
         }}
       />
       <p id="ai-assist-help" className="sr-only">

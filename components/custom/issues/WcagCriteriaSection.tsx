@@ -39,11 +39,20 @@ export function WcagCriteriaSection({
       const mapped = next
         .map((v) => {
           const [ver, code] = (v || "").split("|", 2);
-          if (ver && code) return { version: ver, code };
+          const version = ver as import("@/types/issue").WcagVersion;
+          if ((version === "2.0" || version === "2.1" || version === "2.2") && code)
+            return { version, code };
           return undefined;
         })
         .filter(Boolean) as Array<{ version: string; code: string }>;
-      setValue("criteria", mapped, { shouldValidate: true, shouldDirty: true });
+      setValue(
+        "criteria",
+        mapped as Array<{
+          version: import("@/types/issue").WcagVersion;
+          code: string;
+        }>,
+        { shouldValidate: true, shouldDirty: true },
+      );
     },
     [setValue],
   );

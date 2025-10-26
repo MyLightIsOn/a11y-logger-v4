@@ -1,6 +1,6 @@
 import { getWcagByCode, type CriteriaDetail } from "@/lib/wcag/reference";
 import { camelToTitle } from "@/lib/utils";
-import type { VpatRowDraft } from "@/types/vpat";
+import type { VpatRowDraft, ConformanceValue, SaveVpatRowRequest } from "@/types/vpat";
 /**
  * Parse a WCAG criterion code (e.g., "1.4.13") into its numeric tuple [1,4,13].
  * Returns null for invalid codes.
@@ -249,7 +249,7 @@ export function buildVpatFormHandle(options: {
   saveRow: {
     mutateAsync: (args: {
       criterionId: string;
-      payload: { conformance: string | null; remarks: string | null };
+      payload: SaveVpatRowRequest;
     }) => Promise<unknown>;
   };
   idByCode: Map<string, string>;
@@ -300,13 +300,15 @@ export function buildVpatFormHandle(options: {
         }
 
         try {
+          // Map UI conformance (camelCase) -> ConformanceValue title case
+          const mapped: ConformanceValue | null =
+            currentConformance.length > 0
+              ? (camelToTitle(currentConformance) as ConformanceValue)
+              : null;
           await saveRow.mutateAsync({
             criterionId: criterionId,
             payload: {
-              conformance:
-                currentConformance.length > 0
-                  ? camelToTitle(currentConformance)
-                  : null,
+              conformance: mapped,
               remarks: currentRemarks.length > 0 ? currentRemarks : null,
             },
           });

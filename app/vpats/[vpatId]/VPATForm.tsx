@@ -46,7 +46,9 @@ type FormValues = {
   criteria: Record<string, { conformance?: string; remarks?: string }>;
 };
 
-const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
+import type { Vpat } from "@/types/vpat";
+
+const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(function VpatForm(
   { vpat },
   ref,
 ) {
@@ -93,8 +95,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
     });
 
   const updateVpat = useUpdateVpat(vpat?.id ?? null);
-  const saveRow = useSaveVpatRow(vpat?.id);
-  const generateRowRemarks = useGenerateVpatRowRemarks(vpat?.id);
+  const saveRow = useSaveVpatRow(vpat!.id);
+  const generateRowRemarks = useGenerateVpatRowRemarks(vpat!.id);
   const [busyCode, setBusyCode] = useState<string | null>(null);
   const [busyAll, setBusyAll] = useState(false);
 

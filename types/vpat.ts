@@ -83,7 +83,7 @@ export interface UpdateVpatRequest {
 }
 
 export interface SaveVpatRowRequest {
-  conformance: ConformanceValue;
+  conformance: ConformanceValue | null;
   remarks: string | null;
   related_issue_ids?: UUID[];
   related_issue_urls?: string[];

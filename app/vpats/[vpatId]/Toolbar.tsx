@@ -2,12 +2,22 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 
-function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }) {
+type VpatLikeLocal = { id: string | number };
+
+type ToolbarProps = {
+  vpat?: VpatLikeLocal | null;
+  savingAll: boolean;
+  exportingPdf: boolean;
+  setExportingPdf: (value: boolean) => void;
+  onSave: () => void | Promise<void>;
+};
+
+function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }: ToolbarProps) {
   return (
     <div className="flex gap-2">
       <Button variant="outline" asChild aria-label="Export HTML VPAT report">
         <a
-          href={`/api/vpats/${encodeURIComponent(String(vpat.id))}/download?format=html`}
+          href={`/api/vpats/${encodeURIComponent(String(vpat?.id ?? ""))}/download?format=html`}
           target="_blank"
           rel="noopener noreferrer"
         >

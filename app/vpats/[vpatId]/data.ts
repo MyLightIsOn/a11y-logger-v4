@@ -1,4 +1,11 @@
-export const handleExportPdf = async ({ setExportingPdf, vpat }) => {
+type VpatLike = { id: string | number };
+
+type HandleExportPdfParams = {
+  setExportingPdf: (value: boolean) => void;
+  vpat?: VpatLike | null;
+};
+
+export const handleExportPdf = async ({ setExportingPdf, vpat }: HandleExportPdfParams): Promise<void> => {
   if (!vpat?.id) return;
   try {
     setExportingPdf(true);
