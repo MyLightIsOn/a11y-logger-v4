@@ -4,6 +4,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
@@ -14,8 +15,10 @@ import {
   useVpatDraftRows,
   useSaveVpatRow,
   useUpdateVpat,
+  useVpatIssuesSummary,
 } from "@/lib/query/use-vpat-queries";
 import { useWcagCriteria } from "@/lib/query/use-wcag-queries";
+import IssuesDrawer, { type CriterionMeta } from "@/components/custom/vpat/IssuesDrawer";
 import {
   getAllWcagCriteria,
   getCriteriaDefaults,
@@ -43,8 +46,12 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   { vpat },
   ref,
 ) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerCriterion, setDrawerCriterion] = useState<CriterionMeta | null>(null);
   const { data: draftRows } = useVpatDraftRows(vpat?.id ?? null);
   const { data: wcagCriteria } = useWcagCriteria();
+  // Project-scoped issues summary for this VPAT
+  const { data: issuesSummary } = useVpatIssuesSummary(vpat?.id ?? null);
 
   // Build maps for code lookups
   const codeById = useMemo(() => getCodeById(wcagCriteria), [wcagCriteria]);
@@ -52,6 +59,15 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
     () => buildCodeToIdMap(wcagCriteria),
     [wcagCriteria],
   );
+
+  // Map WCAG code -> issue count from summary
+  const issuesCountByCode = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const row of issuesSummary || []) {
+      map.set(row.code, row.count);
+    }
+    return map;
+  }, [issuesSummary]);
 
   // Compute criteria default values from DB rows when both datasets are available
   const criteriaDefaults = useMemo(
@@ -71,7 +87,13 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   const saveRow = useSaveVpatRow(vpat?.id);
 
   useImperativeHandle(ref, () =>
-    buildVpatFormHandle({ getValues, updateVpat, saveRow, idByCode, originalCriteria: criteriaDefaults }),
+    buildVpatFormHandle({
+      getValues,
+      updateVpat,
+      saveRow,
+      idByCode,
+      originalCriteria: criteriaDefaults,
+    }),
   );
 
   const criteriaArray = getAllWcagCriteria();
@@ -100,7 +122,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
   }, [vpat, criteriaDefaults, reset, formState.isDirty]);
 
   return (
-    <div>
+    <div className={drawerOpen ? "pr-[34rem]" : undefined}>
       <form>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-card rounded-lg shadow-md border border-border mb-4">
           <div className="space-y-2">
@@ -153,7 +175,10 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
                       <tr key={key} className="border-t">
                         <td className="p-3 align-top">
                           <div className="font-medium">
-                            {row.code} — {row.name}
+                            {row.code} - {row.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-2">
+                            <span>Level {row.level}</span>
                           </div>
                         </td>
                         <td className="p-3 align-top">
@@ -184,7 +209,21 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
                           />
                         </td>
                         <td className="p-3 align-top text-center">
-                          Issue Count Here
+                          <button
+                            type="button"
+                            aria-label={`Open issues for ${row.code} ${row.name}`}
+                            className="font-semibold text-2xl underline"
+                            onClick={() => {
+                              setDrawerCriterion({
+                                code: row.code,
+                                name: row.name,
+                                level: row.level,
+                              });
+                              setDrawerOpen(true);
+                            }}
+                          >
+                            {issuesCountByCode.get(row.code) ?? 0}
+                          </button>
                         </td>
                         <td className="p-3 align-top text-center">
                           <Button variant="outline">Generate</Button>
@@ -198,6 +237,15 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat }>(function VpatForm(
           );
         })}
       </form>
+      <IssuesDrawer
+        open={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          setDrawerCriterion(null);
+        }}
+        vpatId={vpat?.id ?? null}
+        criterion={drawerCriterion}
+      />
     </div>
   );
 });
