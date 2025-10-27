@@ -10,9 +10,17 @@ type ToolbarProps = {
   exportingPdf: boolean;
   setExportingPdf: (value: boolean) => void;
   onSave: () => void | Promise<void>;
+  readOnly?: boolean;
 };
 
-function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }: ToolbarProps) {
+function Toolbar({
+  vpat,
+  savingAll,
+  exportingPdf,
+  setExportingPdf,
+  onSave,
+  readOnly,
+}: ToolbarProps) {
   return (
     <div className="flex gap-2">
       <Button variant="outline" asChild aria-label="Export HTML VPAT report">
@@ -32,15 +40,17 @@ function Toolbar({ vpat, savingAll, exportingPdf, setExportingPdf, onSave }: Too
       >
         {exportingPdf ? "Exporting…" : "Export PDF"}
       </Button>
-      <Button
-        variant="default"
-        className={"bg-success dark:bg-success"}
-        onClick={onSave}
-        disabled={savingAll}
-        aria-label="Save all changes"
-      >
-        {savingAll ? "Saving…" : "Save"}
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="default"
+          className={"bg-success dark:bg-success"}
+          onClick={onSave}
+          disabled={savingAll}
+          aria-label="Save all changes"
+        >
+          {savingAll ? "Saving…" : "Save"}
+        </Button>
+      )}
     </div>
   );
 }
