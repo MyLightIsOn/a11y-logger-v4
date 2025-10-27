@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
 import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
@@ -11,8 +11,6 @@ function Page() {
   const vpatId = (params?.vpatId ?? null) as string | null | undefined;
 
   const { data: vpat, isLoading, isError, error } = useVpatDraft(vpatId);
-  const [savingAll, setSavingAll] = useState<boolean>(false);
-  const formRef = useRef<VpatFormHandle>(null);
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
 
@@ -35,17 +33,18 @@ function Page() {
       {vpat && (
         <div className={"container mx-auto px-4 py-8 min-h-full"}>
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">VPAT Editor</h1>
+            <h1 className="text-2xl font-bold">VPAT Detail</h1>
 
             <Toolbar
               vpat={vpat}
-              savingAll={savingAll}
+              savingAll={false}
               exportingPdf={exportingPdf}
               setExportingPdf={setExportingPdf}
+              onSave={() => {}}
               readOnly
             />
           </div>
-          <VPATTable ref={formRef} vpat={vpat} />
+          <VPATTable vpat={vpat} />
         </div>
       )}
     </div>
