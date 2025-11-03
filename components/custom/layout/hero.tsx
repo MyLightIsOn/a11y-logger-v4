@@ -20,12 +20,12 @@ export function Hero() {
         </a>
       </div>
       <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
-      <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
+      <p className="text-3xl lg:text-3xl !leading-tight mx-auto max-w-xl text-center">
         Prototype for an <span className={"font-bold"}>AI driven</span>{" "}
-        accessibility bug logger.
+        accessibility program managment tool.
       </p>
       <p className="text-lg lg:text-xl !leading-tight mx-auto max-w-xl text-center">
-        This tool uses Generative AI to speed up logging issues and creating
+        This tool uses Generative AI to speed up logging issues, creating
         reports. Credentials are on the login page. <br />
       </p>
       <div className={"flex gap-4 w-full justify-center"}>

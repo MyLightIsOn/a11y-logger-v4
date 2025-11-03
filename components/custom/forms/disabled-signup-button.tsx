@@ -10,12 +10,7 @@ export function DisabledSignupButton() {
 
   return (
     <>
-      <Button
-        ref={triggerRef}
-        size="sm"
-        variant="default"
-        onClick={() => setOpen(true)}
-      >
+      <Button size="sm" variant="default" onClick={() => setOpen(true)}>
         Sign up
       </Button>
       <ConfirmationModal

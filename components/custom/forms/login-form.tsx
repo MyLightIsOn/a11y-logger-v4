@@ -54,7 +54,7 @@ export function LoginForm({
       <Card>
         <CardHeader>
           <CardTitle className="text-xl text-center font-bold">
-            Sign In to A11y Bug Logger!
+            Sign In to A11yPM!
           </CardTitle>
           <CardDescription>
             Enter your email below to login to your account
