@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import {
   Card,
@@ -169,53 +169,55 @@ export function CriteriaTable() {
           </div>
         )}
         {loading ? (
-          <div className="text-sm text-muted-foreground min-h-[500px]">
-            Loading…
+          <div className="w-full h-96 flex items-center justify-center">
+            <div className="loader"></div>
           </div>
         ) : chartData.length === 0 ? (
           <div className="text-sm text-muted-foreground">
             No data to display
           </div>
         ) : (
-          <table className="w-full border-collapse border-spacing-y-1">
-            <tbody>
-              {chartData.map((row) => {
-                const { wcag, count, code } = row;
-                const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                const pctLabel = `${Math.round(pct)}%`;
-                return (
-                  <tr key={code} className="align-middle border border-border">
-                    <td className="py-1 pr-2 pl-5 whitespace-nowrap text-sm text-muted-foreground">
-                      {code}
-                    </td>
-                    <td className="py-1 pr-2 text-sm h-10 p-5">{wcag}</td>
-                    <td>
-                      <div className="px-5">{count}</div>
-                    </td>
-                    <td className="py-1 pr-2 w-[70%]">
-                      <div
-                        className="h-3 w-full bg-muted rounded-full relative"
-                        role="img"
-                        aria-label={`${wcag}: ${pctLabel} of ${principle} max`}
-                        title={`${pctLabel} (${count} vs max ${maxCount} in ${principle})`}
-                      >
-                        <div className="h-full dark:bg-primary bg-button-background/5" />
-                        <div className="absolute inset-0 flex items-center">
-                          <span
-                            className={`leading-none bg-button-background/50 dark:bg-button-background/70 px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
-                            style={{ width: animateBars ? `${pct}%` : "0%" }}
-                          ></span>
+          <div className={"max-h-96 overflow-y-auto"}>
+            <table className="w-full border-collapse border-spacing-y-1 ">
+              <tbody>
+                {chartData.map((row) => {
+                  const { wcag, count, code } = row;
+                  const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                  const pctLabel = `${Math.round(pct)}%`;
+                  return (
+                    <tr
+                      key={code}
+                      className="align-middle border border-border"
+                    >
+                      <td className="py-1 pr-2 pl-5 whitespace-nowrap text-sm text-muted-foreground">
+                        {code}
+                      </td>
+                      <td className="py-1 pr-2 text-sm h-10 p-5">{wcag}</td>
+                      <td>
+                        <div className="px-5">{count}</div>
+                      </td>
+                      <td className="py-1 pr-2 w-[70%]">
+                        <div
+                          className="h-3 w-full bg-muted rounded-full relative"
+                          role="img"
+                          aria-label={`${wcag}: ${pctLabel} of ${principle} max`}
+                          title={`${pctLabel} (${count} vs max ${maxCount} in ${principle})`}
+                        >
+                          <div className="h-full dark:bg-primary bg-button-background/5" />
+                          <div className="absolute inset-0 flex items-center">
+                            <span
+                              className={`leading-none bg-button-background/50 dark:bg-button-background/70 px-1 rounded-full transition-all duration-1000 ease-out h-full relative`}
+                              style={{ width: animateBars ? `${pct}%` : "0%" }}
+                            ></span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    {/*<td className="py-1 pl-2 pr-5 text-right tabular-nums">
-                      {count}
-                    </td>*/}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </CardContent>
     </Card>

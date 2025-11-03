@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
@@ -259,102 +259,112 @@ export default function DashboardAreaChart() {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <AreaChart
-            accessibilityLayer
-            data={chartData}
-            margin={{ left: 12, right: 12 }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value: string) => value}
-            />
-            <YAxis
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              width={32}
-              domain={[0, "dataMax + 1"]}
-            />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-            <defs>
-              <linearGradient id="fillProjects" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-projects)"
-                  stopOpacity={0.7}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-projects)"
-                  stopOpacity={0.05}
-                />
-              </linearGradient>
-              <linearGradient id="fillAssessments" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-assessments)"
-                  stopOpacity={0.7}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-assessments)"
-                  stopOpacity={0.05}
-                />
-              </linearGradient>
-              <linearGradient id="fillIssues" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="50%"
-                  stopColor="var(--color-issues)"
-                  stopOpacity={1}
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--color-issues)"
-                  stopOpacity={0.05}
-                />
-              </linearGradient>
-            </defs>
-            <Area
-              dataKey="projects"
-              type="linear"
-              fill="url(#fillProjects)"
-              stroke="var(--color-projects)"
-              name="Projects"
-              strokeWidth={2}
-              dot
-              isAnimationActive
-            />
-            <Area
-              dataKey="assessments"
-              type="linear"
-              fill="url(#fillAssessments)"
-              stroke="var(--color-assessments)"
-              name="Assessments"
-              strokeWidth={2}
-              dot
-              isAnimationActive
-            />
-            <Area
-              dataKey="issues"
-              type="linear"
-              fill="url(#fillIssues)"
-              stroke="var(--color-issues)"
-              name="Issues"
-              strokeWidth={2}
-              dot
-              isAnimationActive
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
+        {!loading && (
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <AreaChart
+              accessibilityLayer
+              data={chartData}
+              margin={{ left: 12, right: 12 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value: string) => value}
+              />
+              <YAxis
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                width={32}
+                domain={[0, "dataMax + 1"]}
+              />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+              <defs>
+                <linearGradient id="fillProjects" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-projects)"
+                    stopOpacity={0.7}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-projects)"
+                    stopOpacity={0.05}
+                  />
+                </linearGradient>
+                <linearGradient
+                  id="fillAssessments"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-assessments)"
+                    stopOpacity={0.7}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-assessments)"
+                    stopOpacity={0.05}
+                  />
+                </linearGradient>
+                <linearGradient id="fillIssues" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="50%"
+                    stopColor="var(--color-issues)"
+                    stopOpacity={1}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor="var(--color-issues)"
+                    stopOpacity={0.05}
+                  />
+                </linearGradient>
+              </defs>
+              <Area
+                dataKey="projects"
+                type="linear"
+                fill="url(#fillProjects)"
+                stroke="var(--color-projects)"
+                name="Projects"
+                strokeWidth={2}
+                dot
+                isAnimationActive
+              />
+              <Area
+                dataKey="assessments"
+                type="linear"
+                fill="url(#fillAssessments)"
+                stroke="var(--color-assessments)"
+                name="Assessments"
+                strokeWidth={2}
+                dot
+                isAnimationActive
+              />
+              <Area
+                dataKey="issues"
+                type="linear"
+                fill="url(#fillIssues)"
+                stroke="var(--color-issues)"
+                name="Issues"
+                strokeWidth={2}
+                dot
+                isAnimationActive
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
+        )}
         {loading && (
-          <div className="text-sm text-muted-foreground mt-2">Loading…</div>
+          <div className="w-full h-72 flex items-center justify-center">
+            <div className="loader"></div>
+          </div>
         )}
         {error && <div className="text-sm text-destructive mt-2">{error}</div>}
       </CardContent>
