@@ -60,7 +60,7 @@ function ToggleGroupItem({
           variant: context.variant || variant,
           size: context.size || size,
         }),
-        "flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l min-w-[100px] px-7",
+        "flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l min-w-[100px] px-7 a11y-focus bg-muted data-[state=on]:bg-black/80 data-[state=on]:text-white dark:focus:bg-white dark:focus:text-black dark:hover:bg-white dark:hover:text-black dark:focus:outline-white dark:active:bg-red-200",
         className,
       )}
       {...props}

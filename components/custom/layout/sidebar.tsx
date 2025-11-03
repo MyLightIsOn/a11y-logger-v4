@@ -33,7 +33,7 @@ export default function SideBar({
   }, []);
 
   const linkBaseClass =
-    "flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-white dark:focus:text-white a11y-focus ";
+    "flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-black dark:hover:bg-white dark:focus:text-black dark:focus:bg-white hover:bg-black hover:text-white ";
   const navItems = [
     {
       href: "/dashboard",
