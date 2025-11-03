@@ -10,10 +10,10 @@ export function DisabledSignupLink() {
   return (
     <>
       <button
-        ref={triggerRef}
+        // ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="underline underline-offset-4 text-primary hover:underline"
+        className="underline underline-offset-4 text-primary hover:underline a11y-focus"
       >
         Sign up
       </button>

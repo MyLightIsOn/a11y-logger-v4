@@ -11,8 +11,8 @@ import {
   ChevronRight,
   ClipboardList,
 } from "lucide-react";
-import { LogoutButton } from "@/components/custom/logout-button";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function SideBar({
   children,
@@ -32,6 +32,27 @@ export default function SideBar({
     }
   }, []);
 
+  const linkBaseClass =
+    "flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-white dark:focus:text-white a11y-focus ";
+  const navItems = [
+    {
+      href: "/dashboard",
+      title: "Dashboard",
+      label: "Dashboard",
+      Icon: LayoutDashboardIcon,
+    },
+    { href: "/projects", title: "Projects", label: "Projects", Icon: Folder },
+    {
+      href: "/assessments",
+      title: "Assessments",
+      label: "Assessments",
+      Icon: FileCheck,
+    },
+    { href: "/issues", title: "Issues", label: "Issues", Icon: AlertTriangle },
+    { href: "/vpats", title: "VPATs", label: "VPATS", Icon: ClipboardList },
+    { href: "/account", title: "Account", label: "Account", Icon: User },
+  ];
+
   return (
     <div className={"w-full"}>
       <div
@@ -42,29 +63,23 @@ export default function SideBar({
       >
         <nav className="border-r bg-primary-foreground dark:bg-card pt-[65px]">
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex items-center justify-between px-2">
-              <button
-                type="button"
+            <div className="flex items-center justify-end px-2">
+              <Button
+                variant={"outline"}
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 aria-controls="nav"
                 aria-expanded={!collapsed}
+                className={"h-10 w-10 p-0 relative right-2"}
                 onClick={() => {
                   localStorage.setItem("sidebar:collapsed", String(!collapsed));
                   setCollapsed(!collapsed);
                 }}
-                className={`inline-flex ${collapsed ? "justify-center" : "justify-end"} w-full rounded-md px-2 py-1 text-sm text-primary a11y-focus`}
               >
-                <div className={"border border-border rounded-sm p-1"}>
-                  {collapsed ? (
-                    <ChevronRight className={"h-6 w-6"} />
-                  ) : (
-                    <ChevronLeft className={"h-6 w-6"} />
-                  )}
-                </div>
+                {collapsed ? <ChevronRight /> : <ChevronLeft />}{" "}
                 <span className={"sr-only"}>
                   {collapsed ? "Expand" : "Collapse"}
                 </span>
-              </button>
+              </Button>
             </div>
 
             <div className="flex-1 overflow-auto relative">
@@ -75,91 +90,20 @@ export default function SideBar({
                   (collapsed ? "px-1" : "px-4")
                 }
               >
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/dashboard"
-                  title="Dashboard"
-                >
-                  <LayoutDashboardIcon
-                    className={collapsed ? "h-6 w-6" : "h-4 w-4"}
-                  />
-                  <span className={collapsed ? "sr-only" : ""}>Dashboard</span>
-                </Link>
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/projects"
-                  title="Projects"
-                >
-                  <Folder className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                  <span className={collapsed ? "sr-only" : ""}>Projects</span>
-                </Link>
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/assessments"
-                  title="Assessments"
-                >
-                  <FileCheck className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                  <span className={collapsed ? "sr-only" : ""}>
-                    Assessments
-                  </span>
-                </Link>
-
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/issues"
-                  title="Issues"
-                >
-                  <AlertTriangle
-                    className={collapsed ? "h-6 w-6" : "h-4 w-4"}
-                  />
-                  <span className={collapsed ? "sr-only" : ""}>Issues</span>
-                </Link>
-
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/vpats"
-                  title="VPATs"
-                >
-                  <ClipboardList
-                    className={collapsed ? "h-6 w-6" : "h-4 w-4"}
-                  />
-                  <span className={collapsed ? "sr-only" : ""}>VPATS</span>
-                </Link>
-
-                <Link
-                  className={
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-gray-50 a11y-focus " +
-                    (collapsed ? "justify-center" : "")
-                  }
-                  href="/account"
-                  title="Account"
-                >
-                  <User className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                  <span className={collapsed ? "sr-only" : ""}>Account</span>
-                </Link>
+                {navItems.map(({ href, title, label, Icon }) => (
+                  <Link
+                    key={href}
+                    className={
+                      linkBaseClass + (collapsed ? "justify-center" : "")
+                    }
+                    href={href}
+                    title={title}
+                  >
+                    <Icon className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
+                    <span className={collapsed ? "sr-only" : ""}>{label}</span>
+                  </Link>
+                ))}
               </nav>
-              <div
-                className={
-                  "absolute bottom-0 border-t border-[hsl(var(--primary)_/_0.3)] w-full p-2"
-                }
-              >
-                <LogoutButton />
-              </div>
             </div>
           </div>
         </nav>
