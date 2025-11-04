@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { projectsApi } from "@/lib/api";
 import { Project } from "@/types/project";
 import {
@@ -14,7 +13,6 @@ import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 
 function Page() {
-  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

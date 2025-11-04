@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useMemo } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -38,16 +38,6 @@ function StatusBadge({ status }: { status: VpatCurrentView["status"] }) {
 
 export default function VpatsListPage() {
   const { data: vpats, isLoading, isError, error } = useVpatsList();
-
-  const headerExtras = useMemo(() => {
-    return (
-      <div className="flex items-center gap-3">
-        <Link href="/vpats/new">
-          <Button>Create VPAT</Button>
-        </Link>
-      </div>
-    );
-  }, []);
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-full">
