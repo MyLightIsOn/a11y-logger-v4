@@ -227,7 +227,7 @@ export default function Page() {
           <div className="flex items-center gap-2">
             <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
             <Link href={"/issues/new"}>
-              <Button className={"ml-5"}>
+              <Button className={"ml-5 bg-success dark:bg-success"}>
                 Create Issue <PlusIcon />
               </Button>
             </Link>

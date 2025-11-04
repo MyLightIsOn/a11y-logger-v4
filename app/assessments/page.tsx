@@ -50,7 +50,7 @@ function Page() {
         <h1 className="text-2xl font-bold">Assessments</h1>
         {assessments.length > 0 && (
           <Link href={"/assessments/new"}>
-            <Button className={"ml-5"}>
+            <Button className={"ml-5 bg-success dark:bg-success"}>
               Create Assessment <PlusIcon />
             </Button>
           </Link>

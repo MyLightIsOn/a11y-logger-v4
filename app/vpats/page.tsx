@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,6 +13,7 @@ import {
 import { useVpatsList } from "@/lib/query/use-vpat-queries";
 import { formatDate } from "@/lib/utils";
 import type { VpatCurrentView } from "@/types/vpat";
+import { PlusIcon } from "lucide-react";
 
 function DescriptionFirstLine({ text }: { text?: string | null }) {
   if (!text) return <span className="text-muted-foreground">—</span>;
@@ -49,10 +50,16 @@ export default function VpatsListPage() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">VPATs</h1>
-        {headerExtras}
+    <div className="container mx-auto px-4 py-8 min-h-full">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">VPATs</h1>
+        {vpats && vpats.length > 0 && (
+          <Link href={"/vpats/new"}>
+            <Button className={"ml-5 bg-success dark:bg-success"}>
+              Create VPAT <PlusIcon />
+            </Button>
+          </Link>
+        )}
       </div>
 
       {isError && (
@@ -76,7 +83,7 @@ export default function VpatsListPage() {
 
       {!isLoading && (vpats?.length ?? 0) > 0 && (
         <div
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           data-testid="vpats-grid"
         >
           {vpats!.map((row) => (

@@ -11,6 +11,7 @@ import {
 import ProjectList from "@/components/custom/projects/ProjectList";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import Link from "next/link";
 
 function Page() {
   const router = useRouter();
@@ -52,15 +53,13 @@ function Page() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
         <div className="flex gap-2">
-          {
-            <Button
-              onClick={() => router.push("/projects/new")}
-              className="px-4 py-2 bg-success dark:bg-success"
-              data-testid="create-project-button"
-            >
-              Create Project <PlusIcon className="ml-2" />
-            </Button>
-          }
+          {projects.length > 0 && (
+            <Link href={"/projects/new"}>
+              <Button className={"ml-5 bg-success dark:bg-success"}>
+                Create Project <PlusIcon />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
