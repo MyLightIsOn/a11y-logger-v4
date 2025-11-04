@@ -23,6 +23,17 @@ import { assessmentsApi, issuesApi, projectsApi } from "@/lib/api";
 import type { Assessment } from "@/types/assessment";
 import type { Project } from "@/types/project";
 import type { Issue } from "@/types/issue";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { ChartPieIcon, TableIcon } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+} from "@/components/ui/table";
 
 // Match the metrics shown by the line chart
 
@@ -120,6 +131,7 @@ export default function DashboardAreaChart() {
   const [issues, setIssues] = useState<Issue[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
 
   useEffect(() => {
     let active = true;
@@ -236,30 +248,55 @@ export default function DashboardAreaChart() {
             <CardTitle>Projects, Assessments, and Issues</CardTitle>
             <CardDescription>{rangeText}</CardDescription>
           </div>
-          <ToggleGroup
-            type="single"
-            value={range}
-            onValueChange={(v) => v && setRange(v as RangeKey)}
-            variant="outline"
-            className="h-9"
-          >
-            <ToggleGroupItem value="6 months" aria-label="Last 6 months">
-              6 months
-            </ToggleGroupItem>
-            <ToggleGroupItem value="3 months" aria-label="Last 3 months">
-              3 months
-            </ToggleGroupItem>
-            <ToggleGroupItem value="1 month" aria-label="Last 1 month">
-              1 month
-            </ToggleGroupItem>
-            <ToggleGroupItem value="1 week" aria-label="Last 1 week">
-              1 week
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className="flex items-center gap-4">
+            <ToggleGroup
+              type="single"
+              value={range}
+              onValueChange={(v) => v && setRange(v as RangeKey)}
+              variant="outline"
+              className="h-9"
+            >
+              <ToggleGroupItem value="6 months" aria-label="Last 6 months">
+                6 months
+              </ToggleGroupItem>
+              <ToggleGroupItem value="3 months" aria-label="Last 3 months">
+                3 months
+              </ToggleGroupItem>
+              <ToggleGroupItem value="1 month" aria-label="Last 1 month">
+                1 month
+              </ToggleGroupItem>
+              <ToggleGroupItem value="1 week" aria-label="Last 1 week">
+                1 week
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        </div>
+        <div
+          className="flex items-center space-x-2 absolute -z-10 right-4 top-4"
+          tabIndex={-1}
+        >
+          <Label htmlFor="view-mode" className="sr-only">
+            View Mode
+          </Label>
+          <div className="flex items-center space-x-1">
+            <TableIcon
+              className={`h-4 w-4 ${viewMode === "table" ? "text-primary" : "text-muted-foreground"}`}
+            />
+            <Switch
+              id="view-mode"
+              checked={viewMode === "chart"}
+              onCheckedChange={(checked) =>
+                setViewMode(checked ? "chart" : "table")
+              }
+            />
+            <ChartPieIcon
+              className={`h-4 w-4 ${viewMode === "chart" ? "text-primary" : "text-muted-foreground"}`}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        {!loading && (
+        {!loading && viewMode === "chart" && (
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <AreaChart
               accessibilityLayer
@@ -360,6 +397,54 @@ export default function DashboardAreaChart() {
               <ChartLegend content={<ChartLegendContent />} />
             </AreaChart>
           </ChartContainer>
+        )}
+        {!loading && viewMode === "table" && (
+          <div className="w-full overflow-x-auto h-[300px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Period</TableHead>
+                  <TableHead className="text-right">Projects</TableHead>
+                  <TableHead className="text-right">Assessments</TableHead>
+                  <TableHead className="text-right">Issues</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {chartData.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-muted-foreground"
+                    >
+                      No data for selected range.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  chartData.map((row) => {
+                    const total = row.projects + row.assessments + row.issues;
+                    return (
+                      <TableRow key={`${row.label}-${row.date.toString()}`}>
+                        <TableCell className="font-medium">
+                          {row.label}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.projects}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.assessments}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {row.issues}
+                        </TableCell>
+                        <TableCell className="text-right">{total}</TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
         {loading && (
           <div className="w-full h-72 flex items-center justify-center">

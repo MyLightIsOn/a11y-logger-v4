@@ -6,8 +6,24 @@ export type GenerateReportRequest = {
   includePatterns?: boolean;
 };
 
+export interface ReportListItem {
+  id: string;
+  assessment_id: string;
+  created_at: string;
+}
+
+export interface ReportListResponse {
+  data: ReportListItem[];
+  count: number;
+}
+
 export class ReportsApiService extends BaseApiService {
   private readonly basePath = "/reports";
+
+  /** GET /api/reports */
+  async listAll(): Promise<ApiResponse<ReportListResponse>> {
+    return this.get<ReportListResponse>(this.basePath);
+  }
 
   /** POST /api/reports/[assessmentId] */
   async generateReport(
