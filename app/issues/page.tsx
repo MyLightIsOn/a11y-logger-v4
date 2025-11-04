@@ -15,6 +15,7 @@ import {
 import ViewModeToggle from "@/components/custom/view-mode-toggle";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -27,6 +28,12 @@ function severityBadgeClasses(severity?: string) {
     default:
       return "bg-blue-100 border-blue-800"; // "4" or undefined
   }
+}
+
+function DescriptionFirstLine({ text }: { text?: string | null }) {
+  if (!text) return <span className="text-muted-foreground">—</span>;
+  const firstLine = text.split("\n")[0]?.trim();
+  return <span className="text-muted-foreground">{firstLine || "—"}</span>;
 }
 
 export default function Page() {
@@ -254,20 +261,11 @@ export default function Page() {
           data-testid="issues-grid"
         >
           {issues.map((issue) => (
-            <div
-              key={issue.id}
-              className="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-border"
-              data-testid={`issue-card-${issue.id}`}
-            >
-              <Link
-                href={`/issues/${issue.id}`}
-                className="block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h2 className="text-xl font-semibold mb-2 flex-1 pr-3">
-                      {issue.title}
-                    </h2>
+            <Link key={issue.id} href={`/issues/${issue.id}`}>
+              <Card className="h-full shadow-md" data-testid={`issue-card-${issue.id}`}>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    {issue.title}
                     <Badge
                       variant="outline"
                       className={`text-black p-1 px-2 ${severityBadgeClasses(issue.severity)}`}
@@ -275,54 +273,36 @@ export default function Page() {
                       {issue.severity === "1" ? (
                         <p className={"flex items-center text-xs"}>
                           CRITICAL
-                          <span
-                            className={
-                              "block w-3 h-3 rounded-full bg-red-400 ml-2"
-                            }
-                          />
+                          <span className={"block w-3 h-3 rounded-full bg-red-400 ml-2"} />
                         </p>
                       ) : issue.severity === "2" ? (
                         <p className={"flex items-center text-xs"}>
                           HIGH
-                          <span
-                            className={
-                              "block w-3 h-3 rounded-full bg-orange-400 ml-2"
-                            }
-                          />
+                          <span className={"block w-3 h-3 rounded-full bg-orange-400 ml-2"} />
                         </p>
                       ) : issue.severity === "3" ? (
                         <p className={"flex items-center text-xs"}>
                           MEDIUM
-                          <span
-                            className={
-                              "block  w-3 h-3 rounded-full bg-yellow-400 ml-2"
-                            }
-                          />
+                          <span className={"block  w-3 h-3 rounded-full bg-yellow-400 ml-2"} />
                         </p>
                       ) : (
                         <p className={"flex items-center text-xs"}>
                           LOW
-                          <span
-                            className={
-                              "block w-3 h-3 rounded-full bg-blue-400 ml-2"
-                            }
-                          />
+                          <span className={"block w-3 h-3 rounded-full bg-blue-400 ml-2"} />
                         </p>
                       )}
                     </Badge>
-                  </div>
-
-                  {issue.description && (
-                    <p className="text-foreground mb-4 text-sm leading-relaxed line-clamp-2">
-                      {issue.description}
-                    </p>
-                  )}
-
-                  <div className="mt-2 border-t border-border pt-4">
-                    <p className="text-sm font-medium mb-1">Tags:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {issue.tags && issue.tags.length > 0 ? (
-                        issue.tags.map((tag) => (
+                  </CardTitle>
+                  <CardDescription>
+                    <DescriptionFirstLine text={issue.description ?? null} />
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  {issue.tags && issue.tags.length > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="text-sm font-medium mb-1">Tags</div>
+                      <div className="flex flex-wrap gap-2">
+                        {issue.tags.map((tag) => (
                           <Badge
                             key={tag.id}
                             variant="outline"
@@ -330,15 +310,18 @@ export default function Page() {
                           >
                             {tag.label}
                           </Badge>
-                        ))
-                      ) : (
-                        <p>None</p>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Link>
-            </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Tags</span>
+                      <span className="text-muted-foreground">—</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}
