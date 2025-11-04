@@ -78,9 +78,9 @@ export default function VpatsListPage() {
         >
           {vpats!.map((row) => (
             <Link key={row.vpat_id} href={`/vpats/${row.vpat_id}`}>
-              <Card key={row.vpat_id} className="h-full">
+              <Card key={row.vpat_id} className="h-full shadow-md ">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-base flex items-center gap-2">
+                  <CardTitle className="text-xl flex items-center gap-2">
                     {row.title}
                     <StatusBadge status={row.status} />
                   </CardTitle>

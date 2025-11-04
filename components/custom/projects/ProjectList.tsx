@@ -2,14 +2,27 @@ import React from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Project } from "@/types/project";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 // ProjectList component props
 interface ProjectListProps {
   projects: Project[];
 }
 
+function DescriptionFirstLine({ text }: { text?: string | null }) {
+  if (!text) return <span className="text-muted-foreground">—</span>;
+  const firstLine = text.split("\n")[0]?.trim();
+  return <span className="text-muted-foreground">{firstLine || "—"}</span>;
+}
+
 /**
- * Renders a grid of project cards
+ * Renders a grid of project cards using the shared Card component (parity with VPAT list)
  */
 export function ProjectList({ projects }: ProjectListProps) {
   return (
@@ -18,26 +31,21 @@ export function ProjectList({ projects }: ProjectListProps) {
       data-testid="projects-grid"
     >
       {projects.map((project) => (
-        <div
-          key={project.id}
-          className="bg-card rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow border border-border"
-          data-testid={`project-card-${project.id}`}
-        >
-          <Link href={`/projects/${project.id}`} className="block">
-            <div className="p-6">
-              <div className="flex justify-between items-start">
-                <h2 className="text-xl font-semibold mb-2">{project.name}</h2>
-              </div>
-
-              {project.description && (
-                <p className="text-foreground mb-4 text-sm leading-relaxed">
-                  {project.description}
-                </p>
-              )}
-
-              {project.tags && project.tags.length > 0 && (
-                <div className="mt-2 border-t border-border pt-4">
-                  <p className="text-sm font-medium mb-1">Tags:</p>
+        <Link key={project.id} href={`/projects/${project.id}`}>
+          <Card
+            className="h-full shadow-md"
+            data-testid={`project-card-${project.id}`}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl">{project.name}</CardTitle>
+              <CardDescription>
+                <DescriptionFirstLine text={project.description ?? null} />
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm">
+              {project.tags && project.tags.length > 0 ? (
+                <div className="flex flex-col gap-1.5">
+                  <div className="text-sm font-medium mb-1">Tags</div>
                   <div className="flex flex-wrap gap-2">
                     {project.tags.map((tag) => (
                       <Badge
@@ -50,17 +58,15 @@ export function ProjectList({ projects }: ProjectListProps) {
                     ))}
                   </div>
                 </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Tags</span>
+                  <span className="text-muted-foreground">—</span>
+                </div>
               )}
-              {!project.tags ||
-                (project.tags.length === 0 && (
-                  <div className="mt-2 border-t border-border pt-4">
-                    <p className="text-sm font-medium mb-1">Tags:</p>
-                    None
-                  </div>
-                ))}
-            </div>
-          </Link>
-        </div>
+            </CardContent>
+          </Card>
+        </Link>
       ))}
     </div>
   );
