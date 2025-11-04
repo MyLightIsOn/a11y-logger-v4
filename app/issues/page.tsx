@@ -15,7 +15,13 @@ import {
 import ViewModeToggle from "@/components/custom/view-mode-toggle";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -227,7 +233,7 @@ export default function Page() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-full">
+    <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Issues</h1>
         {issues.length > 0 && (
@@ -262,7 +268,10 @@ export default function Page() {
         >
           {issues.map((issue) => (
             <Link key={issue.id} href={`/issues/${issue.id}`}>
-              <Card className="h-full shadow-md" data-testid={`issue-card-${issue.id}`}>
+              <Card
+                className="h-full shadow-md"
+                data-testid={`issue-card-${issue.id}`}
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xl flex items-center gap-2">
                     {issue.title}
@@ -273,22 +282,38 @@ export default function Page() {
                       {issue.severity === "1" ? (
                         <p className={"flex items-center text-xs"}>
                           CRITICAL
-                          <span className={"block w-3 h-3 rounded-full bg-red-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-red-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : issue.severity === "2" ? (
                         <p className={"flex items-center text-xs"}>
                           HIGH
-                          <span className={"block w-3 h-3 rounded-full bg-orange-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-orange-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : issue.severity === "3" ? (
                         <p className={"flex items-center text-xs"}>
                           MEDIUM
-                          <span className={"block  w-3 h-3 rounded-full bg-yellow-400 ml-2"} />
+                          <span
+                            className={
+                              "block  w-3 h-3 rounded-full bg-yellow-400 ml-2"
+                            }
+                          />
                         </p>
                       ) : (
                         <p className={"flex items-center text-xs"}>
                           LOW
-                          <span className={"block w-3 h-3 rounded-full bg-blue-400 ml-2"} />
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-blue-400 ml-2"
+                            }
+                          />
                         </p>
                       )}
                     </Badge>
