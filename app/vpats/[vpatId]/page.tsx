@@ -10,7 +10,6 @@ import { EditIcon, File, FileCode } from "lucide-react";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 import type { Vpat } from "@/types/vpat";
 
-// Minimal prop types for local buttons. Use the domain `Vpat` type to avoid `any`.
 interface HasVpat {
   vpat: Vpat;
 }
@@ -45,7 +44,11 @@ type ExportPDFButtonProps = HasVpat & {
   exportingPdf: boolean;
 };
 
-const ExportPDFButton: React.FC<ExportPDFButtonProps> = ({ setExportingPdf, vpat, exportingPdf }) => (
+const ExportPDFButton: React.FC<ExportPDFButtonProps> = ({
+  setExportingPdf,
+  vpat,
+  exportingPdf,
+}) => (
   <Button
     variant="outline"
     onClick={() => handleExportPdf({ setExportingPdf, vpat })}
