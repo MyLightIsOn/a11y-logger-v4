@@ -134,7 +134,7 @@ export function ProjectForm({
       ) : null}
       <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
         {/* Name */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
+        <section className="bg-card rounded-lg mb-4">
           <label htmlFor="name" className="block text-xl font-bold">
             Name <span className="text-destructive">*</span>
           </label>
@@ -162,7 +162,7 @@ export function ProjectForm({
         </section>
 
         {/* Description */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
+        <section className="bg-card rounded-lg mb-4">
           <label htmlFor="description" className="block text-xl font-bold">
             Description
           </label>
@@ -193,7 +193,7 @@ export function ProjectForm({
 
         {/* Assessment selection slot (multi-select) */}
         {typeof renderAssessmentSelection === "function" ? (
-          <section className="bg-card rounded-lg p-4 border border-border mb-4">
+          <section className="bg-card rounded-lg mb-4">
             {renderAssessmentSelection({
               selectedIds: selectedAssessmentIds,
               onChange: (ids: string[]) =>

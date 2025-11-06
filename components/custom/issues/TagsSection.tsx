@@ -21,10 +21,7 @@ export function TagsSection({
   );
 
   return (
-    <section
-      aria-labelledby="tags-heading"
-      className="bg-card rounded-lg p-4 border border-border mb-4"
-    >
+    <section aria-labelledby="tags-heading" className="bg-card rounded-lg mb-4">
       <h2 id="tags-heading" className="text-lg font-semibold mb-4">
         Tags
       </h2>

@@ -1,5 +1,4 @@
 import type { CriterionRef } from "@/types/issue";
-import type React from "react";
 
 // Shared AI-related types for issue insights and service configuration
 
@@ -38,7 +37,11 @@ export type OpenAiServiceOptions = {
 };
 
 // UI component props for the AI Assist panel
-import type { UseFormGetValues, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import type {
+  UseFormGetValues,
+  UseFormSetValue,
+  UseFormWatch,
+} from "react-hook-form";
 import type { CreateIssueInput } from "@/lib/validation/issues";
 
 export type AIAssistPanelProps = {

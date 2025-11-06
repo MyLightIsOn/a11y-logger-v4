@@ -5,16 +5,43 @@ import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
 import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
 import VPATForm, { VpatFormHandle } from "@/app/vpats/[vpatId]/VPATForm";
+import { SaveIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+// Types for component props
+type SaveVPATButtonProps = {
+  onSave: () => void | Promise<void>;
+  savingAll: boolean;
+};
+
+const SaveVPATButton: React.FC<SaveVPATButtonProps> = ({ onSave, savingAll }) => (
+  <Button
+    variant="success"
+    onClick={onSave}
+    disabled={savingAll}
+    aria-label="Save all changes"
+  >
+    <SaveIcon />
+    {savingAll ? "Saving…" : "Save"}
+  </Button>
+);
+
+const CancelVPATButton = (
+  <Button
+    variant="destructive"
+    onClick={() => window.history.back()}
+    aria-label="Save all changes"
+  >
+    Cancel
+  </Button>
+);
 
 function Page() {
-  const params = useParams();
-  const vpatId = (params?.vpatId ?? null) as string | null | undefined;
+  const { vpatId } = useParams<{ vpatId: string }>();
 
   const { data: vpat, isLoading, isError, error } = useVpatDraft(vpatId);
   const [savingAll, setSavingAll] = useState<boolean>(false);
   const formRef = useRef<VpatFormHandle>(null);
-
-  const [exportingPdf, setExportingPdf] = useState<boolean>(false);
 
   return (
     <div className={"min-h-full"}>
@@ -36,21 +63,24 @@ function Page() {
         <div className={"container mx-auto px-4 py-8 min-h-full"}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">VPAT Editor</h1>
-
             <Toolbar
-              vpat={vpat}
-              savingAll={savingAll}
-              exportingPdf={exportingPdf}
-              setExportingPdf={setExportingPdf}
-              onSave={async () => {
-                if (savingAll) return;
-                setSavingAll(true);
-                try {
-                  await formRef.current?.saveDraft();
-                } finally {
-                  setSavingAll(false);
-                }
-              }}
+              buttons={
+                <>
+                  <SaveVPATButton
+                    onSave={async () => {
+                      if (savingAll) return;
+                      setSavingAll(true);
+                      try {
+                        await formRef.current?.saveDraft();
+                      } finally {
+                        setSavingAll(false);
+                      }
+                    }}
+                    savingAll={savingAll}
+                  />
+                  {CancelVPATButton}
+                </>
+              }
             />
           </div>
           <VPATForm ref={formRef} vpat={vpat} />

@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ProjectForm, ProjectFormValues } from "@/components/custom/projects/ProjectForm";
+import {
+  ProjectForm,
+  ProjectFormValues,
+} from "@/components/custom/projects/ProjectForm";
 import AssessmentSelection from "@/components/custom/projects/AssessmentSelection";
 import { useCreateProjectMutation } from "@/lib/query/use-create-project-mutation";
 import type { CreateProjectRequest } from "@/lib/api/projects";
@@ -16,7 +19,8 @@ export default function NewProjectPage() {
     const payload: CreateProjectRequest = {
       name: values.name.trim(),
       description: values.description?.trim() || undefined,
-      tag_ids: values.tag_ids && values.tag_ids.length ? values.tag_ids : undefined,
+      tag_ids:
+        values.tag_ids && values.tag_ids.length ? values.tag_ids : undefined,
       assessment_ids:
         values.assessment_ids && values.assessment_ids.length
           ? values.assessment_ids
@@ -47,10 +51,9 @@ export default function NewProjectPage() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Projects
         </Link>
       </div>
-
+      <h1 className="text-2xl font-bold mb-4">Create Project</h1>
       <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden">
         <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Create Project</h1>
           <ProjectForm
             mode="create"
             submitting={createProject.isPending}
