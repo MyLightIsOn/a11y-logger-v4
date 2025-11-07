@@ -57,7 +57,8 @@ function Page() {
               {" "}
               <Button
                 asChild
-                className={"ml-5 bg-success dark:bg-success overflow-visible"}
+                variant={"success"}
+                className={"ml-5 overflow-visible"}
               >
                 <Link href={"/projects/new"} className={"a11y-focus"}>
                   <PlusIcon /> Create Project

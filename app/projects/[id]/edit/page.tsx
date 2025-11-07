@@ -70,7 +70,9 @@ export default function EditProjectPage({ params }: PageProps) {
       {isLoading ? (
         <div>Loading project…</div>
       ) : error ? (
-        <div className="text-destructive">Failed to load project: {error.message}</div>
+        <div className="text-destructive">
+          Failed to load project: {error.message}
+        </div>
       ) : !project ? (
         <div className="text-destructive">Project not found.</div>
       ) : (
@@ -93,17 +95,22 @@ export default function EditProjectPage({ params }: PageProps) {
             buttons={
               <>
                 <Button
-                  className="bg-success dark:bg-successfles"
+                  variant="success"
                   type="submit"
                   disabled={updateProject.isPending}
                   aria-describedby="submit-status"
                 >
                   {updateProject.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <SaveIcon className="h-4 w-4" aria-hidden="true" />
                   )}
-                  {updateProject.isPending ? "Saving Project..." : "Save Project"}
+                  {updateProject.isPending
+                    ? "Saving Project..."
+                    : "Save Project"}
                 </Button>
                 <span
                   id="submit-status"
@@ -114,7 +121,7 @@ export default function EditProjectPage({ params }: PageProps) {
                   {updateProject.isPending ? "Saving Project" : ""}
                 </span>
                 <Button
-                  className="bg-destructive dark:bg-destructive"
+                  variant="destructive"
                   onClick={() => router.push(`/projects/${id}`)}
                   aria-label="Cancel"
                 >
