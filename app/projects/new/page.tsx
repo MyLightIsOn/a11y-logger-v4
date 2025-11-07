@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, SaveIcon, Loader2, CircleX } from "lucide-react";
+import { ArrowLeft, SaveIcon, Loader2, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   ProjectForm,
@@ -97,7 +97,7 @@ export default function NewProjectPage() {
               onClick={() => router.push("/projects")}
               aria-label="Cancel"
             >
-              <CircleX /> Cancel
+              <XIcon /> Cancel
             </Button>
           </>
         }

@@ -918,9 +918,9 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                                 }
                               }}
                               aria-label={`Remove ${option.label} from selection`}
-                              className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-sm -mr-0.5 focus:outline-none focus:ring-1 focus:ring-white/50"
+                              className="ml-2 h-4 w-4 cursor-pointer hover:bg-white/20 rounded-full -mr-0.5 focus:outline-none focus:ring-2  focus:ring-offset-2 focus:ring-offset-background focus:ring-black focus:bg-black focus:text-white"
                             >
-                              <XCircle
+                              <XIcon
                                 className={cn(
                                   "h-3 w-3",
                                   responsiveSettings.compactMode &&
@@ -983,7 +983,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
                         }
                       }}
                       aria-label={`Clear all ${selectedValues.length} selected options`}
-                      className="flex items-center justify-center h-4 w-4 mx-2 cursor-pointer text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded-sm"
+                      className="flex items-center justify-center h-4 w-4 mx-2 cursor-pointer text-muted-foreground hover:text-foreground a11y-focus rounded-sm"
                     >
                       <XIcon className="h-4 w-4" />
                     </div>
