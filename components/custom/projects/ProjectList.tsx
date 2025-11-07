@@ -31,7 +31,11 @@ export function ProjectList({ projects }: ProjectListProps) {
       data-testid="projects-grid"
     >
       {projects.map((project) => (
-        <Link key={project.id} href={`/projects/${project.id}`}>
+        <Link
+          className={"rounded-lg"}
+          key={project.id}
+          href={`/projects/${project.id}`}
+        >
           <Card
             className="h-full shadow-md"
             data-testid={`project-card-${project.id}`}

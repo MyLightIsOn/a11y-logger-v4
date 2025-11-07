@@ -33,7 +33,7 @@ export default function SideBar({
   }, []);
 
   const linkBaseClass =
-    "flex items-center gap-3 rounded-md px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-black dark:hover:bg-white dark:focus:text-black dark:focus:bg-white hover:bg-black hover:text-white ";
+    "flex items-center gap-3 px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-black dark:hover:bg-white dark:focus:text-black dark:focus:bg-white hover:bg-black hover:text-white ";
   const navItems = [
     {
       href: "/dashboard",
@@ -63,7 +63,7 @@ export default function SideBar({
       >
         <nav className="border-r bg-primary-foreground dark:bg-card pt-[65px]">
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex items-center justify-end px-2">
+            <div className="flex items-center justify-end px-2 bg-transparent">
               <Button
                 variant={"outline"}
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -82,11 +82,11 @@ export default function SideBar({
               </Button>
             </div>
 
-            <div className="flex-1 overflow-auto relative">
+            <div className="flex-1 overflow-visible relative">
               <nav
                 id={"nav"}
                 className={
-                  "grid items-start text-sm font-medium " +
+                  "grid items-start text-sm font-medium" +
                   (collapsed ? "px-1" : "px-4")
                 }
               >

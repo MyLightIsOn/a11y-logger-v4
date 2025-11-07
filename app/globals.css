@@ -121,13 +121,10 @@ body {
 }
 
 .a11y-focus:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible {
-  /*outline-style: dashed;
-  outline-color: var(--primary);
+  outline-style: dashed;
+  outline-color: hsl(var(--primary));
   outline-width: 4px;
-  outline-offset: 4px;*/
-
-  outline: none;
-  box-shadow: 0 0 0 3px hsla(220, 100%, 50%, 80%);
+  outline-offset: 4px;
 }
 
 /* HTML: <div class="loader"></div> */
