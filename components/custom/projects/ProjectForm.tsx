@@ -4,14 +4,12 @@ import React, { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import ErrorAlert from "@/components/ui/error-alert";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import type { Option } from "@/types/options";
 import type { Project } from "@/types/project";
 import type { ProjectWithRelations } from "@/lib/api/projects";
-import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 export type ProjectFormValues = {
   name: string;
