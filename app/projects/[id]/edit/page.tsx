@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SaveIcon, Loader2, XIcon } from "lucide-react";
 import {
   ProjectForm,
   ProjectFormValues,
@@ -12,6 +12,8 @@ import AssessmentSelection from "@/components/custom/projects/AssessmentSelectio
 import { useProjectDetails } from "@/lib/query/use-project-details-query";
 import { useUpdateProjectMutation } from "@/lib/query/use-update-project-mutation";
 import type { UpdateProjectRequest } from "@/lib/api/projects";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -58,46 +60,71 @@ export default function EditProjectPage({ params }: PageProps) {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href={`/projects/${id}`}
-          onClick={(e) => {
-            if (typeof window !== "undefined" && window.history.length > 1) {
-              e.preventDefault();
-              router.back();
-            }
-          }}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Project
         </Link>
       </div>
+      <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
 
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
-          {isLoading ? (
-            <div>Loading project…</div>
-          ) : error ? (
-            <div className="text-destructive">
-              Failed to load project: {error.message}
-            </div>
-          ) : !project ? (
-            <div className="text-destructive">Project not found.</div>
-          ) : (
-            <ProjectForm
-              mode="edit"
-              initialData={project}
-              submitting={updateProject.isPending}
-              error={updateProject.error}
-              onSubmit={handleSubmit}
-              renderAssessmentSelection={({ selectedIds, onChange }) => (
-                <AssessmentSelection
-                  selected={selectedIds}
-                  onSelectedChangeAction={onChange}
-                />
-              )}
-            />
-          )}
-        </div>
-      </div>
+      {isLoading ? (
+        <div>Loading project…</div>
+      ) : error ? (
+        <div className="text-destructive">Failed to load project: {error.message}</div>
+      ) : !project ? (
+        <div className="text-destructive">Project not found.</div>
+      ) : (
+        <>
+          <ProjectForm
+            mode="edit"
+            initialData={project}
+            submitting={updateProject.isPending}
+            error={updateProject.error}
+            onSubmit={handleSubmit}
+            renderAssessmentSelection={({ selectedIds, onChange }) => (
+              <AssessmentSelection
+                selected={selectedIds}
+                onSelectedChangeAction={onChange}
+              />
+            )}
+          />
+
+          <ButtonToolbar
+            buttons={
+              <>
+                <Button
+                  className="bg-success dark:bg-successfles"
+                  type="submit"
+                  disabled={updateProject.isPending}
+                  aria-describedby="submit-status"
+                >
+                  {updateProject.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <SaveIcon className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {updateProject.isPending ? "Saving Project..." : "Save Project"}
+                </Button>
+                <span
+                  id="submit-status"
+                  role="status"
+                  aria-live="polite"
+                  className="sr-only"
+                >
+                  {updateProject.isPending ? "Saving Project" : ""}
+                </span>
+                <Button
+                  className="bg-destructive dark:bg-destructive"
+                  onClick={() => router.push(`/projects/${id}`)}
+                  aria-label="Cancel"
+                >
+                  <XIcon /> Cancel
+                </Button>
+              </>
+            }
+          />
+        </>
+      )}
     </div>
   );
 }
