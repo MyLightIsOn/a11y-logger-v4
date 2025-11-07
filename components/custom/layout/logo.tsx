@@ -35,7 +35,7 @@ interface LogoProps {
 export function Logo({ text }: Readonly<LogoProps>) {
   return (
     <Link
-      className="flex justify-center items-center gap-2 hover:text-primary hover:outline-2 hover:outline-offset-4 focus:outline-dashed focus:outline-primary focus:outline-2 focus:outline-offset-4  rounded-sm"
+      className="flex justify-center items-center gap-2  rounded-sm a11y-focus"
       href="/"
     >
       {" "}

@@ -41,13 +41,13 @@ export default function RootLayout({
               <div className="flex gap-2 bg-background p-4 border-primary border-2">
                 <a
                   href="#nav"
-                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium focus:outline-dashed focus:ring-2 focus:ring-offset-4 focus:bg-white focus:text-black focus:underline focus:outline-primary"
+                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium a11y-focus focus:text-black focus:underline focus:outline-primary"
                 >
                   Skip to Nav
                 </a>
                 <a
                   href="#main"
-                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium focus:outline-dashed focus:ring-2 focus:ring-offset-4 focus:bg-white focus:text-black focus:underline focus:outline-primary focus:border-black"
+                  className="bg-button-background text-button-foreground px-4 py-2 rounded-md text-sm font-medium a11y-focusfocus:bg-white focus:text-black focus:underline focus:outline-primary focus:border-black"
                 >
                   Skip to Main
                 </a>

@@ -43,7 +43,7 @@ export default function NewAssessmentPage() {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"
-          className="dark:text-white hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
+          className="dark:text-white hover:underline flex items-center w-fit a11y-focus"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessments
         </Link>

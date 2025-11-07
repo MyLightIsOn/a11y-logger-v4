@@ -55,11 +55,11 @@ function Page() {
           buttons={
             <>
               {" "}
-              <Link href={"/projects/new"}>
-                <Button className={"ml-5 bg-success dark:bg-success"}>
+              <Button asChild className={"ml-5 bg-success dark:bg-success"}>
+                <Link href={"/projects/new"}>
                   <PlusIcon /> Create Project
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </>
           }
         />

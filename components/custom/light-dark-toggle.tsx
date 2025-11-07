@@ -22,7 +22,7 @@ export function LightDarkToggle() {
           variant="outline"
           size="icon"
           className={
-            "bg-white hover:bg-black hover:text-white dark:bg-background dark:border-border dark:hover:bg-primary  dark:hover:bg-white dark:hover:text-black focus:outline-dashed focus:outline-primary focus:outline-2 focus:outline-offset-4"
+            "bg-white hover:bg-black hover:text-white dark:bg-background dark:border-border dark:hover:bg-primary  dark:hover:bg-white dark:hover:text-black a11y-focus"
           }
         >
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />

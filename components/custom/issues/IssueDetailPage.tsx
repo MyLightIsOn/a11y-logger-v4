@@ -72,7 +72,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
       <div className="mb-4 flex justify-between items-center">
         <Link
           href="/issues"
-          className="hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
+          className="hover:underline flex items-center a11y-focus w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Issues
         </Link>
@@ -395,7 +395,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
                 tabIndex={0}
                 role="button"
                 aria-label={`Open ${alt}`}
-                className="relative group focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus border border-border rounded-md overflow-hidden cursor-pointer transition-shadow hover:shadow-lg"
+                className="relative group a11y-focus border border-border rounded-md overflow-hidden cursor-pointer transition-shadow hover:shadow-lg"
                 onClick={() => handleOpen(url, alt, ref)}
                 onKeyDown={(e: React.KeyboardEvent<HTMLDivElement>) => {
                   if (e.key === "Enter" || e.key === " ") {

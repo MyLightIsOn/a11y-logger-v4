@@ -49,7 +49,7 @@ export default function NewProjectPage() {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/projects"
-          className="dark:text-white hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Projects
         </Link>

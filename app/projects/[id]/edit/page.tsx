@@ -4,7 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { ProjectForm, ProjectFormValues } from "@/components/custom/projects/ProjectForm";
+import {
+  ProjectForm,
+  ProjectFormValues,
+} from "@/components/custom/projects/ProjectForm";
 import AssessmentSelection from "@/components/custom/projects/AssessmentSelection";
 import { useProjectDetails } from "@/lib/query/use-project-details-query";
 import { useUpdateProjectMutation } from "@/lib/query/use-update-project-mutation";
@@ -25,7 +28,8 @@ export default function EditProjectPage({ params }: PageProps) {
     const payload: UpdateProjectRequest = {
       name: values.name?.trim() || undefined,
       description: values.description?.trim() || undefined,
-      tag_ids: values.tag_ids && values.tag_ids.length ? values.tag_ids : undefined,
+      tag_ids:
+        values.tag_ids && values.tag_ids.length ? values.tag_ids : undefined,
       assessment_ids:
         values.assessment_ids && values.assessment_ids.length
           ? values.assessment_ids
@@ -60,7 +64,7 @@ export default function EditProjectPage({ params }: PageProps) {
               router.back();
             }
           }}
-          className="dark:text-white hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Project
         </Link>
@@ -72,7 +76,9 @@ export default function EditProjectPage({ params }: PageProps) {
           {isLoading ? (
             <div>Loading project…</div>
           ) : error ? (
-            <div className="text-destructive">Failed to load project: {error.message}</div>
+            <div className="text-destructive">
+              Failed to load project: {error.message}
+            </div>
           ) : !project ? (
             <div className="text-destructive">Project not found.</div>
           ) : (

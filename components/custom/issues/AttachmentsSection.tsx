@@ -185,7 +185,7 @@ export function AttachmentsSection({
                 href={url}
                 target="_blank"
                 rel="noreferrer"
-                className="relative group block focus:outline-dashed focus:outline-4 focus:outline-offset-4 focus:outline-primary a11y-focus"
+                className="relative group block a11y-focus"
                 aria-label={`Open screenshot ${index + 1}`}
               >
                 <Image

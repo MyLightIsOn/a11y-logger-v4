@@ -125,7 +125,10 @@ export default function ProjectDetailPage({ params }: PageProps) {
       accessorKey: "name",
       sortable: true,
       cell: (a) => (
-        <Link href={`/assessments/${a.id}`} className="font-bold hover:underline">
+        <Link
+          href={`/assessments/${a.id}`}
+          className="font-bold hover:underline"
+        >
           {a.name}
         </Link>
       ),
@@ -161,7 +164,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
               router.back();
             }
           }}
-          className="dark:text-white hover:underline flex items-center focus:outline-dashed focus:outline-primary focus:outline-4 focus:outline-offset-4 w-fit"
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to Projects
         </Link>
@@ -179,7 +182,9 @@ export default function ProjectDetailPage({ params }: PageProps) {
             variant="destructive"
             disabled={deleteProject.isPending}
             onClick={() => {
-              const confirmed = window.confirm("Are you sure you want to delete this project? This action cannot be undone.");
+              const confirmed = window.confirm(
+                "Are you sure you want to delete this project? This action cannot be undone.",
+              );
               if (!confirmed) return;
               deleteProject.mutate(id, {
                 onSuccess: () => {
@@ -189,7 +194,8 @@ export default function ProjectDetailPage({ params }: PageProps) {
             }}
             data-testid="delete-project-button"
           >
-            {deleteProject.isPending ? "Deleting..." : "Delete"} <Trash2 className="ml-2" />
+            {deleteProject.isPending ? "Deleting..." : "Delete"}{" "}
+            <Trash2 className="ml-2" />
           </Button>
         </div>
       </div>
@@ -236,11 +242,19 @@ export default function ProjectDetailPage({ params }: PageProps) {
           <div className={"flex flex-col mt-4"}>
             <div className={"flex justify-between mb-2 gap-10"}>
               <p className={"font-bold text-right w-1/2"}>Created:</p>
-              <p className={"w-1/2"}>{project.created_at && formatDate(project.created_at)}</p>
+              <p className={"w-1/2"}>
+                {project.created_at && formatDate(project.created_at)}
+              </p>
             </div>
-            <div className={"flex justify-between mb-2 gap-10 border-b border-border pb-8"}>
+            <div
+              className={
+                "flex justify-between mb-2 gap-10 border-b border-border pb-8"
+              }
+            >
               <p className={"font-bold text-right w-1/2"}>Updated:</p>
-              <p className={"w-1/2"}>{project.updated_at && formatDate(project.updated_at)}</p>
+              <p className={"w-1/2"}>
+                {project.updated_at && formatDate(project.updated_at)}
+              </p>
             </div>
             <div className={"flex mb-2 pt-4 mx-auto"}>
               <p className={"font-bold mr-4"}>Tags:</p>
@@ -254,7 +268,9 @@ export default function ProjectDetailPage({ params }: PageProps) {
                     {tag.label}
                   </Badge>
                 ))}
-                {tags.length === 0 && <span className="text-sm text-gray-600">None</span>}
+                {tags.length === 0 && (
+                  <span className="text-sm text-gray-600">None</span>
+                )}
               </div>
             </div>
           </div>
