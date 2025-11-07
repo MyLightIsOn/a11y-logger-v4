@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
-import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import VPATForm, { VpatFormHandle } from "@/app/vpats/[vpatId]/VPATForm";
 import { SaveIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,10 @@ type SaveVPATButtonProps = {
   savingAll: boolean;
 };
 
-const SaveVPATButton: React.FC<SaveVPATButtonProps> = ({ onSave, savingAll }) => (
+const SaveVPATButton: React.FC<SaveVPATButtonProps> = ({
+  onSave,
+  savingAll,
+}) => (
   <Button
     variant="success"
     onClick={onSave}
@@ -63,7 +66,7 @@ function Page() {
         <div className={"container mx-auto px-4 py-8 min-h-full"}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">VPAT Editor</h1>
-            <Toolbar
+            <ButtonToolbar
               buttons={
                 <>
                   <SaveVPATButton

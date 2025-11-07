@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SaveIcon, Loader2, CircleX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   ProjectForm,
@@ -10,6 +10,9 @@ import {
 import AssessmentSelection from "@/components/custom/projects/AssessmentSelection";
 import { useCreateProjectMutation } from "@/lib/query/use-create-project-mutation";
 import type { CreateProjectRequest } from "@/lib/api/projects";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { Button } from "@/components/ui/button";
+import React from "react";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -52,22 +55,53 @@ export default function NewProjectPage() {
         </Link>
       </div>
       <h1 className="text-2xl font-bold mb-4">Create Project</h1>
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden">
-        <div className="p-6">
-          <ProjectForm
-            mode="create"
-            submitting={createProject.isPending}
-            error={createProject.error}
-            onSubmit={handleSubmit}
-            renderAssessmentSelection={({ selectedIds, onChange }) => (
-              <AssessmentSelection
-                selected={selectedIds}
-                onSelectedChangeAction={onChange}
-              />
-            )}
+      <ProjectForm
+        mode="create"
+        submitting={createProject.isPending}
+        error={createProject.error}
+        onSubmit={handleSubmit}
+        renderAssessmentSelection={({ selectedIds, onChange }) => (
+          <AssessmentSelection
+            selected={selectedIds}
+            onSelectedChangeAction={onChange}
           />
-        </div>
-      </div>
+        )}
+      />
+
+      <ButtonToolbar
+        buttons={
+          <>
+            <Button
+              className="bg-success dark:bg-successfles"
+              type="submit"
+              disabled={createProject.isPending}
+              aria-describedby="submit-status"
+            >
+              {createProject.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <SaveIcon className="h-4 w-4" aria-hidden="true" />
+              )}
+              {createProject.isPending ? "Saving Project..." : "Save Project"}
+            </Button>
+            <span
+              id="submit-status"
+              role="status"
+              aria-live="polite"
+              className="sr-only"
+            >
+              {createProject.isPending ? "Saving Project" : ""}
+            </span>
+            <Button
+              className="bg-destructive dark:bg-destructive"
+              onClick={() => router.push("/projects")}
+              aria-label="Cancel"
+            >
+              <CircleX /> Cancel
+            </Button>
+          </>
+        }
+      />
     </div>
   );
 }

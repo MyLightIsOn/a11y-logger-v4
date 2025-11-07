@@ -11,7 +11,7 @@ import ProjectList from "@/components/custom/projects/ProjectList";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
-import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 function Page() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -51,13 +51,13 @@ function Page() {
     <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Projects</h1>
-        <Toolbar
+        <ButtonToolbar
           buttons={
             <>
               {" "}
               <Link href={"/projects/new"}>
                 <Button className={"ml-5 bg-success dark:bg-success"}>
-                  Create Project <PlusIcon />
+                  <PlusIcon /> Create Project
                 </Button>
               </Link>
             </>

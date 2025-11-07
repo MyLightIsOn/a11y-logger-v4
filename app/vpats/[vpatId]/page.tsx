@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams } from "next/navigation";
-import Toolbar from "@/app/vpats/[vpatId]/Toolbar";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import VPATTable from "@/app/vpats/[vpatId]/VPATTable";
 import { Button } from "@/components/ui/button";
 import { EditIcon, File, FileCode } from "lucide-react";
@@ -88,7 +88,7 @@ function Page() {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">VPAT Detail</h1>
 
-            <Toolbar
+            <ButtonToolbar
               buttons={
                 <>
                   <ExportHTMLButton vpat={vpat} />

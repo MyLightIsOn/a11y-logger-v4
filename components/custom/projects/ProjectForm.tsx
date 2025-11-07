@@ -11,6 +11,7 @@ import { useTagsQuery } from "@/lib/query/use-tags-query";
 import type { Option } from "@/types/options";
 import type { Project } from "@/types/project";
 import type { ProjectWithRelations } from "@/lib/api/projects";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 export type ProjectFormValues = {
   name: string;
@@ -26,9 +27,7 @@ export interface ProjectFormProps {
   error?: unknown | null;
   onSubmit?: (values: ProjectFormValues) => void | Promise<void>;
   /**
-   * Optional render-prop for injecting an Assessment multi-select UI without
-   * coupling this component to a specific implementation yet.
-   * This keeps us within the scope of step 3 (Project Form) without building
+   * Optional render-prop for injecting an Assessment multi-select UI without coupling this component to a specific implementation yet.
    * the separate AssessmentSelection component right now.
    */
   renderAssessmentSelection?: (args: {
@@ -132,116 +131,89 @@ export function ProjectForm({
           />
         </div>
       ) : null}
-      <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
-        {/* Name */}
-        <section className="bg-card rounded-lg mb-4">
-          <label htmlFor="name" className="block text-xl font-bold">
-            Name <span className="text-destructive">*</span>
-          </label>
-          <p id="project-name-help" className="text-sm text-gray-500 mb-1">
-            Provide a concise name for the project.
-          </p>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Example: Accessibility Improvements Q3"
-            aria-invalid={!!errors.name}
-            aria-describedby={`project-name-help${errors.name ? " name-error" : ""}`}
-            required
-            {...register("name", { required: true })}
-          />
-          {errors.name && (
-            <p
-              id="name-error"
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
-              Name is required
-            </p>
-          )}
-        </section>
-
-        {/* Description */}
-        <section className="bg-card rounded-lg mb-4">
-          <label htmlFor="description" className="block text-xl font-bold">
-            Description
-          </label>
-          <p
-            id="project-description-help"
-            className="text-sm text-gray-500 mb-1"
-          >
-            Optionally describe the scope and goals of this project.
-          </p>
-          <Textarea
-            id="description"
-            rows={4}
-            placeholder="Example: Consolidates multiple audits and tracks ongoing fixes."
-            aria-invalid={!!errors.description}
-            aria-describedby={`project-description-help${errors.description ? " description-error" : ""}`}
-            {...register("description")}
-          />
-          {errors.description && (
-            <p
-              id="description-error"
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
-              {String(errors.description.message)}
-            </p>
-          )}
-        </section>
-
-        {/* Assessment selection slot (multi-select) */}
-        {typeof renderAssessmentSelection === "function" ? (
+      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden p-6 mb-6">
+        <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
+          {/* Name */}
           <section className="bg-card rounded-lg mb-4">
-            {renderAssessmentSelection({
-              selectedIds: selectedAssessmentIds,
-              onChange: (ids: string[]) =>
-                setValue("assessment_ids", ids, { shouldValidate: false }),
-            })}
+            <label htmlFor="name" className="block text-xl font-bold">
+              Name <span className="text-destructive">*</span>
+            </label>
+            <p id="project-name-help" className="text-sm text-gray-500 mb-1">
+              Provide a concise name for the project.
+            </p>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Example: Accessibility Improvements Q3"
+              aria-invalid={!!errors.name}
+              aria-describedby={`project-name-help${errors.name ? " name-error" : ""}`}
+              required
+              {...register("name", { required: true })}
+            />
+            {errors.name && (
+              <p
+                id="name-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                Name is required
+              </p>
+            )}
           </section>
-        ) : null}
 
-        {/* Tags */}
-        <TagsSection
-          isLoading={tagsLoading}
-          error={tagsError}
-          options={tagOptions}
-          selected={selectedTagIds}
-          onSelectedChangeAction={(arr) =>
-            setValue("tag_ids", arr, { shouldValidate: false })
-          }
-        />
+          {/* Description */}
+          <section className="bg-card rounded-lg mb-4">
+            <label htmlFor="description" className="block text-xl font-bold">
+              Description
+            </label>
+            <p
+              id="project-description-help"
+              className="text-sm text-gray-500 mb-1"
+            >
+              Optionally describe the scope and goals of this project.
+            </p>
+            <Textarea
+              id="description"
+              rows={4}
+              placeholder="Example: Consolidates multiple audits and tracks ongoing fixes."
+              aria-invalid={!!errors.description}
+              aria-describedby={`project-description-help${errors.description ? " description-error" : ""}`}
+              {...register("description")}
+            />
+            {errors.description && (
+              <p
+                id="description-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                {String(errors.description.message)}
+              </p>
+            )}
+          </section>
 
-        {/* Actions */}
-        <div className="mt-6 flex items-center gap-3">
-          <Button
-            type="submit"
-            disabled={submitting}
-            aria-describedby="submit-status"
-          >
-            {mode === "edit"
-              ? submitting
-                ? "Saving..."
-                : "Update Project"
-              : submitting
-                ? "Creating..."
-                : "Create Project"}
-          </Button>
-          <span
-            id="submit-status"
-            role="status"
-            aria-live="polite"
-            className="sr-only"
-          >
-            {submitting
-              ? mode === "edit"
-                ? "Saving project..."
-                : "Creating project..."
-              : ""}
-          </span>
-        </div>
-      </form>
+          {/* Assessment selection slot (multi-select) */}
+          {typeof renderAssessmentSelection === "function" ? (
+            <section className="bg-card rounded-lg mb-4">
+              {renderAssessmentSelection({
+                selectedIds: selectedAssessmentIds,
+                onChange: (ids: string[]) =>
+                  setValue("assessment_ids", ids, { shouldValidate: false }),
+              })}
+            </section>
+          ) : null}
+
+          {/* Tags */}
+          <TagsSection
+            isLoading={tagsLoading}
+            error={tagsError}
+            options={tagOptions}
+            selected={selectedTagIds}
+            onSelectedChangeAction={(arr) =>
+              setValue("tag_ids", arr, { shouldValidate: false })
+            }
+          />
+        </form>
+      </div>
     </>
   );
 }
