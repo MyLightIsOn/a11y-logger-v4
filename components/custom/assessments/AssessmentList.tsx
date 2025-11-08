@@ -31,7 +31,11 @@ export function AssessmentList({ assessments }: AssessmentListProps) {
       data-testid="assessments-grid"
     >
       {assessments.map((assessment) => (
-        <Link key={assessment.id} href={`/assessments/${assessment.id}`}>
+        <Link
+          key={assessment.id}
+          href={`/assessments/${assessment.id}`}
+          className={"rounded-lg"}
+        >
           <Card
             className="h-full shadow-md"
             data-testid={`assessment-card-${assessment.id}`}
