@@ -62,7 +62,7 @@ export default function EditProjectPage({ params }: PageProps) {
           href={`/projects/${id}`}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Project
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Project Details
         </Link>
       </div>
       <h1 className="text-2xl font-bold mb-4">Edit Project</h1>
