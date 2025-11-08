@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
  */
 export function LoadingIndicator() {
   return (
-    <div className="text-center py-8" data-testid="loading-indicator">
-      <p className="text-gray-500">Loading assessments...</p>
+    <div className="w-full h-72 flex items-center justify-center">
+      <div className="loader"></div>
     </div>
   );
 }
@@ -18,7 +18,10 @@ export function LoadingIndicator() {
  */
 export function EmptyState() {
   return (
-    <div className="text-center py-8 bg-card rounded-lg" data-testid="empty-state">
+    <div
+      className="text-center py-8 bg-card rounded-lg"
+      data-testid="empty-state"
+    >
       <p className="text-gray-500 mb-4">
         No assessments found. Create your first assessment to get started.
       </p>
