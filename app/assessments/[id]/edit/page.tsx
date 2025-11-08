@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SaveIcon, Loader2, XIcon } from "lucide-react";
 import {
   AssessmentForm,
   AssessmentFormValues,
@@ -12,6 +12,8 @@ import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import { useUpdateAssessmentMutation } from "@/lib/query/use-update-assessment-mutation";
 import type { UpdateAssessmentRequest } from "@/lib/api/assessments";
 import type { WcagVersion } from "@/types/issue";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { Button } from "@/components/ui/button";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -67,29 +69,64 @@ export default function EditAssessmentPage({ params }: PageProps) {
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Edit Assessment</h1>
-          {isLoading ? (
-            <div>Loading assessment…</div>
-          ) : error ? (
-            <div className="text-destructive">
-              Failed to load assessment: {error.message}
-            </div>
-          ) : !assessment ? (
-            <div className="text-destructive">Assessment not found.</div>
-          ) : (
-            <AssessmentForm
-              mode="edit"
-              initialData={assessment}
-              issueCount={issues?.length ?? 0}
-              submitting={updateAssessment.isPending}
-              error={updateAssessment.error}
-              onSubmit={handleSubmit}
-            />
-          )}
+      <h1 className="text-2xl font-bold mb-4">Edit Assessment</h1>
+
+      {isLoading ? (
+        <div>Loading assessment…</div>
+      ) : error ? (
+        <div className="text-destructive">
+          Failed to load assessment: {error.message}
         </div>
-      </div>
+      ) : !assessment ? (
+        <div className="text-destructive">Assessment not found.</div>
+      ) : (
+        <>
+          <AssessmentForm
+            mode="edit"
+            initialData={assessment}
+            issueCount={issues?.length ?? 0}
+            submitting={updateAssessment.isPending}
+            error={updateAssessment.error}
+            onSubmit={handleSubmit}
+          />
+
+          <ButtonToolbar
+            buttons={
+              <>
+                <Button
+                  className="bg-success dark:bg-successfles"
+                  type="submit"
+                  form="edit-assessment-form"
+                  disabled={updateAssessment.isPending}
+                  aria-describedby="submit-status"
+                >
+                  {updateAssessment.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <SaveIcon className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {updateAssessment.isPending ? "Saving Assessment..." : "Save Assessment"}
+                </Button>
+                <span
+                  id="submit-status"
+                  role="status"
+                  aria-live="polite"
+                  className="sr-only"
+                >
+                  {updateAssessment.isPending ? "Saving Assessment" : ""}
+                </span>
+                <Button
+                  className="bg-destructive dark:bg-destructive"
+                  onClick={() => router.push(`/assessments/${id}`)}
+                  aria-label="Cancel"
+                >
+                  <XIcon /> Cancel
+                </Button>
+              </>
+            }
+          />
+        </>
+      )}
     </div>
   );
 }
