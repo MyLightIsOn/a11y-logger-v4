@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { useTagsQuery } from "@/lib/query/use-tags-query";
 import TagsSection from "@/components/custom/issues/TagsSection";
 import ErrorAlert from "@/components/ui/error-alert";
@@ -157,150 +156,123 @@ export function AssessmentForm({
           />
         </div>
       ) : null}
-      <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
-        {/* Name */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
-          <label htmlFor="name" className="block text-xl font-bold">
-            Name <span className="text-destructive">*</span>
-          </label>
-          <p id="name-help" className="text-sm text-gray-500 mb-1">
-            Provide a concise name for the assessment.
-          </p>
-          <Input
-            id="name"
-            type="text"
-            placeholder="Example: Homepage Accessibility Audit"
-            aria-invalid={!!errors.name}
-            aria-describedby={`name-help${errors.name ? " name-error" : ""}`}
-            required
-            {...register("name", { required: true })}
+      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden p-6 mb-6">
+        <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
+          {/* Name */}
+          <section className="bg-card rounded-lg mb-4">
+            <label htmlFor="name" className="block text-xl font-bold">
+              Name <span className="text-destructive">*</span>
+            </label>
+            <p id="name-help" className="text-sm text-gray-500 mb-1">
+              Provide a concise name for the assessment.
+            </p>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Example: Homepage Accessibility Audit"
+              aria-invalid={!!errors.name}
+              aria-describedby={`name-help${errors.name ? " name-error" : ""}`}
+              required
+              {...register("name", { required: true })}
+            />
+            {errors.name && (
+              <p
+                id="name-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                Name is required
+              </p>
+            )}
+          </section>
+
+          {/* Description */}
+          <section className="bg-card rounded-lg mb-4">
+            <label htmlFor="description" className="block text-xl font-bold">
+              Description
+            </label>
+            <p id="description-help" className="text-sm text-gray-500 mb-1">
+              Optionally describe the scope and goals of this assessment.
+            </p>
+            <Textarea
+              id="description"
+              rows={4}
+              placeholder="Example: Covers the main flows for unauthenticated users on the marketing site."
+              aria-invalid={!!errors.description}
+              aria-describedby={`description-help${errors.description ? " description-error" : ""}`}
+              {...register("description")}
+            />
+            {errors.description && (
+              <p
+                id="description-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                {String(errors.description.message)}
+              </p>
+            )}
+          </section>
+
+          {/* WCAG Version */}
+          <section className="bg-card rounded-lg mb-4">
+            <label htmlFor="wcag_version" className="block text-xl font-bold">
+              WCAG Version <span className="text-destructive">*</span>
+            </label>
+            <p id="wcag-version-help" className="text-sm text-gray-500 mb-1">
+              Select the WCAG version this assessment targets.
+            </p>
+            <Select
+              value={(currentVersion || (initialData?.wcag_version as WcagVersion | undefined) || "")}
+              onValueChange={(v) => {
+                setValue("wcag_version", v as WcagVersion, {
+                  shouldValidate: true,
+                });
+              }}
+            >
+              <SelectTrigger
+                ref={wcagTriggerRef as unknown as React.Ref<HTMLButtonElement>}
+                id="wcag_version"
+                className="w-full"
+                aria-invalid={!!errors.wcag_version}
+                aria-describedby={`wcag-version-help${errors.wcag_version ? " wcag-version-error" : ""}`}
+              >
+                <SelectValue placeholder="Select version" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2.0">WCAG 2.0</SelectItem>
+                <SelectItem value="2.1">WCAG 2.1</SelectItem>
+                <SelectItem value="2.2">WCAG 2.2</SelectItem>
+              </SelectContent>
+            </Select>
+            {showVersionWarning && (
+              <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
+                Changing WCAG version may affect existing issues linked to this
+                assessment.
+              </div>
+            )}
+            {errors.wcag_version && (
+              <p
+                id="wcag-version-error"
+                className="text-sm text-red-600 mt-1"
+                role="alert"
+              >
+                WCAG Version is required
+              </p>
+            )}
+          </section>
+
+          {/* Tags */}
+          <TagsSection
+            isLoading={tagsLoading}
+            error={tagsError}
+            options={tagOptions}
+            selected={selectedTagIds}
+            onSelectedChangeAction={(arr) =>
+              setValue("tag_ids", arr, { shouldValidate: false })
+            }
           />
-          {errors.name && (
-            <p
-              id="name-error"
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
-              Name is required
-            </p>
-          )}
-        </section>
-
-        {/* Description */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
-          <label htmlFor="description" className="block text-xl font-bold">
-            Description
-          </label>
-          <p id="description-help" className="text-sm text-gray-500 mb-1">
-            Optionally describe the scope and goals of this assessment.
-          </p>
-          <Textarea
-            id="description"
-            rows={4}
-            placeholder="Example: Covers the main flows for unauthenticated users on the marketing site."
-            aria-invalid={!!errors.description}
-            aria-describedby={`description-help${errors.description ? " description-error" : ""}`}
-            {...register("description")}
-          />
-          {errors.description && (
-            <p
-              id="description-error"
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
-              {String(errors.description.message)}
-            </p>
-          )}
-        </section>
-
-        {/* WCAG Version */}
-        <section className="bg-card rounded-lg p-4 border border-border mb-4">
-          <label htmlFor="wcag_version" className="block text-xl font-bold">
-            WCAG Version <span className="text-destructive">*</span>
-          </label>
-          <p id="wcag-version-help" className="text-sm text-gray-500 mb-1">
-            Select the WCAG version this assessment targets.
-          </p>
-          <Select
-            value={(currentVersion || (initialData?.wcag_version as WcagVersion | undefined) || "")}
-            onValueChange={(v) => {
-              setValue("wcag_version", v as WcagVersion, {
-                shouldValidate: true,
-              });
-            }}
-          >
-            <SelectTrigger
-              ref={wcagTriggerRef as unknown as React.Ref<HTMLButtonElement>}
-              id="wcag_version"
-              className="w-full py-6 text-lg"
-              aria-invalid={!!errors.wcag_version}
-              aria-describedby={`wcag-version-help${errors.wcag_version ? " wcag-version-error" : ""}`}
-            >
-              <SelectValue placeholder="Select version" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="2.0">WCAG 2.0</SelectItem>
-              <SelectItem value="2.1">WCAG 2.1</SelectItem>
-              <SelectItem value="2.2">WCAG 2.2</SelectItem>
-            </SelectContent>
-          </Select>
-          {showVersionWarning && (
-            <div className="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2">
-              Changing WCAG version may affect existing issues linked to this
-              assessment.
-            </div>
-          )}
-          {errors.wcag_version && (
-            <p
-              id="wcag-version-error"
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
-              WCAG Version is required
-            </p>
-          )}
-        </section>
-
-        {/* Tags */}
-        <TagsSection
-          isLoading={tagsLoading}
-          error={tagsError}
-          options={tagOptions}
-          selected={selectedTagIds}
-          onSelectedChangeAction={(arr) =>
-            setValue("tag_ids", arr, { shouldValidate: false })
-          }
-        />
-
-        {/* Actions */}
-        <div className="mt-6 flex items-center gap-3">
-          <Button
-            type="submit"
-            disabled={submitting}
-            aria-describedby="submit-status"
-          >
-            {mode === "edit"
-              ? submitting
-                ? "Saving..."
-                : "Update Assessment"
-              : submitting
-                ? "Creating..."
-                : "Create Assessment"}
-          </Button>
-          <span
-            id="submit-status"
-            role="status"
-            aria-live="polite"
-            className="sr-only"
-          >
-            {submitting
-              ? mode === "edit"
-                ? "Saving assessment..."
-                : "Creating assessment..."
-              : ""}
-          </span>
-        </div>
-      </form>
+        </form>
+      </div>
     </>
   );
 }

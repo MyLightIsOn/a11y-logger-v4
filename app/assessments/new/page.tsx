@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SaveIcon, Loader2, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   AssessmentForm,
@@ -10,6 +10,9 @@ import {
 import { useCreateAssessmentMutation } from "@/lib/query/use-create-assessment-mutation";
 import type { CreateAssessmentRequest } from "@/lib/api/assessments";
 import type { WcagVersion } from "@/types/issue";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { Button } from "@/components/ui/button";
+import React from "react";
 
 export default function NewAssessmentPage() {
   const router = useRouter();
@@ -43,23 +46,56 @@ export default function NewAssessmentPage() {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"
-          className="dark:text-white hover:underline flex items-center w-fit a11y-focus"
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessments
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to all Assessments
         </Link>
       </div>
+      <h1 className="text-2xl font-bold mb-4">Create Assessment</h1>
+      <AssessmentForm
+        mode="create"
+        submitting={createAssessment.isPending}
+        error={createAssessment.error}
+        onSubmit={handleSubmit}
+      />
 
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold mb-4">Create Assessment</h1>
-          <AssessmentForm
-            mode="create"
-            submitting={createAssessment.isPending}
-            error={createAssessment.error}
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </div>
+      <ButtonToolbar
+        buttons={
+          <>
+            <Button
+              className="bg-success dark:bg-successfles"
+              type="submit"
+              form="create-assessment-form"
+              disabled={createAssessment.isPending}
+              aria-describedby="submit-status"
+            >
+              {createAssessment.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <SaveIcon className="h-4 w-4" aria-hidden="true" />
+              )}
+              {createAssessment.isPending
+                ? "Saving Assessment..."
+                : "Save Assessment"}
+            </Button>
+            <span
+              id="submit-status"
+              role="status"
+              aria-live="polite"
+              className="sr-only"
+            >
+              {createAssessment.isPending ? "Saving Assessment" : ""}
+            </span>
+            <Button
+              className="bg-destructive dark:bg-destructive"
+              onClick={() => router.push("/assessments")}
+              aria-label="Cancel"
+            >
+              <XIcon /> Cancel
+            </Button>
+          </>
+        }
+      />
     </div>
   );
 }
