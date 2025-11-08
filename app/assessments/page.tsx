@@ -11,6 +11,7 @@ import {
   ErrorMessage,
 } from "@/components/custom/assessments/common";
 import AssessmentList from "@/components/custom/assessments/AssessmentList";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 function Page() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
@@ -48,13 +49,21 @@ function Page() {
     <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Assessments</h1>
-        {assessments.length > 0 && (
-          <Link href={"/assessments/new"}>
-            <Button className={"ml-5 bg-success dark:bg-success"}>
-              Create Assessment <PlusIcon />
-            </Button>
-          </Link>
-        )}
+        <ButtonToolbar
+          buttons={
+            <>
+              <Button
+                asChild
+                variant={"success"}
+                className={"ml-5 overflow-visible"}
+              >
+                <Link href={"/assessments/new"}>
+                  <PlusIcon /> Create Assessment
+                </Link>
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <ErrorMessage message={error} />
