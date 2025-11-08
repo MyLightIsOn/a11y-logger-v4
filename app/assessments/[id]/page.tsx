@@ -218,14 +218,12 @@ export default function AssessmentDetailPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6">
-        <Skeleton className="h-12 w-3/4 mb-4" />
-        <Skeleton className="h-6 w-1/2 mb-2" />
-        <Skeleton className="h-24 w-full mb-4" />
-        <div className="flex gap-2 mt-4">
+      <div className="container mx-auto py-6 h-full">
+        <div className="flex gap-2 my-4 justify-end">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-24" />
         </div>
+        <Skeleton className={"h-3/4 w-full"} />
       </div>
     );
   }
@@ -273,17 +271,11 @@ export default function AssessmentDetailPage() {
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"
-          onClick={(e) => {
-            // Prefer real browser back when history exists to maintain user context (filters, page, etc.)
-            if (typeof window !== "undefined" && window.history.length > 1) {
-              e.preventDefault();
-              router.back();
-            }
-          }}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessments
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to all Assessments
         </Link>
+
         {/* Action Buttons */}
         <div className="flex justify-end gap-2">
           <GenerateReportButton

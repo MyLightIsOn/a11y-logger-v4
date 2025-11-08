@@ -17,6 +17,7 @@ import type { Assessment } from "@/types/assessment";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { useQueries } from "@tanstack/react-query";
 import { assessmentsApi } from "@/lib/api";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -27,6 +28,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { data: project, isLoading, error } = useProjectDetails({ id });
   const deleteProject = useDeleteProjectMutation();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
 
   // Prepare aggregated issue stats across all linked assessments.
   const assessmentIds = React.useMemo(
@@ -66,16 +68,23 @@ export default function ProjectDetailPage({ params }: PageProps) {
     return { ...counts, total };
   }, [statsQueries]);
 
+  const showDeleteConfirmation = () => setIsDeleteModalOpen(true);
+  const handleDelete = () => {
+    deleteProject.mutate(id, {
+      onSuccess: () => {
+        router.push("/projects");
+      },
+    });
+  };
+
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6">
-        <Skeleton className="h-12 w-3/4 mb-4" />
-        <Skeleton className="h-6 w-1/2 mb-2" />
-        <Skeleton className="h-24 w-full mb-4" />
-        <div className="flex gap-2 mt-4">
+      <div className="container mx-auto py-6 h-full">
+        <div className="flex gap-2 my-4 justify-end">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-24" />
         </div>
+        <Skeleton className={"h-3/4 w-full"} />
       </div>
     );
   }
@@ -175,17 +184,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
             className={"min-w-[120px]"}
             variant="destructive"
             disabled={deleteProject.isPending}
-            onClick={() => {
-              const confirmed = window.confirm(
-                "Are you sure you want to delete this project? This action cannot be undone.",
-              );
-              if (!confirmed) return;
-              deleteProject.mutate(id, {
-                onSuccess: () => {
-                  router.push("/projects");
-                },
-              });
-            }}
+            onClick={showDeleteConfirmation}
             data-testid="delete-project-button"
           >
             {deleteProject.isPending ? "Deleting..." : "Delete"}{" "}
@@ -270,6 +269,15 @@ export default function ProjectDetailPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 }
