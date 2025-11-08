@@ -97,6 +97,7 @@ export default function EditProjectPage({ params }: PageProps) {
                 <Button
                   variant="success"
                   type="submit"
+                  form="edit-project-form"
                   disabled={updateProject.isPending}
                   aria-describedby="submit-status"
                 >
