@@ -18,6 +18,7 @@ import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { useQueries } from "@tanstack/react-query";
 import { assessmentsApi } from "@/lib/api";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -172,25 +173,29 @@ export default function ProjectDetailPage({ params }: PageProps) {
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to all Projects
         </Link>
 
-        <div className="flex justify-end gap-2">
-          <Button
-            className={"min-w-[100px]"}
-            variant="outline"
-            onClick={() => router.push(`/projects/${id}/edit`)}
-          >
-            Edit <Edit />
-          </Button>
-          <Button
-            className={"min-w-[120px]"}
-            variant="destructive"
-            disabled={deleteProject.isPending}
-            onClick={showDeleteConfirmation}
-            data-testid="delete-project-button"
-          >
-            {deleteProject.isPending ? "Deleting..." : "Delete"}{" "}
-            <Trash2 className="ml-2" />
-          </Button>
-        </div>
+        <ButtonToolbar
+          buttons={
+            <>
+              <Button
+                className={"min-w-[100px]"}
+                variant="outline"
+                onClick={() => router.push(`/projects/${id}/edit`)}
+              >
+                Edit <Edit />
+              </Button>
+              <Button
+                className={"min-w-[120px]"}
+                variant="destructive"
+                disabled={deleteProject.isPending}
+                onClick={showDeleteConfirmation}
+                data-testid="delete-project-button"
+              >
+                {deleteProject.isPending ? "Deleting..." : "Delete"}{" "}
+                <Trash2 className="ml-2" />
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden flex">

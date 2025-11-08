@@ -18,6 +18,7 @@ import type { Issue } from "@/types/issue";
 import { useGenerateReport } from "@/lib/query/use-generate-report-mutation";
 import { reportsApi } from "@/lib/api";
 import AiIcon from "@/components/custom/AiIcon";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 function GenerateReportButton({
   assessmentId,
@@ -275,40 +276,43 @@ export default function AssessmentDetailPage() {
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to all Assessments
         </Link>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-2">
-          <GenerateReportButton
-            issueCount={issues.length}
-            assessmentId={id}
-            hasReport={hasReport}
-          />
-          {hasReport ? (
-            <Button
-              className={"min-w-[140px]"}
-              variant="outline"
-              onClick={() => router.push(`/reports/${id}`)}
-              aria-label="View latest report"
-            >
-              View Report
-            </Button>
-          ) : null}
-          <Button
-            className={"min-w-[100px]"}
-            variant="outline"
-            onClick={() => router.push(`/assessments/${id}/edit`)}
-          >
-            Edit <Edit />
-          </Button>
-          <Button
-            className={"min-w-[100px]"}
-            variant="destructive"
-            onClick={showDeleteConfirmation}
-            disabled={deleteAssessment.isPending}
-          >
-            {deleteAssessment.isPending ? "Deleting..." : "Delete"} <Trash />
-          </Button>
-        </div>
+        <ButtonToolbar
+          buttons={
+            <>
+              <GenerateReportButton
+                issueCount={issues.length}
+                assessmentId={id}
+                hasReport={hasReport}
+              />
+              {hasReport ? (
+                <Button
+                  className={"min-w-[140px]"}
+                  variant="outline"
+                  onClick={() => router.push(`/reports/${id}`)}
+                  aria-label="View latest report"
+                >
+                  View Report
+                </Button>
+              ) : null}
+              <Button
+                className={"min-w-[100px]"}
+                variant="outline"
+                onClick={() => router.push(`/assessments/${id}/edit`)}
+              >
+                Edit <Edit />
+              </Button>
+              <Button
+                className={"min-w-[100px]"}
+                variant="destructive"
+                onClick={showDeleteConfirmation}
+                disabled={deleteAssessment.isPending}
+              >
+                {deleteAssessment.isPending ? "Deleting..." : "Delete"}{" "}
+                <Trash />
+              </Button>
+            </>
+          }
+        />
       </div>
 
       <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden flex">
