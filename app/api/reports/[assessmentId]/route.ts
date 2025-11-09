@@ -246,3 +246,65 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ assessmentId: string }> },
+) {
+  try {
+    const supabase = await createClient();
+
+    // Auth check
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { assessmentId } = await params;
+    if (!assessmentId) {
+      return NextResponse.json(
+        { error: "Missing assessmentId" },
+        { status: 400 },
+      );
+    }
+
+    // Verify assessment belongs to current user
+    const { data: assessmentRow, error: assessErr } = await supabase
+      .from("assessments")
+      .select("id, user_id")
+      .eq("id", assessmentId)
+      .single();
+
+    if (assessErr || !assessmentRow) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if ((assessmentRow as { user_id?: string }).user_id !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Delete ALL reports for this assessment (cannot be undone)
+    const { error: delErr } = await supabase
+      .from("reports")
+      .delete()
+      .eq("assessment_id", assessmentId);
+
+    if (delErr) {
+      console.error("Error deleting reports for assessment:", delErr);
+      return NextResponse.json(
+        { error: "Failed to delete" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Unhandled error in DELETE /api/reports/[assessmentId]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}

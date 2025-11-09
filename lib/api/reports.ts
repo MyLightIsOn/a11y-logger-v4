@@ -46,6 +46,13 @@ export class ReportsApiService extends BaseApiService {
   async getLatest(assessmentId: string): Promise<ApiResponse<Report>> {
     return this.get<Report>(`${this.basePath}/${assessmentId}`);
   }
+
+  /** DELETE /api/reports/[assessmentId] (delete ALL reports for this assessment) */
+  async deleteReportsForAssessment(
+    assessmentId: string,
+  ): Promise<ApiResponse<null>> {
+    return this.delete<null>(`${this.basePath}/${assessmentId}`);
+  }
 }
 
 export const reportsApi = new ReportsApiService();

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,11 +10,12 @@ import { reportsApi } from "@/lib/api";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { getWcagByCode } from "@/lib/wcag/reference";
-import { useSaveReport } from "@/lib/query/use-save-report-mutation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import { LoadingIndicator } from "@/components/custom/projects/common";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
+import { useDeleteReportMutation } from "@/lib/query/use-delete-report-mutation";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -31,9 +32,12 @@ function severityBadgeClasses(severity?: string) {
 
 export default function ReportDetailsPage() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
+  const router = useRouter();
   const [report, setReport] = React.useState<Report | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | undefined>(undefined);
+  const deleteReports = useDeleteReportMutation();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
 
   // Fetch assessment issues to compute stats for charts (per planning step 18)
   const {
@@ -129,22 +133,6 @@ export default function ReportDetailsPage() {
   const isLoading = loading || isAssessmentLoading;
   const pageError = error || assessError?.message;
 
-  const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
-  const {
-    save,
-    isPending: isSaving,
-    error: saveError,
-  } = useSaveReport(assessmentId, () => {
-    setSaveMessage("Report saved successfully.");
-    setTimeout(() => setSaveMessage(null), 4000);
-  });
-
-  const handleSave = React.useCallback(() => {
-    if (!report || !assessmentId) return;
-    setSaveMessage(null);
-    save(report);
-  }, [assessmentId, report, save]);
-
   return (
     <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
@@ -157,20 +145,28 @@ export default function ReportDetailsPage() {
         <ButtonToolbar
           buttons={
             <>
-              <Button onClick={handleSave} disabled={!report || isSaving}>
-                {isSaving ? "Saving..." : "Save Report"}
+              <Button
+                className={"min-w-[100px]"}
+                variant="outline"
+                onClick={() => router.push(`/reports/${assessmentId}/edit`)}
+                disabled={!report}
+              >
+                Edit <Edit />
+              </Button>
+              <Button
+                className={"min-w-[120px]"}
+                variant="destructive"
+                disabled={deleteReports.isPending || !report}
+                onClick={() => setIsDeleteModalOpen(true)}
+                data-testid="delete-report-button"
+              >
+                {deleteReports.isPending ? "Deleting..." : "Delete"}{" "}
+                <Trash2 className="ml-2" />
               </Button>
             </>
           }
         />
       </div>
-
-      {saveMessage && (
-        <span className="text-green-600 text-sm">{saveMessage}</span>
-      )}
-      {saveError && (
-        <span className="text-red-600 text-sm">{saveError.message}</span>
-      )}
 
       {isLoading && <LoadingIndicator />}
       {pageError && (
@@ -285,9 +281,6 @@ export default function ReportDetailsPage() {
             {/* Right column: stats and chart */}
             <div className="space-y-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Issue Statistics</CardTitle>
-                </CardHeader>
                 <CardContent>
                   <IssueStatisticsChart
                     criticalCount={severityCounts.Critical}
@@ -339,6 +332,27 @@ export default function ReportDetailsPage() {
           </div>
         </>
       )}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          if (!assessmentId) return;
+          deleteReports.mutate(assessmentId, {
+            onSuccess: () => {
+              try {
+                if (typeof window !== "undefined") {
+                  window.sessionStorage.removeItem(`report:${assessmentId}`);
+                }
+              } catch {}
+              router.push(`/assessments/${assessmentId}`);
+            },
+          });
+        }}
+        title="Delete all reports for this assessment?"
+        message="This will permanently delete ALL reports associated with this assessment. This action cannot be undone."
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+      />
     </div>
   );
 }
