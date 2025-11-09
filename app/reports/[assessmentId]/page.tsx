@@ -16,6 +16,19 @@ import Link from "next/link";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import { LoadingIndicator } from "@/components/custom/projects/common";
 
+function severityBadgeClasses(severity?: string) {
+  switch (severity) {
+    case "Critical":
+      return "bg-red-100 border-red-800";
+    case "High":
+      return "bg-orange-100 border-orange-800";
+    case "Medium":
+      return "bg-yellow-100 border-yellow-800";
+    default:
+      return "bg-blue-100 border-blue-800"; // Low or undefined
+  }
+}
+
 export default function ReportDetailsPage() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
   const [report, setReport] = React.useState<Report | null>(null);
@@ -207,8 +220,50 @@ export default function ReportDetailsPage() {
                     <span className="font-semibold">
                       Estimated User Impact:
                     </span>
-                    <Badge variant="outline">
-                      {report.executive_summary.estimated_user_impact}
+                    <Badge
+                      variant="outline"
+                      className={`text-black p-1 px-2 ${severityBadgeClasses(report.executive_summary.estimated_user_impact)}`}
+                    >
+                      {report.executive_summary.estimated_user_impact ===
+                      "Critical" ? (
+                        <p className={"flex items-center text-xs"}>
+                          CRITICAL
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-red-400 ml-2"
+                            }
+                          />
+                        </p>
+                      ) : report.executive_summary.estimated_user_impact ===
+                        "High" ? (
+                        <p className={"flex items-center text-xs"}>
+                          HIGH
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-orange-400 ml-2"
+                            }
+                          />
+                        </p>
+                      ) : report.executive_summary.estimated_user_impact ===
+                        "Medium" ? (
+                        <p className={"flex items-center text-xs"}>
+                          MEDIUM
+                          <span
+                            className={
+                              "block  w-3 h-3 rounded-full bg-yellow-400 ml-2"
+                            }
+                          />
+                        </p>
+                      ) : (
+                        <p className={"flex items-center text-xs"}>
+                          LOW
+                          <span
+                            className={
+                              "block w-3 h-3 rounded-full bg-blue-400 ml-2"
+                            }
+                          />
+                        </p>
+                      )}
                     </Badge>
                   </div>
                 </CardContent>
@@ -268,7 +323,9 @@ export default function ReportDetailsPage() {
                           </span>
                           <Badge
                             variant="secondary"
-                            className={"text-black font-bold text-lg w-[35px]"}
+                            className={
+                              "text-primary bg-muted font-bold text-lg w-[35px] h-[35px]"
+                            }
                           >
                             {row.count}
                           </Badge>
