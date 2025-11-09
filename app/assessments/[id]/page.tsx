@@ -22,7 +22,6 @@ import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 function GenerateReportButton({
   assessmentId,
-  hasReport,
   issueCount,
 }: {
   assessmentId: string;
