@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, Edit, Trash } from "lucide-react";
+import { AlertCircle, ArrowLeft, Edit, EyeIcon, Trash } from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
@@ -56,7 +56,7 @@ function GenerateReportButton({
           </span>
         ) : (
           <span className="flex items-center gap-2">
-            <AiIcon /> {hasReport ? "Regenerate Report" : "Generate Report"}
+            <AiIcon /> Generate Report
           </span>
         )}
       </Button>
@@ -279,11 +279,13 @@ export default function AssessmentDetailPage() {
         <ButtonToolbar
           buttons={
             <>
-              <GenerateReportButton
-                issueCount={issues.length}
-                assessmentId={id}
-                hasReport={hasReport}
-              />
+              {!hasReport && (
+                <GenerateReportButton
+                  issueCount={issues.length}
+                  assessmentId={id}
+                  hasReport={hasReport}
+                />
+              )}
               {hasReport ? (
                 <Button
                   className={"min-w-[140px]"}
@@ -291,7 +293,7 @@ export default function AssessmentDetailPage() {
                   onClick={() => router.push(`/reports/${id}`)}
                   aria-label="View latest report"
                 >
-                  View Report
+                  <EyeIcon /> View Report
                 </Button>
               ) : null}
               <Button

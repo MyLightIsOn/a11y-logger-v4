@@ -54,7 +54,6 @@ function Page() {
         <ButtonToolbar
           buttons={
             <>
-              {" "}
               <Button
                 asChild
                 variant={"success"}

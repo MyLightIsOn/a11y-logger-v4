@@ -11,16 +11,20 @@ import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { getWcagByCode } from "@/lib/wcag/reference";
 import { useSaveReport } from "@/lib/query/use-save-report-mutation";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { LoadingIndicator } from "@/components/custom/projects/common";
 
 export default function ReportDetailsPage() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
-  const router = useRouter();
   const [report, setReport] = React.useState<Report | null>(null);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [error, setError] = React.useState<string | undefined>(undefined);
 
   // Fetch assessment issues to compute stats for charts (per planning step 18)
   const {
+    assessment,
     issues,
     stats,
     isLoading: isAssessmentLoading,
@@ -129,28 +133,33 @@ export default function ReportDetailsPage() {
   }, [assessmentId, report, save]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-col gap-2 md:flex-row md:justify-between md:items-center">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => router.back()}>
-            Back
-          </Button>
-          {saveMessage && (
-            <span className="text-green-600 text-sm">{saveMessage}</span>
-          )}
-          {saveError && (
-            <span className="text-red-600 text-sm">{saveError.message}</span>
-          )}
-        </div>
-        <h1 className="text-2xl font-bold">Report Details</h1>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleSave} disabled={!report || isSaving}>
-            {isSaving ? "Saving..." : "Save Report"}
-          </Button>
-        </div>
+    <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
+      <div className="flex justify-between items-center mb-6">
+        <Link
+          href={`/assessments/${assessmentId}`}
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessment Detail
+        </Link>
+        <ButtonToolbar
+          buttons={
+            <>
+              <Button onClick={handleSave} disabled={!report || isSaving}>
+                {isSaving ? "Saving..." : "Save Report"}
+              </Button>
+            </>
+          }
+        />
       </div>
 
-      {isLoading && <p>Loading report...</p>}
+      {saveMessage && (
+        <span className="text-green-600 text-sm">{saveMessage}</span>
+      )}
+      {saveError && (
+        <span className="text-red-600 text-sm">{saveError.message}</span>
+      )}
+
+      {isLoading && <LoadingIndicator />}
       {pageError && (
         <div className="text-red-600">
           <p className="font-semibold">Error</p>
@@ -159,119 +168,119 @@ export default function ReportDetailsPage() {
       )}
 
       {!isLoading && !pageError && report && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column: summaries */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Executive Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {report.executive_summary.overview}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Top Risks</h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {report.executive_summary.top_risks.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Quick Wins</h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {report.executive_summary.quick_wins.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">Estimated User Impact:</span>
-                  <Badge variant="outline">
-                    {report.executive_summary.estimated_user_impact}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Persona Summaries</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {report.persona_summaries.map((p, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 border rounded-md dark:border-border"
-                    >
-                      <h4 className="font-semibold mb-2">{p.persona}</h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {p.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right column: stats and chart */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Issue Statistics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <IssueStatisticsChart
-                  criticalCount={severityCounts.Critical}
-                  highCount={severityCounts.High}
-                  mediumCount={severityCounts.Medium}
-                  lowCount={severityCounts.Low}
-                  totalCount={severityCounts.Total}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>WCAG by Criterion</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {byWcag.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No WCAG criteria linked yet.
+        <>
+          <h1 className="text-2xl font-bold mb-4">
+            Report for {assessment?.name ?? assessmentId}
+          </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column: summaries */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className={"shadow-md"}>
+                <CardHeader>
+                  <CardTitle>Executive Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {report.executive_summary.overview}
                   </p>
-                ) : (
-                  <ul className="space-y-2 max-h-[420px] overflow-auto pr-2">
-                    {byWcag.map((row) => (
-                      <li
-                        key={row.criterion}
-                        className="flex items-center justify-between gap-2"
-                      >
-                        <span
-                          className="text-md truncate"
-                          title={`${row.criterion} - ${row.name}`}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h3 className="font-semibold mb-2">Top Risks</h3>
+                      <ul className="list-disc pl-5 space-y-1">
+                        {report.executive_summary.top_risks.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Quick Wins</h3>
+                      <ul className="list-disc pl-5 space-y-1">
+                        {report.executive_summary.quick_wins.map(
+                          (item, idx) => (
+                            <li key={idx}>{item}</li>
+                          ),
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      Estimated User Impact:
+                    </span>
+                    <Badge variant="outline">
+                      {report.executive_summary.estimated_user_impact}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <h1 className="text-xl font-bold mb-4">Persona Summaries</h1>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {report.persona_summaries.map((p) => (
+                  <Card key={p.persona}>
+                    <CardHeader>
+                      <CardTitle>{p.persona}</CardTitle>
+                    </CardHeader>
+                    <CardContent>{p.summary}</CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Right column: stats and chart */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Issue Statistics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <IssueStatisticsChart
+                    criticalCount={severityCounts.Critical}
+                    highCount={severityCounts.High}
+                    mediumCount={severityCounts.Medium}
+                    lowCount={severityCounts.Low}
+                    totalCount={severityCounts.Total}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>WCAG by Criterion</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {byWcag.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No WCAG criteria linked yet.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2 max-h-[420px] overflow-auto pr-2">
+                      {byWcag.map((row) => (
+                        <li
+                          key={row.criterion}
+                          className="flex items-center justify-between gap-2"
                         >
-                          {row.criterion} - {row.name}
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className={"text-black font-bold text-lg w-[35px]"}
-                        >
-                          {row.count}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
+                          <span
+                            className="text-md truncate"
+                            title={`${row.criterion} - ${row.name}`}
+                          >
+                            {row.criterion} - {row.name}
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className={"text-black font-bold text-lg w-[35px]"}
+                          >
+                            {row.count}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
