@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { useSaveReport } from "@/lib/query/use-save-report-mutation";
-import type { Report } from "@/lib/validation/report";
+import type { Report, Persona } from "@/lib/validation/report";
 import type { Issue } from "@/types/issue";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import { reportsApi } from "@/lib/api";
@@ -23,7 +23,7 @@ type EstimatedImpact = "Critical" | "High" | "Medium" | "Low";
 
 interface FormValues {
   overview: string;
-  personaSummaries: { persona: string; summary: string }[];
+  personaSummaries: { persona: Persona; summary: string }[];
   topRisks: string[]; // 5 inputs
   quickWins: string[]; // 5 inputs
   estimatedImpact: EstimatedImpact;
@@ -100,11 +100,11 @@ export default function EditReportPage() {
           })),
           topRisks: Array.from(
             { length: 5 },
-            (_, i) => report.executive_summary?.top_risks?.[i] || "",
+            (_, i) => report!.executive_summary?.top_risks?.[i] || "",
           ),
           quickWins: Array.from(
             { length: 5 },
-            (_, i) => report.executive_summary?.quick_wins?.[i] || "",
+            (_, i) => report!.executive_summary?.quick_wins?.[i] || "",
           ),
           estimatedImpact:
             (report.executive_summary
@@ -119,7 +119,7 @@ export default function EditReportPage() {
       }
     };
     void load();
-  }, [assessmentId, reset]);
+  }, [assessmentId, reset, trigger]);
 
   // Load assessment issues for review on the edit screen
   const { issues } = useAssessmentDetails(assessmentId);
