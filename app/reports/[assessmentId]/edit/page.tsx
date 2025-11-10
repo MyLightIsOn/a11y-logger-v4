@@ -7,8 +7,12 @@ import { useForm } from "react-hook-form";
 import { ArrowLeft, SaveIcon, Loader2, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { useSaveReport } from "@/lib/query/use-save-report-mutation";
 import type { Report } from "@/lib/validation/report";
+import type { Issue } from "@/types/issue";
+import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import { reportsApi } from "@/lib/api";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
@@ -52,7 +56,11 @@ export default function EditReportPage() {
     },
   });
 
-  const { save, isPending, error: saveError } = useSaveReport(assessmentId, () => {
+  const {
+    save,
+    isPending,
+    error: saveError,
+  } = useSaveReport(assessmentId, () => {
     // After successful save, redirect back to detail
     router.push(`/reports/${assessmentId}`);
   });
@@ -66,7 +74,9 @@ export default function EditReportPage() {
         const key = `report:${assessmentId}`;
         let report: Report | null = null;
         const cached =
-          typeof window !== "undefined" ? window.sessionStorage.getItem(key) : null;
+          typeof window !== "undefined"
+            ? window.sessionStorage.getItem(key)
+            : null;
         if (cached) {
           report = JSON.parse(cached) as Report;
         } else {
@@ -88,9 +98,17 @@ export default function EditReportPage() {
             persona: p.persona,
             summary: p.summary || "",
           })),
-          topRisks: Array.from({ length: 5 }, (_, i) => report.executive_summary?.top_risks?.[i] || ""),
-          quickWins: Array.from({ length: 5 }, (_, i) => report.executive_summary?.quick_wins?.[i] || ""),
-          estimatedImpact: (report.executive_summary?.estimated_user_impact as EstimatedImpact) || "Low",
+          topRisks: Array.from(
+            { length: 5 },
+            (_, i) => report.executive_summary?.top_risks?.[i] || "",
+          ),
+          quickWins: Array.from(
+            { length: 5 },
+            (_, i) => report.executive_summary?.quick_wins?.[i] || "",
+          ),
+          estimatedImpact:
+            (report.executive_summary
+              ?.estimated_user_impact as EstimatedImpact) || "Low",
         });
         // Validate immediately so errors/counters reflect constraints on load
         void trigger();
@@ -103,6 +121,78 @@ export default function EditReportPage() {
     void load();
   }, [assessmentId, reset]);
 
+  // Load assessment issues for review on the edit screen
+  const { issues } = useAssessmentDetails(assessmentId);
+
+  // Right-column: list vs detail state for issues
+  const [selectedIssue, setSelectedIssue] = React.useState<Issue | null>(null);
+
+  const issueColumns: DataTableColumn<Issue>[] = React.useMemo(
+    () => [
+      {
+        header: "Title",
+        accessorKey: "title",
+        sortable: true,
+        cell: (issue) => (
+          <button
+            type="button"
+            className="font-bold hover:underline text-left"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedIssue(issue);
+            }}
+            aria-label={`Open issue ${issue.title}`}
+          >
+            {issue.title}
+          </button>
+        ),
+      },
+      {
+        header: "Severity",
+        accessorKey: "severity",
+        sortable: true,
+        cell: (issue) => (
+          <Badge
+            variant="outline"
+            className={`text-black p-1 px-2 ${
+              issue.severity === "1"
+                ? "bg-red-100 border-red-800"
+                : issue.severity === "2"
+                  ? "bg-orange-100 border-orange-800"
+                  : issue.severity === "3"
+                    ? "bg-yellow-100 border-yellow-800"
+                    : "bg-blue-100 border-blue-800"
+            }`}
+          >
+            {issue.severity === "1" ? (
+              <p className="flex items-center text-xs">
+                CRITICAL
+                <span className="block w-3 h-3 rounded-full bg-red-400 ml-2" />
+              </p>
+            ) : issue.severity === "2" ? (
+              <p className="flex items-center text-xs">
+                HIGH
+                <span className="block w-3 h-3  rounded-full bg-orange-400 ml-2" />
+              </p>
+            ) : issue.severity === "3" ? (
+              <p className="flex items-center text-xs">
+                MEDIUM
+                <span className="block w-3 h-3 rounded-full bg-yellow-400 ml-2" />
+              </p>
+            ) : (
+              <p className="flex items-center text-xs">
+                LOW
+                <span className="block w-3 h-3 rounded-full bg-blue-400 ml-2" />
+              </p>
+            )}
+          </Badge>
+        ),
+      },
+    ],
+    [],
+  );
+
   const onSubmit = (values: FormValues) => {
     if (!initialReport || !assessmentId) return;
 
@@ -113,7 +203,9 @@ export default function EditReportPage() {
         ...initialReport.executive_summary,
         overview: values.overview?.trim() || "",
         top_risks: (values.topRisks || []).map((s) => s.trim()).filter(Boolean),
-        quick_wins: (values.quickWins || []).map((s) => s.trim()).filter(Boolean),
+        quick_wins: (values.quickWins || [])
+          .map((s) => s.trim())
+          .filter(Boolean),
         estimated_user_impact: values.estimatedImpact,
       },
       persona_summaries: (values.personaSummaries || []).map((p) => ({
@@ -124,7 +216,10 @@ export default function EditReportPage() {
 
     try {
       if (typeof window !== "undefined") {
-        window.sessionStorage.setItem(`report:${assessmentId}`, JSON.stringify(updated));
+        window.sessionStorage.setItem(
+          `report:${assessmentId}`,
+          JSON.stringify(updated),
+        );
       }
     } catch {}
 
@@ -177,11 +272,17 @@ export default function EditReportPage() {
                         },
                       })}
                     />
-                    <div className={`text-xs mt-1 ${overviewVal.length >= MAX_OVERVIEW_CHARS ? "text-destructive" : "text-muted-foreground"}`} id="overview-char-count" aria-live="polite">
+                    <div
+                      className={`text-xs mt-1 ${overviewVal.length >= MAX_OVERVIEW_CHARS ? "text-destructive" : "text-muted-foreground"}`}
+                      id="overview-char-count"
+                      aria-live="polite"
+                    >
                       {overviewVal.length}/{MAX_OVERVIEW_CHARS} characters
                     </div>
                     {errors.overview && (
-                      <p className="text-sm text-destructive">{errors.overview.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.overview.message}
+                      </p>
                     )}
                   </div>
 
@@ -218,7 +319,9 @@ export default function EditReportPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-semibold">Estimated User Impact</label>
+                    <label className="font-semibold">
+                      Estimated User Impact
+                    </label>
                     <select
                       className="w-full p-2 border rounded bg-background"
                       {...register("estimatedImpact")}
@@ -238,7 +341,11 @@ export default function EditReportPage() {
                   ? personaSummaries
                   : initialReport.persona_summaries
                 ).map((p, idx) => {
-                  const current = (watch(`personaSummaries.${idx}.summary` as const) ?? p.summary ?? "") as string;
+                  const current = (watch(
+                    `personaSummaries.${idx}.summary` as const,
+                  ) ??
+                    p.summary ??
+                    "") as string;
                   const over = current.length >= MAX_PERSONA_CHARS;
                   return (
                     <Card key={p.persona}>
@@ -250,12 +357,15 @@ export default function EditReportPage() {
                           className="w-full min-h-[120px] p-2 border rounded bg-background"
                           maxLength={MAX_PERSONA_CHARS}
                           aria-describedby={`persona-${idx}-char-count`}
-                          {...register(`personaSummaries.${idx}.summary` as const, {
-                            maxLength: {
-                              value: MAX_PERSONA_CHARS,
-                              message: `Summary must be ${MAX_PERSONA_CHARS} characters or fewer`,
+                          {...register(
+                            `personaSummaries.${idx}.summary` as const,
+                            {
+                              maxLength: {
+                                value: MAX_PERSONA_CHARS,
+                                message: `Summary must be ${MAX_PERSONA_CHARS} characters or fewer`,
+                              },
                             },
-                          })}
+                          )}
                           defaultValue={p.summary}
                         />
                         <div
@@ -267,12 +377,17 @@ export default function EditReportPage() {
                         </div>
                         {errors.personaSummaries?.[idx]?.summary && (
                           <p className="text-sm text-destructive">
-                            {errors.personaSummaries[idx]?.summary?.message as string}
+                            {
+                              errors.personaSummaries[idx]?.summary
+                                ?.message as string
+                            }
                           </p>
                         )}
                         <input
                           type="hidden"
-                          {...register(`personaSummaries.${idx}.persona` as const)}
+                          {...register(
+                            `personaSummaries.${idx}.persona` as const,
+                          )}
                           defaultValue={p.persona}
                         />
                       </CardContent>
@@ -282,7 +397,122 @@ export default function EditReportPage() {
               </div>
             </div>
 
-            {/* Right column intentionally omitted per requirements */}
+            {/* Right column: Issues list and inline detail for easy review while editing */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Assessment Issues</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedIssue ? (
+                    <div
+                      className="space-y-3"
+                      role="region"
+                      aria-label="Issue detail"
+                    >
+                      <button
+                        type="button"
+                        className="text-sm underline text-primary hover:opacity-80"
+                        onClick={() => setSelectedIssue(null)}
+                        aria-label="Back to issues list"
+                      >
+                        ← Back to list
+                      </button>
+                      <h3 className="text-lg font-semibold">
+                        {selectedIssue.title}
+                      </h3>
+                      <Badge
+                        variant="outline"
+                        className={`text-black p-1 px-2 ${
+                          selectedIssue.severity === "1"
+                            ? "bg-red-100 border-red-800"
+                            : selectedIssue.severity === "2"
+                              ? "bg-orange-100 border-orange-800"
+                              : selectedIssue.severity === "3"
+                                ? "bg-yellow-100 border-yellow-800"
+                                : "bg-blue-100 border-blue-800"
+                        }`}
+                      >
+                        {selectedIssue.severity === "1" ? (
+                          <p className="flex items-center text-xs">
+                            CRITICAL
+                            <span className="block w-3 h-3 rounded-full bg-red-400 ml-2" />
+                          </p>
+                        ) : selectedIssue.severity === "2" ? (
+                          <p className="flex items-center text-xs">
+                            HIGH
+                            <span className="block w-3 h-3  rounded-full bg-orange-400 ml-2" />
+                          </p>
+                        ) : selectedIssue.severity === "3" ? (
+                          <p className="flex items-center text-xs">
+                            MEDIUM
+                            <span className="block w-3 h-3 rounded-full bg-yellow-400 ml-2" />
+                          </p>
+                        ) : (
+                          <p className="flex items-center text-xs">
+                            LOW
+                            <span className="block w-3 h-3 rounded-full bg-blue-400 ml-2" />
+                          </p>
+                        )}
+                      </Badge>
+                      {selectedIssue.description && (
+                        <p className="whitespace-pre-wrap text-muted-foreground">
+                          {selectedIssue.description}
+                        </p>
+                      )}
+                      {(() => {
+                        const codes =
+                          (
+                            selectedIssue as Issue & {
+                              criteria_codes?: string[];
+                            }
+                          ).criteria_codes || [];
+                        if (codes.length === 0) return null;
+                        return (
+                          <div>
+                            <p className="text-sm font-semibold mb-1">
+                              WCAG Criteria
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                              {codes.map((code, idx) => (
+                                <Badge
+                                  key={code + "-" + idx}
+                                  variant="outline"
+                                  className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full"
+                                >
+                                  {code}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      <div className="pt-2">
+                        <Link
+                          href={`/issues/${selectedIssue.id}`}
+                          className="underline text-sm"
+                          target={"_blank"}
+                          rel={"noopener noreferrer"}
+                        >
+                          Open full issue
+                        </Link>
+                      </div>
+                    </div>
+                  ) : issues && issues.length > 0 ? (
+                    <DataTable<Issue>
+                      data={issues}
+                      columns={issueColumns}
+                      onRowClick={(i) => setSelectedIssue(i)}
+                      data-testid="report-edit-issues-table"
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No issues in this assessment.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           <div className="mt-6">
@@ -297,13 +527,21 @@ export default function EditReportPage() {
                     aria-describedby="submit-status"
                   >
                     {isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      <Loader2
+                        className="h-4 w-4 animate-spin"
+                        aria-hidden="true"
+                      />
                     ) : (
                       <SaveIcon className="h-4 w-4" aria-hidden="true" />
                     )}
                     {isPending ? "Saving Report..." : "Save Report"}
                   </Button>
-                  <span id="submit-status" role="status" aria-live="polite" className="sr-only">
+                  <span
+                    id="submit-status"
+                    role="status"
+                    aria-live="polite"
+                    className="sr-only"
+                  >
                     {isPending ? "Saving Report" : ""}
                   </span>
                   <Button
