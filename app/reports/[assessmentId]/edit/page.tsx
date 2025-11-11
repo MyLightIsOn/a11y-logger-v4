@@ -320,10 +320,10 @@ export default function EditReportPage() {
 
                   <div className="space-y-1">
                     <label className="font-semibold">
-                      Estimated User Impact
+                      Estimated User Impact:{" "}
                     </label>
                     <select
-                      className="w-full p-2 border rounded bg-background"
+                      className="p-2 border rounded bg-background"
                       {...register("estimatedImpact")}
                     >
                       <option value="Critical">Critical</option>
@@ -354,7 +354,7 @@ export default function EditReportPage() {
                       </CardHeader>
                       <CardContent>
                         <textarea
-                          className="w-full min-h-[120px] p-2 border rounded bg-background"
+                          className="w-full min-h-[200px] p-2 border rounded bg-background"
                           maxLength={MAX_PERSONA_CHARS}
                           aria-describedby={`persona-${idx}-char-count`}
                           {...register(
