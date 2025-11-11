@@ -265,6 +265,7 @@ export default function Page() {
         <DataTable<Issue>
           data={issues}
           columns={columns}
+          getRowHref={(issue) => `/issues/${issue.id}`}
           severityFilter={{
             accessor: (issue) => issue.severity ?? undefined,
             label: "Severity",

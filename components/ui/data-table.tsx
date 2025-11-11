@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -52,6 +53,12 @@ interface DataTableProps<T> {
   onDeleteSelected?: (items: T[]) => void;
   "data-testid"?: string;
   /**
+   * Optional function to generate a detail URL for a given row.
+   * When provided, the text in the first visible column of each row will be rendered as a link
+   * that navigates to the item's detail page.
+   */
+  getRowHref?: (item: T) => string;
+  /**
    * Optional multi-select severity filter that will be rendered next to the Search field.
    * When provided, users can pick one or more severities to filter the table rows.
    */
@@ -79,6 +86,7 @@ export function DataTable<T>({
   onDeleteSelected,
   "data-testid": dataTestId,
   severityFilter,
+  getRowHref,
 }: DataTableProps<T> & { "data-testid"?: string }) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -461,9 +469,30 @@ export function DataTable<T>({
                     .filter((column) => !column.hidden)
                     .map((column, index) => (
                       <TableCell key={String(column.accessorKey) + "-" + index}>
-                        {column.cell
-                          ? column.cell(item)
-                          : String(item[column.accessorKey] || "")}
+                        {(() => {
+                          const content = column.cell
+                            ? column.cell(item)
+                            : String(item[column.accessorKey] || "");
+
+                          // If a row href generator is provided, render the first visible column as a link
+                          if (getRowHref && index === 0) {
+                            const href = getRowHref(item);
+                            return (
+                              <Link
+                                href={href}
+                                onClick={(e) => {
+                                  // Prevent triggering the row onClick handler
+                                  e.stopPropagation();
+                                }}
+                                className="text-primary underline-offset-2 a11y-focus focus:underline block"
+                              >
+                                {content}
+                              </Link>
+                            );
+                          }
+
+                          return content;
+                        })()}
                       </TableCell>
                     ))}
                 </TableRow>
