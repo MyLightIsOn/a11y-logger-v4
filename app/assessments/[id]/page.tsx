@@ -73,7 +73,7 @@ function GenerateReportButton({
 }
 
 export default function AssessmentDetailPage() {
-  const [hasReport, setHasReport] = useState<boolean | null>(false);
+  const [hasReport, setHasReport] = useState<boolean | null>(null);
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { assessment, stats, issues, deleteAssessment, isLoading, error } =
@@ -94,6 +94,7 @@ export default function AssessmentDetailPage() {
       }
     };
     void check();
+
     return () => {
       active = false;
     };
@@ -278,7 +279,7 @@ export default function AssessmentDetailPage() {
         <ButtonToolbar
           buttons={
             <>
-              {!hasReport && (
+              {hasReport !== null && !hasReport && (
                 <GenerateReportButton
                   issueCount={issues.length}
                   assessmentId={id}
