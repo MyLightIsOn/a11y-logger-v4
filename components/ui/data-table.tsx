@@ -106,13 +106,12 @@ export function DataTable<T>({
     onChange: (values: string[]) => void;
   }) {
     const defaultOptions = React.useMemo(
-      () =>
-        [
-          { value: "1", label: "Critical", colorClass: "bg-red-400" },
-          { value: "2", label: "High", colorClass: "bg-orange-400" },
-          { value: "3", label: "Medium", colorClass: "bg-yellow-400" },
-          { value: "4", label: "Low", colorClass: "bg-blue-400" },
-        ],
+      () => [
+        { value: "1", label: "Critical", colorClass: "bg-red-400" },
+        { value: "2", label: "High", colorClass: "bg-orange-400" },
+        { value: "3", label: "Medium", colorClass: "bg-yellow-400" },
+        { value: "4", label: "Low", colorClass: "bg-blue-400" },
+      ],
       [],
     );
 
@@ -135,11 +134,21 @@ export function DataTable<T>({
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="bg-primary-foreground">
+          <Button variant="outline" id={"severity-filter"}>
             <Filter className="mr-2 h-4 w-4" /> {btnLabel}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuContent
+          align="start"
+          className="w-56"
+          onCloseAutoFocus={(e) => {
+            // Explicitly restore focus to the trigger using its ID
+            // after the menu closes (selection, Clear, Escape, click outside).
+            e.preventDefault();
+            const el = document.getElementById("severity-filter");
+            if (el instanceof HTMLElement) el.focus();
+          }}
+        >
           <DropdownMenuLabel>{label ?? "Severity"}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {opts.map((o) => (
@@ -149,7 +158,9 @@ export function DataTable<T>({
               onCheckedChange={(checked) => toggleValue(o.value, checked)}
             >
               <span className="flex items-center">
-                <span className={`mr-2 h-3 w-3 rounded-full ${o.colorClass ?? "bg-gray-400"}`} />
+                <span
+                  className={`mr-2 h-3 w-3 rounded-full ${o.colorClass ?? "bg-gray-400"}`}
+                />
                 {o.label}
               </span>
             </DropdownMenuCheckboxItem>
