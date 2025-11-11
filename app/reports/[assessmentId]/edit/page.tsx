@@ -10,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
 import { useSaveReport } from "@/lib/query/use-save-report-mutation";
+import { useGenerateReport } from "@/lib/query/use-generate-report-mutation";
 import type { Report, Persona } from "@/lib/validation/report";
 import type { Issue } from "@/types/issue";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import { reportsApi } from "@/lib/api";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import AiIcon from "@/components/custom/AiIcon";
 
 const MAX_OVERVIEW_CHARS = 1200;
 const MAX_PERSONA_CHARS = 800;
@@ -44,6 +46,8 @@ export default function EditReportPage() {
     reset,
     watch,
     trigger,
+    setValue,
+    getValues,
   } = useForm<FormValues>({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -63,6 +67,80 @@ export default function EditReportPage() {
   } = useSaveReport(assessmentId, () => {
     // After successful save, redirect back to detail
     router.push(`/reports/${assessmentId}`);
+  });
+
+  // Generate report button (fills only blank fields)
+  const {
+    generate,
+    isPending: isGenerating,
+    error: generateError,
+  } = useGenerateReport(assessmentId, (generated) => {
+    // Only populate empty fields in the form
+    const current = getValues();
+
+    // Overview
+    const genOverview = generated.executive_summary?.overview || "";
+    const curOverview = (current.overview || "").trim();
+    if (!curOverview && genOverview) {
+      setValue("overview", genOverview, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+
+    // Top Risks (5 slots)
+    const genTop = generated.executive_summary?.top_risks || [];
+    const curTop = current.topRisks || ["", "", "", "", ""];
+    const mergedTop = curTop.map((val, i) =>
+      val?.trim() ? val : genTop[i] || "",
+    );
+    setValue("topRisks", mergedTop, { shouldDirty: true, shouldTouch: true });
+
+    // Quick Wins (5 slots)
+    const genWins = generated.executive_summary?.quick_wins || [];
+    const curWins = current.quickWins || ["", "", "", "", ""];
+    const mergedWins = curWins.map((val, i) =>
+      val?.trim() ? val : genWins[i] || "",
+    );
+    setValue("quickWins", mergedWins, { shouldDirty: true, shouldTouch: true });
+
+    // Persona summaries — match by persona id/name
+    const curPersonas = current.personaSummaries || [];
+    const genPersonaMap = new Map(
+      (generated.persona_summaries || []).map((p) => [
+        p.persona,
+        p.summary || "",
+      ]),
+    );
+    if (curPersonas.length > 0) {
+      const mergedPersonaSummaries = curPersonas.map((p) => ({
+        persona: p.persona,
+        summary: (p.summary || "").trim()
+          ? p.summary
+          : genPersonaMap.get(p.persona) || p.summary || "",
+      }));
+      setValue("personaSummaries", mergedPersonaSummaries, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    } else if ((initialReport?.persona_summaries?.length || 0) > 0) {
+      // If form array is empty but UI shows initialReport personas, try to set them as well
+      const mergedPersonaSummaries = (
+        initialReport!.persona_summaries || []
+      ).map((p) => ({
+        persona: p.persona,
+        summary: (p.summary || "").trim() || genPersonaMap.get(p.persona) || "",
+      }));
+      setValue("personaSummaries", mergedPersonaSummaries, {
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    }
+
+    // Do not change Estimated Impact automatically
+
+    // Re-validate so counters/errors update
+    void trigger();
   });
 
   React.useEffect(() => {
@@ -241,7 +319,42 @@ export default function EditReportPage() {
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold mb-4">Edit Report</h1>
+      <div className={"flex justify-between items-center mb-4"}>
+        <h1 className="text-2xl font-bold mb-4">Edit Report</h1>
+        <ButtonToolbar
+          buttons={
+            <>
+              <Button
+                type="button"
+                onClick={() => generate()}
+                disabled={isGenerating}
+                aria-describedby="generate-status"
+              >
+                {isGenerating ? (
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <AiIcon />
+                )}
+                {isGenerating ? "Generating…" : "Generate Report"}
+              </Button>
+              <span
+                id="generate-status"
+                role="status"
+                aria-live="polite"
+                className="sr-only"
+              >
+                {isGenerating ? "Generating report" : ""}
+              </span>
+            </>
+          }
+        />
+      </div>
+      {generateError && (
+        <div className="mt-2 text-destructive">{generateError.message}</div>
+      )}
 
       {loading ? (
         <div>Loading report…</div>
@@ -320,10 +433,10 @@ export default function EditReportPage() {
 
                   <div className="space-y-1">
                     <label className="font-semibold">
-                      Estimated User Impact:{" "}
+                      Estimated User Impact
                     </label>
                     <select
-                      className="p-2 border rounded bg-background"
+                      className="w-full p-2 border rounded bg-background"
                       {...register("estimatedImpact")}
                     >
                       <option value="Critical">Critical</option>
@@ -354,7 +467,7 @@ export default function EditReportPage() {
                       </CardHeader>
                       <CardContent>
                         <textarea
-                          className="w-full min-h-[200px] p-2 border rounded bg-background"
+                          className="w-full min-h-[120px] p-2 border rounded bg-background"
                           maxLength={MAX_PERSONA_CHARS}
                           aria-describedby={`persona-${idx}-char-count`}
                           {...register(
