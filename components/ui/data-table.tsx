@@ -14,6 +14,15 @@ import { Input } from "./input";
 import { Checkbox } from "./checkbox";
 import { ConfirmationModal } from "./confirmation-modal";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
+import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -23,6 +32,7 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
+  Filter,
 } from "lucide-react";
 
 export interface DataTableColumn<T> {
@@ -41,6 +51,24 @@ interface DataTableProps<T> {
   selectable?: boolean;
   onDeleteSelected?: (items: T[]) => void;
   "data-testid"?: string;
+  /**
+   * Optional multi-select severity filter that will be rendered next to the Search field.
+   * When provided, users can pick one or more severities to filter the table rows.
+   */
+  severityFilter?: {
+    /** Returns the severity value for an item (e.g. "1", "2", "3", "4"). */
+    accessor: (item: T) => string | null | undefined;
+    /** Label for the filter trigger button (defaults to "Severity"). */
+    label?: string;
+    /**
+     * Custom options. If omitted, defaults to Critical (1), High (2), Medium (3), Low (4).
+     */
+    options?: Array<{
+      value: string;
+      label: string;
+      colorClass?: string; // Tailwind classes for the color dot
+    }>;
+  };
 }
 
 export function DataTable<T>({
@@ -50,6 +78,7 @@ export function DataTable<T>({
   selectable = false,
   onDeleteSelected,
   "data-testid": dataTestId,
+  severityFilter,
 }: DataTableProps<T> & { "data-testid"?: string }) {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -59,7 +88,78 @@ export function DataTable<T>({
   );
   const [selectedRows, setSelectedRows] = React.useState<T[]>([]);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
+  const [selectedSeverities, setSelectedSeverities] = React.useState<string[]>(
+    [],
+  );
   const itemsPerPage = 10;
+
+  // Local helper component: Severity multi-select dropdown
+  function SeverityDropdown({
+    label,
+    options,
+    selectedValues,
+    onChange,
+  }: {
+    label?: string;
+    options?: Array<{ value: string; label: string; colorClass?: string }>;
+    selectedValues: string[];
+    onChange: (values: string[]) => void;
+  }) {
+    const defaultOptions = React.useMemo(
+      () =>
+        [
+          { value: "1", label: "Critical", colorClass: "bg-red-400" },
+          { value: "2", label: "High", colorClass: "bg-orange-400" },
+          { value: "3", label: "Medium", colorClass: "bg-yellow-400" },
+          { value: "4", label: "Low", colorClass: "bg-blue-400" },
+        ],
+      [],
+    );
+
+    const opts = options && options.length > 0 ? options : defaultOptions;
+
+    const toggleValue = (val: string, checked: boolean | "indeterminate") => {
+      const c = Boolean(checked);
+      if (c) {
+        if (!selectedValues.includes(val)) onChange([...selectedValues, val]);
+      } else {
+        onChange(selectedValues.filter((v) => v !== val));
+      }
+    };
+
+    const clearAll = () => onChange([]);
+
+    const activeCount = selectedValues.length;
+    const btnLabel = `${label ?? "Severity"}${activeCount > 0 ? ` (${activeCount})` : ""}`;
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="bg-primary-foreground">
+            <Filter className="mr-2 h-4 w-4" /> {btnLabel}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>{label ?? "Severity"}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {opts.map((o) => (
+            <DropdownMenuCheckboxItem
+              key={o.value}
+              checked={selectedValues.includes(o.value)}
+              onCheckedChange={(checked) => toggleValue(o.value, checked)}
+            >
+              <span className="flex items-center">
+                <span className={`mr-2 h-3 w-3 rounded-full ${o.colorClass ?? "bg-gray-400"}`} />
+                {o.label}
+              </span>
+            </DropdownMenuCheckboxItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={clearAll}>Clear</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
 
   // Handle column sort
   const handleSort = (column: DataTableColumn<T>) => {
@@ -87,6 +187,14 @@ export function DataTable<T>({
           if (value === null || value === undefined) return false;
           return String(value).toLowerCase().includes(searchTerm.toLowerCase());
         });
+      });
+    }
+
+    // Apply severity filter if enabled and any values are selected
+    if (severityFilter && selectedSeverities.length > 0) {
+      processedData = processedData.filter((item) => {
+        const sev = severityFilter.accessor(item);
+        return sev != null && selectedSeverities.includes(String(sev));
       });
     }
 
@@ -129,7 +237,15 @@ export function DataTable<T>({
     }
 
     return processedData;
-  }, [data, searchTerm, columns, sortColumn, sortDirection]);
+  }, [
+    data,
+    searchTerm,
+    columns,
+    sortColumn,
+    sortDirection,
+    severityFilter,
+    selectedSeverities,
+  ]);
 
   // Paginate data
   const paginatedData = React.useMemo(() => {
@@ -218,6 +334,14 @@ export function DataTable<T>({
               className="pl-10 bg-primary-foreground"
             />
           </div>
+          {severityFilter && (
+            <SeverityDropdown
+              label={severityFilter.label}
+              options={severityFilter.options}
+              selectedValues={selectedSeverities}
+              onChange={setSelectedSeverities}
+            />
+          )}
           {selectable && selectedRows.length > 0 && (
             <Button
               variant="destructive"

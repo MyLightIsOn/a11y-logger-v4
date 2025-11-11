@@ -265,6 +265,10 @@ export default function Page() {
         <DataTable<Issue>
           data={issues}
           columns={columns}
+          severityFilter={{
+            accessor: (issue) => issue.severity ?? undefined,
+            label: "Severity",
+          }}
           onRowClick={(issue) => router.push(`/issues/${issue.id}`)}
           data-testid="issues-table"
         />
