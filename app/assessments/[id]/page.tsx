@@ -3,7 +3,14 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { AlertCircle, ArrowLeft, Edit, EyeIcon, Trash } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Edit,
+  EyeIcon,
+  PlusIcon,
+  Trash,
+} from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { DataTable, DataTableColumn } from "@/components/ui/data-table";
@@ -291,12 +298,16 @@ export default function AssessmentDetailPage() {
         <ButtonToolbar
           buttons={
             <>
-              {hasReport !== null && !hasReport && (
-                <GenerateReportButton
-                  issueCount={issues.length}
-                  assessmentId={id}
-                  hasReport={hasReport}
-                />
+              {!hasReport && hasReport !== null && (
+                <Button
+                  asChild
+                  variant={"success"}
+                  className={"ml-5 overflow-visible"}
+                >
+                  <Link href={`/reports/${id}/create`}>
+                    <PlusIcon /> Create Report
+                  </Link>
+                </Button>
               )}
               {hasReport ? (
                 <Button
@@ -308,13 +319,15 @@ export default function AssessmentDetailPage() {
                   <EyeIcon /> View Report
                 </Button>
               ) : null}
-              <Button
-                className={"min-w-[100px]"}
-                variant="outline"
-                onClick={() => router.push(`/assessments/${id}/edit`)}
-              >
-                Edit <Edit />
-              </Button>
+              {hasReport && true && (
+                <Button
+                  className={"min-w-[100px]"}
+                  variant="outline"
+                  onClick={() => router.push(`/assessments/${id}/edit`)}
+                >
+                  Edit <Edit />
+                </Button>
+              )}
               <Button
                 className={"min-w-[100px]"}
                 variant="destructive"
