@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -236,16 +237,22 @@ export default function Page() {
     <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Issues</h1>
-        {issues.length > 0 && (
-          <div className="flex items-center gap-2">
-            <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-            <Link href={"/issues/new"}>
-              <Button className={"ml-5 bg-success dark:bg-success"}>
-                Create Issue <PlusIcon />
+        <ButtonToolbar
+          buttons={
+            <>
+              <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
+              <Button
+                asChild
+                variant={"success"}
+                className={"ml-5 overflow-visible"}
+              >
+                <Link href={"/assessments/new"}>
+                  <PlusIcon /> Create Issue
+                </Link>
               </Button>
-            </Link>
-          </div>
-        )}
+            </>
+          }
+        />
       </div>
 
       <ErrorMessage message={error} />
