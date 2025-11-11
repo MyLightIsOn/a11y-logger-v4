@@ -209,6 +209,18 @@ export default function AssessmentDetailPage() {
     [],
   );
 
+  const MemoizedChart = React.useMemo(() => {
+    return (
+      <IssueStatisticsChart
+        criticalCount={critical}
+        highCount={high}
+        mediumCount={medium}
+        lowCount={low}
+        totalCount={total}
+      />
+    );
+  }, [critical, high, medium, low, total]);
+
   const showDeleteConfirmation = () => setIsDeleteModalOpen(true);
   const handleDelete = () => {
     // Trigger delete and navigate back to list (optimistic)
@@ -347,13 +359,7 @@ export default function AssessmentDetailPage() {
           </div>
         </div>
         <div className="p-6 w-1/3 dark:bg-border-border border-l border-border">
-          <IssueStatisticsChart
-            criticalCount={critical}
-            highCount={high}
-            mediumCount={medium}
-            lowCount={low}
-            totalCount={total}
-          />
+          {MemoizedChart}
           <div className={"flex flex-col mt-4"}>
             <div className={"flex justify-between mb-2 gap-10"}>
               <p className={"font-bold text-right w-1/2"}>Created:</p>
