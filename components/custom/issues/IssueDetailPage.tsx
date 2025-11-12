@@ -43,6 +43,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   const { data, isLoading, error } = useIssueQuery({
     id: issueId,
     includeCriteria: true,
+    includeAssessment: true,
   });
   const [isDeleteOpen, setIsDeleteOpen] = React.useState<boolean>(false);
   const deleteButtonRef = React.useRef<HTMLButtonElement>(null);

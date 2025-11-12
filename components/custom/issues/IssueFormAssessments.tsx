@@ -6,9 +6,14 @@ import type { CreateIssueInput } from "@/lib/validation/issues";
 type Props = {
   register: UseFormRegister<CreateIssueInput>;
   assessments?: Assessment[] | null;
+  selectedAssessmentId?: string | null;
 };
 
-function IssueFormAssessments({ register, assessments }: Props) {
+function IssueFormAssessments({
+  register,
+  assessments,
+  selectedAssessmentId,
+}: Props) {
   return (
     <section className="bg-card rounded-lg p-4 border border-border mb-4">
       <label className="block text-xl font-bold">Assessment</label>
@@ -22,6 +27,7 @@ function IssueFormAssessments({ register, assessments }: Props) {
       >
         <select
           className={"bg-transparent w-full rounded-md"}
+          value={selectedAssessmentId || ""}
           {...register("assessment_id")}
         >
           <option value="">Select an assessment</option>
