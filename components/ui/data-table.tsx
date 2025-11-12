@@ -76,6 +76,27 @@ interface DataTableProps<T> {
       colorClass?: string; // Tailwind classes for the color dot
     }>;
   };
+  /**
+   * Optional multi-select status filter (e.g., Opened/Closed) similar to Severity filter.
+   */
+  statusFilter?: {
+    /** Returns the status value for an item (e.g., "open", "closed"). */
+    accessor: (item: T) => string | null | undefined;
+    /** Label for the filter trigger button (defaults to "Status"). */
+    label?: string;
+    /**
+     * Options to render. If omitted, defaults to Opened (open) and Closed (closed).
+     */
+    options?: Array<{
+      value: string;
+      label: string;
+      colorClass?: string;
+    }>;
+    /**
+     * Default selected statuses on initial render. If omitted, nothing is selected by default.
+     */
+    defaultSelected?: string[];
+  };
 }
 
 export function DataTable<T>({
@@ -86,6 +107,7 @@ export function DataTable<T>({
   onDeleteSelected,
   "data-testid": dataTestId,
   severityFilter,
+  statusFilter,
   getRowHref,
 }: DataTableProps<T> & { "data-testid"?: string }) {
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -98,6 +120,9 @@ export function DataTable<T>({
   const [isConfirmModalOpen, setIsConfirmModalOpen] = React.useState(false);
   const [selectedSeverities, setSelectedSeverities] = React.useState<string[]>(
     [],
+  );
+  const [selectedStatuses, setSelectedStatuses] = React.useState<string[]>(
+    statusFilter?.defaultSelected ?? [],
   );
   const itemsPerPage = 10;
 
@@ -180,6 +205,81 @@ export function DataTable<T>({
     );
   }
 
+  // Local helper component: Status multi-select dropdown
+  function StatusDropdown({
+    label,
+    options,
+    selectedValues,
+    onChange,
+  }: {
+    label?: string;
+    options?: Array<{ value: string; label: string; colorClass?: string }>;
+    selectedValues: string[];
+    onChange: (values: string[]) => void;
+  }) {
+    const defaultOptions = React.useMemo(
+      () => [
+        { value: "open", label: "Opened", colorClass: "bg-green-500" },
+        { value: "closed", label: "Closed", colorClass: "bg-gray-500" },
+      ],
+      [],
+    );
+
+    const opts = options && options.length > 0 ? options : defaultOptions;
+
+    const toggleValue = (val: string, checked: boolean | "indeterminate") => {
+      const c = Boolean(checked);
+      if (c) {
+        if (!selectedValues.includes(val)) onChange([...selectedValues, val]);
+      } else {
+        onChange(selectedValues.filter((v) => v !== val));
+      }
+    };
+
+    const clearAll = () => onChange([]);
+
+    const activeCount = selectedValues.length;
+    const btnLabel = `${label ?? "Status"}${activeCount > 0 ? ` (${activeCount})` : ""}`;
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" id={"status-filter"}>
+            <Filter className="mr-2 h-4 w-4" /> {btnLabel}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="w-56"
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            const el = document.getElementById("status-filter");
+            if (el instanceof HTMLElement) el.focus();
+          }}
+        >
+          <DropdownMenuLabel>{label ?? "Status"}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {opts.map((o) => (
+            <DropdownMenuCheckboxItem
+              key={o.value}
+              checked={selectedValues.includes(o.value)}
+              onCheckedChange={(checked) => toggleValue(o.value, checked)}
+            >
+              <span className="flex items-center">
+                <span
+                  className={`mr-2 h-3 w-3 rounded-full ${o.colorClass ?? "bg-gray-400"}`}
+                />
+                {o.label}
+              </span>
+            </DropdownMenuCheckboxItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={clearAll}>Clear</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   // Handle column sort
   const handleSort = (column: DataTableColumn<T>) => {
     if (!column.sortable) return;
@@ -214,6 +314,14 @@ export function DataTable<T>({
       processedData = processedData.filter((item) => {
         const sev = severityFilter.accessor(item);
         return sev != null && selectedSeverities.includes(String(sev));
+      });
+    }
+
+    // Apply status filter if enabled and any values are selected
+    if (statusFilter && selectedStatuses.length > 0) {
+      processedData = processedData.filter((item) => {
+        const statusVal = statusFilter.accessor(item);
+        return statusVal != null && selectedStatuses.includes(String(statusVal));
       });
     }
 
@@ -264,6 +372,8 @@ export function DataTable<T>({
     sortDirection,
     severityFilter,
     selectedSeverities,
+    statusFilter,
+    selectedStatuses,
   ]);
 
   // Paginate data
@@ -359,6 +469,14 @@ export function DataTable<T>({
               options={severityFilter.options}
               selectedValues={selectedSeverities}
               onChange={setSelectedSeverities}
+            />
+          )}
+          {statusFilter && (
+            <StatusDropdown
+              label={statusFilter.label}
+              options={statusFilter.options}
+              selectedValues={selectedStatuses}
+              onChange={setSelectedStatuses}
             />
           )}
           {selectable && selectedRows.length > 0 && (

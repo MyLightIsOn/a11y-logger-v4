@@ -270,6 +270,15 @@ export default function Page() {
             accessor: (issue) => issue.severity ?? undefined,
             label: "Severity",
           }}
+          statusFilter={{
+            accessor: (issue) => issue.status ?? undefined,
+            label: "Status",
+            defaultSelected: ["open"],
+            options: [
+              { value: "open", label: "Opened", colorClass: "bg-green-500" },
+              { value: "closed", label: "Closed", colorClass: "bg-gray-500" },
+            ],
+          }}
           onRowClick={(issue) => router.push(`/issues/${issue.id}`)}
           data-testid="issues-table"
         />
