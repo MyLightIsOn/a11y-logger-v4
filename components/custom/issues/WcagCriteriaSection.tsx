@@ -40,7 +40,10 @@ export function WcagCriteriaSection({
         .map((v) => {
           const [ver, code] = (v || "").split("|", 2);
           const version = ver as import("@/types/issue").WcagVersion;
-          if ((version === "2.0" || version === "2.1" || version === "2.2") && code)
+          if (
+            (version === "2.0" || version === "2.1" || version === "2.2") &&
+            code
+          )
             return { version, code };
           return undefined;
         })
@@ -99,7 +102,7 @@ export function WcagCriteriaSection({
       aria-labelledby="wcag-heading"
       className="bg-card rounded-lg p-4 border border-border mb-4"
     >
-      <label htmlFor="criteria" className="block text-xl font-bold">
+      <label htmlFor="criteria" className="block text-lg font-bold">
         WCAG Criteria
       </label>
 

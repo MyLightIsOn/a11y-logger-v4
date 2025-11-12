@@ -14,84 +14,83 @@ type Props = {
 
 export function CoreFields({ register, errors }: Props) {
   return (
-    <>
-      <section className="bg-card rounded-lg p-4 border border-border mb-4">
-        {issueFormConfig.map((config) => {
-          const field = config.field as keyof CreateIssueInput;
-          return (
-            <section key={config.field}>
-              <label htmlFor={config.field} className="block text-xl font-bold">
-                {config.label}
-                {config.required && (
-                  <span className={"text-destructive"}>*</span>
-                )}
-              </label>
-              <p id="severity-help" className="text-sm text-gray-500 mb-1">
-                {config.subtext}
+    <div>
+      {issueFormConfig.map((config) => {
+        const field = config.field as keyof CreateIssueInput;
+        return (
+          <section
+            key={config.field}
+            className="bg-card rounded-lg p-4 border border-border mb-4"
+          >
+            <label htmlFor={config.field} className="block text-lg font-bold">
+              {config.label}
+              {config.required && <span className={"text-destructive"}>*</span>}
+            </label>
+            <p id="severity-help" className="text-sm text-gray-500 mb-1">
+              {config.subtext}
+            </p>
+            {config.type === "input" && (
+              <Input
+                type="text"
+                id={config.field}
+                placeholder={config.placeholder}
+                className="mt-1 block w-full mb-8"
+                aria-invalid={!!errors?.[field]}
+                aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
+                {...register(field, {
+                  required: config.requiredError,
+                })}
+              />
+            )}
+            {config.type === "textarea" && (
+              <Textarea
+                id={config.field}
+                placeholder={config.placeholder}
+                className="mt-1 block w-full mb-8"
+                rows={4}
+                aria-invalid={!!errors?.[field]}
+                aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
+                {...register(field, {
+                  required: config.requiredError,
+                })}
+              />
+            )}
+            {config.type === "select" && (
+              <div
+                className={
+                  "mb-8 bg-card border-border border rounded-md px-4 py-2 text-lg w-[250px]"
+                }
+              >
+                <select
+                  className={"bg-transparent w-full rounded-md"}
+                  {...register("severity")}
+                >
+                  <option value={config.placeholder}>
+                    {config.placeholder}
+                  </option>
+                  /
+                  {config.selectOptions &&
+                    config.selectOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            )}
+            {errors && errors[field] && (
+              <p
+                id={`${config.field}-error`}
+                className="text-sm mt-4 mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                role="alert"
+              >
+                {String(errors[field]?.message)}
               </p>
-              {config.type === "input" && (
-                <Input
-                  type="text"
-                  id={config.field}
-                  placeholder={config.placeholder}
-                  className="mt-1 block w-full mb-8"
-                  aria-invalid={!!errors?.[field]}
-                  aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
-                  {...register(field, {
-                    required: config.requiredError,
-                  })}
-                />
-              )}
-              {config.type === "textarea" && (
-                <Textarea
-                  id={config.field}
-                  placeholder={config.placeholder}
-                  className="mt-1 block w-full mb-8"
-                  rows={4}
-                  aria-invalid={!!errors?.[field]}
-                  aria-describedby={`${config.field}-help${errors?.[field] ? ` ${config.field}-error` : ""}`}
-                  {...register(field, {
-                    required: config.requiredError,
-                  })}
-                />
-              )}
-              {config.type === "select" && (
-                <div
-                  className={
-                    "mb-8 bg-card border-border border rounded-md px-4 py-2 text-lg w-[250px]"
-                  }
-                >
-                  <select
-                    className={"bg-transparent w-full rounded-md"}
-                    {...register("severity")}
-                  >
-                    <option value={config.placeholder}>
-                      {config.placeholder}
-                    </option>
-                    /
-                    {config.selectOptions &&
-                      config.selectOptions.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              )}
-              {errors && errors[field] && (
-                <p
-                  id={`${config.field}-error`}
-                  className="text-sm mt-4 mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-                  role="alert"
-                >
-                  {String(errors[field]?.message)}
-                </p>
-              )}
-            </section>
-          );
-        })}
-      </section>
-    </>
+            )}
+          </section>
+        );
+      })}
+    </div>
   );
 }
 
