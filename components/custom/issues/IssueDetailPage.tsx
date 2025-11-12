@@ -13,7 +13,8 @@ import { useIssueQuery } from "@/lib/query/use-issue-query";
 import { issuesApi } from "@/lib/api";
 import type { IssueRead, IssueCriteriaItem } from "@/types/issue";
 import type { Tag } from "@/types/tag";
-import { LoadingIndicator, ErrorMessage } from "./common";
+import { ErrorMessage } from "./common";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Local helper to map severity to color classes (kept in sync with list page)
 function severityBadgeClasses(severity?: string) {
@@ -45,9 +46,19 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   });
   const [isDeleteOpen, setIsDeleteOpen] = React.useState<boolean>(false);
   const deleteButtonRef = React.useRef<HTMLButtonElement>(null);
-
   if (isLoading) {
-    return <LoadingIndicator />;
+    return (
+      <div className="container mx-auto py-6 h-full">
+        <div className="flex gap-2 my-4 justify-end">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <div className={"flex gap-4 h-full"}>
+          <Skeleton className={"h-[90%] w-2/3"} />
+          <Skeleton className={"h-1/3 w-1/3"} />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
