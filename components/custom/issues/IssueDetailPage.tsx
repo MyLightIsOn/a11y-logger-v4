@@ -183,45 +183,47 @@ interface IssueHeaderProps {
 
 export function IssueHeader({ title, severity, status }: IssueHeaderProps) {
   return (
-    <header className="flex items-start gap-3 w-full">
+    <header className="flex items-start gap-3 w-full flex-col">
       <h1 className="text-2xl font-bold flex-1 pr-2">{title}</h1>
-      {/* Hiding the status for now*/}
-      <Badge
-        variant="outline"
-        className="px-2 py-1 text-xs bg-gray-100 border-gray-400 text-gray-800"
-      >
-        {status === "open"
-          ? "Open"
-          : status === "closed"
-            ? "Closed"
-            : "Archived"}
-      </Badge>
-      <Badge
-        variant="outline"
-        className={`text-black p-1 px-2 ${severityBadgeClasses(severity)}`}
-        aria-label={`Severity ${severity}`}
-      >
-        {severity === "1" ? (
-          <p className="flex items-center text-xs">
-            CRITICAL{" "}
-            <span className="block w-3 h-3 rounded-full bg-red-400 ml-2" />
-          </p>
-        ) : severity === "2" ? (
-          <p className="flex items-center text-xs">
-            HIGH{" "}
-            <span className="block w-3 h-3 rounded-full bg-orange-400 ml-2" />
-          </p>
-        ) : severity === "3" ? (
-          <p className="flex items-center text-xs">
-            MEDIUM{" "}
-            <span className="block w-3 h-3 rounded-full bg-yellow-400 ml-2" />
-          </p>
-        ) : (
-          <p className="flex items-center text-xs">
-            LOW <span className="block w-3 h-3 rounded-full bg-blue-400 ml-2" />
-          </p>
-        )}
-      </Badge>
+      <div className={"flex gap-2"} style={{ flexWrap: "wrap" }}>
+        <Badge
+          variant="outline"
+          className="px-2 py-1 text-xs bg-gray-100 border-gray-400 text-gray-800"
+        >
+          {status === "open"
+            ? "Open"
+            : status === "closed"
+              ? "Closed"
+              : "Archived"}
+        </Badge>
+        <Badge
+          variant="outline"
+          className={`text-black p-1 px-2 ${severityBadgeClasses(severity)}`}
+          aria-label={`Severity ${severity}`}
+        >
+          {severity === "1" ? (
+            <p className="flex items-center text-xs">
+              CRITICAL{" "}
+              <span className="block w-3 h-3 rounded-full bg-red-400 ml-2" />
+            </p>
+          ) : severity === "2" ? (
+            <p className="flex items-center text-xs">
+              HIGH{" "}
+              <span className="block w-3 h-3 rounded-full bg-orange-400 ml-2" />
+            </p>
+          ) : severity === "3" ? (
+            <p className="flex items-center text-xs">
+              MEDIUM{" "}
+              <span className="block w-3 h-3 rounded-full bg-yellow-400 ml-2" />
+            </p>
+          ) : (
+            <p className="flex items-center text-xs">
+              LOW{" "}
+              <span className="block w-3 h-3 rounded-full bg-blue-400 ml-2" />
+            </p>
+          )}
+        </Badge>
+      </div>
     </header>
   );
 }
@@ -245,14 +247,14 @@ export function CoreFieldsDisplay({
 }: CoreFieldsDisplayProps) {
   return (
     <section className="space-y-4">
-      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+      <div className="border border-border rounded-lg p-4 shadow-md bg-card">
         <h2 className="text-lg font-semibold mb-2">Description</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {description || "No description provided."}
         </p>
       </div>
 
-      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+      <div className="border border-border rounded-lg p-4 shadow-md bg-card">
         <h2 className="text-lg font-semibold mb-2">URL</h2>
         {url ? (
           <Link
@@ -267,14 +269,14 @@ export function CoreFieldsDisplay({
         )}
       </div>
 
-      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+      <div className="border border-border rounded-lg p-4 shadow-md bg-card">
         <h2 className="text-lg font-semibold mb-2">Impact</h2>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">
           {impact || "No impact specified."}
         </p>
       </div>
 
-      <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+      <div className="border border-border rounded-lg p-4 shadow-md bg-card">
         <h2 className="text-lg font-semibold mb-2">Suggested Fix</h2>
         <pre className="whitespace-pre-wrap text-sm leading-relaxed border border-border p-4 rounded-md bg-muted">
           {suggestedFix || "No suggestion provided."}
@@ -282,14 +284,14 @@ export function CoreFieldsDisplay({
       </div>
 
       {selector && (
-        <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+        <div className="border border-border rounded-lg p-4 shadow-md bg-card">
           <h2 className="text-lg font-semibold mb-2">Selector</h2>
           <p className="text-sm mb-2">{selector}</p>
         </div>
       )}
 
       {codeSnippet && (
-        <div className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+        <div className="border border-border rounded-lg p-4 shadow-md bg-card">
           <h2 className="text-lg font-semibold mb-2">Code Snippet</h2>
           <pre className="text-xs p-3 rounded bg-muted overflow-auto border border-border">
             {codeSnippet}
@@ -323,7 +325,7 @@ export function StandardsDisplay({
         : [];
 
   return (
-    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card mt-4">
+    <section className="border border-border rounded-lg p-4 shadow-md bg-card mt-4">
       <h2 className="text-lg font-semibold mb-2">Standards</h2>
       {codes.length > 0 ? (
         <div className="flex flex-wrap gap-2">
@@ -346,7 +348,7 @@ interface TagsDisplayProps {
 
 export function TagsDisplay({ tags }: TagsDisplayProps) {
   return (
-    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card mt-4 mb-4">
+    <section className="border border-border rounded-lg p-4 shadow-md bg-card mt-4 mb-4">
       <h2 className="text-lg font-semibold mb-2">Tags</h2>
       <div className="flex flex-wrap gap-2">
         {tags && tags.length > 0 ? (
@@ -390,7 +392,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
   };
 
   return (
-    <section className="bg-card border border-border rounded-lg mb-4 p-4 shadow-md dark:bg-card">
+    <section className="bg-card border border-border rounded-lg mb-4 p-4 shadow-md bg-card">
       <h2 className="text-lg font-semibold mb-2">Screenshots</h2>
       {!screenshots || screenshots.length === 0 ? (
         <p className="text-sm text-gray-600">No screenshots attached.</p>
@@ -457,7 +459,7 @@ export function MetadataDisplay({
   };
 
   return (
-    <section className="border border-border rounded-lg p-4 shadow-md dark:bg-card">
+    <section className="border border-border rounded-lg p-4 shadow-md bg-card">
       <h2 className="text-lg font-semibold mb-2">Metadata</h2>
       <dl className="text-sm">
         <div className="flex justify-between py-1">
