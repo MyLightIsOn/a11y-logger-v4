@@ -4,7 +4,6 @@ import React from "react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { CoreFields } from "@/components/custom/issues/CoreFields";
-import { SubmitButton } from "@/components/custom/forms/submit-button";
 import IssueFormAssessments from "@/components/custom/issues/IssueFormAssessments";
 import AIAssistPanel from "@/components/custom/issues/AIAssistPanel";
 import { WcagCriteriaSection } from "@/components/custom/issues/WcagCriteriaSection";
@@ -20,6 +19,9 @@ import { useCreateIssueMutation } from "@/lib/query/use-create-issue-mutation";
 import { useUpdateIssueMutation } from "@/lib/query/use-update-issue-mutation";
 import { normalizeCreateIssuePayload } from "@/lib/issues/constants";
 import type { CreateIssueInput } from "@/lib/validation/issues";
+import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
+import { Button } from "@/components/ui/button";
+import { Loader2, SaveIcon, XIcon } from "lucide-react";
 
 type IssueFormProps = {
   mode?: "create" | "edit";
@@ -147,6 +149,8 @@ function IssueForm({
   const router = useRouter();
   const createIssue = useCreateIssueMutation();
   const updateIssue = useUpdateIssueMutation();
+  const isSaving = createIssue.isPending || updateIssue.isPending;
+  const formId = mode === "create" ? "create-issue-form" : "edit-issue-form";
   const onSubmit: SubmitHandler<CreateIssueInput> = async (form) => {
     let uploadResult: string[] | undefined = undefined;
     if (filesToUpload && filesToUpload.length > 0) {
@@ -229,10 +233,7 @@ function IssueForm({
       />
 
       {selectedAssessmentId && (
-        <form
-          id={mode === "create" ? "create-issue-form" : "edit-issue-form"}
-          onSubmit={handleSubmit(onSubmit)}
-        >
+        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-wrap">
             <div className="p-6 w-full md:w-2/3">
               {!selectedAssessment && (
@@ -265,9 +266,6 @@ function IssueForm({
                 onSelectedChangeAction={onTagsChange}
               />
 
-              <div className="flex justify-end mt-4">
-                <SubmitButton text={"Submit"} loadingText={"Saving..."} />
-              </div>
             </div>
             <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
               <AttachmentsSection
@@ -280,6 +278,47 @@ function IssueForm({
             </div>
           </div>
         </form>
+      )}
+      {selectedAssessmentId && (
+        <ButtonToolbar
+          buttons={
+            <>
+              <Button
+                variant="success"
+                type="submit"
+                form={formId}
+                disabled={isSaving}
+                aria-describedby="issue-submit-status"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <SaveIcon className="h-4 w-4" aria-hidden="true" />
+                )}
+                {isSaving ? "Saving Issue..." : mode === "edit" ? "Save Changes" : "Create Issue"}
+              </Button>
+              <span
+                id="issue-submit-status"
+                role="status"
+                aria-live="polite"
+                className="sr-only"
+              >
+                {isSaving ? (mode === "edit" ? "Saving Issue" : "Creating Issue") : ""}
+              </span>
+              <Button
+                variant="destructive"
+                onClick={() =>
+                  mode === "edit" && issueId
+                    ? router.push(`/issues/${issueId}`)
+                    : router.push("/issues")
+                }
+                aria-label="Cancel"
+              >
+                <XIcon /> Cancel
+              </Button>
+            </>
+          }
+        />
       )}
     </div>
   );

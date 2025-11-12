@@ -278,9 +278,7 @@ export function CoreFieldsDisplay({
 
       <div className="border border-border rounded-lg p-4 shadow-md bg-card">
         <h2 className="text-lg font-semibold mb-2">Suggested Fix</h2>
-        <pre className="whitespace-pre-wrap text-sm leading-relaxed border border-border p-4 rounded-md bg-muted">
-          {suggestedFix || "No suggestion provided."}
-        </pre>
+        {suggestedFix || "No suggestion provided."}
       </div>
 
       {selector && (
@@ -422,7 +420,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
                   alt={alt}
                   width={300}
                   height={160}
-                  className="h-40 w-full object-contain rounded-md"
+                  className="h-40 w-full object-cover rounded-md"
                   unoptimized
                 />
               </div>
