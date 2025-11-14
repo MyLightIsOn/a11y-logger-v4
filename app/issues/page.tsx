@@ -246,7 +246,7 @@ export default function Page() {
                 variant={"success"}
                 className={"ml-5 overflow-visible"}
               >
-                <Link href={"/assessments/new"}>
+                <Link href={"/issues/new"}>
                   <PlusIcon /> Create Issue
                 </Link>
               </Button>

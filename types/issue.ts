@@ -114,6 +114,10 @@ export interface UpdateIssueRequest {
   screenshots?: string[];
   tag_ids?: UUID[];
   /**
+   * Optional linked assessment for the Issue. When provided, replaces the current link.
+   */
+  assessment_id?: UUID | null;
+  /**
    * When provided, this array represents the full desired criteria set for the Issue
    * (bulk add/remove). It will be validated and de-duplicated by the API.
    */

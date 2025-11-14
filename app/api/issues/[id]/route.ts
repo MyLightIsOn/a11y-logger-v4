@@ -237,8 +237,8 @@ export async function PATCH(
       return NextResponse.json({ error: "Issue not found" }, { status: 404 });
     }
 
-    // Extract criteria from body for separate handling
-    const { criteria, tag_ids, ...issueUpdate } = body;
+    // Extract arrays/relations from body for separate handling
+    const { criteria, tag_ids, assessment_id, ...issueUpdate } = body;
 
     // Update the main issue record
     const { error: updateErr } = await supabase
@@ -331,6 +331,36 @@ export async function PATCH(
       }
     }
 
+    // Handle assessment link update if provided (explicit null clears the link)
+    if (assessment_id !== undefined) {
+      // Remove any existing link first to enforce single assessment per issue
+      const { error: delAssessErr, data: test } = await supabase
+        .from("assessments_issues")
+        .delete()
+        .eq("issue_id", id);
+
+      if (delAssessErr) {
+        console.error("Error removing existing assessment link:", delAssessErr);
+        return NextResponse.json(
+          { error: "Failed to update assessment link" },
+          { status: 500 },
+        );
+      }
+      // Insert new link if a non-null/defined assessment_id is provided
+      if (assessment_id) {
+        const { error: insAssessErr } = await supabase
+          .from("assessments_issues")
+          .insert({ assessment_id, issue_id: id });
+        if (insAssessErr) {
+          console.error("Error inserting new assessment link:", insAssessErr);
+          return NextResponse.json(
+            { error: "Failed to link assessment" },
+            { status: 500 },
+          );
+        }
+      }
+    }
+
     // Handle tag updates if provided
     if (tag_ids) {
       // Remove existing tag associations
@@ -414,6 +444,35 @@ export async function PATCH(
 
     const tags: Tag[] = (issues_tags ?? []).map((it) => it.tags);
 
+    // Fetch updated linked assessment via join table assessments_issues
+    let assessmentRef: IssueRead["assessment"] | undefined = undefined;
+    try {
+      const { data: assessJoins, error: assessErr } = await supabase
+        .from("assessments_issues")
+        .select(`assessments(id, name, wcag_version)`) // join
+        .eq("issue_id", id);
+      if (assessErr) {
+        console.error("Error fetching assessment join:", assessErr);
+      } else if (assessJoins && assessJoins.length > 0) {
+        const rel = (assessJoins[0] as unknown as { assessments: unknown })
+          .assessments as unknown as {
+          id: string;
+          name: string;
+          wcag_version: string;
+        } | null;
+        if (rel) {
+          assessmentRef = {
+            id: rel.id,
+            name: rel.name,
+            wcag_version:
+              rel.wcag_version as unknown as IssueRead["assessment"]["wcag_version"],
+          };
+        }
+      }
+    } catch (e) {
+      console.error("Unhandled error fetching assessment join:", e);
+    }
+
     // Fetch updated criteria
     let criteriaItems: IssueCriteriaItem[] = [];
     const { data: joinedCriteria, error: critErr } = await supabase
@@ -448,10 +507,14 @@ export async function PATCH(
     );
 
     const responseIssue: IssueRead = {
-      ...(baseIssue as Omit<IssueRead, "tags" | "criteria" | "criteria_codes">),
+      ...(baseIssue as Omit<
+        IssueRead,
+        "tags" | "criteria" | "criteria_codes" | "assessment"
+      >),
       tags,
       criteria: criteriaItems,
       criteria_codes,
+      assessment: assessmentRef,
     };
 
     return NextResponse.json(responseIssue);

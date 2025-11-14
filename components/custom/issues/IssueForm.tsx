@@ -179,6 +179,9 @@ function IssueForm({
         code_snippet: form.code_snippet || undefined,
         screenshots: uploadResult ?? form.screenshots ?? undefined,
         tag_ids: form.tag_ids ?? undefined,
+        // allow updating or clearing the assessment link
+        assessment_id:
+          form.assessment_id !== undefined ? form.assessment_id : undefined,
         criteria: Array.isArray(form.criteria)
           ? (form.criteria as Array<{ version: WcagVersion; code: string }>)
           : undefined,

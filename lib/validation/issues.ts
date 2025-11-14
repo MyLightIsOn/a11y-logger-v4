@@ -182,6 +182,10 @@ export const updateIssueSchema = z
     code_snippet: z.string().trim().max(10000).optional(),
     screenshots: z.array(screenshotUrlSchema).max(10).optional(),
     tag_ids: z.array(z.string()).optional(),
+    // Allow null to explicitly clear the assessment link on PATCH; coerce empty string -> null
+    assessment_id: z
+      .preprocess((v) => (v === "" ? null : v), z.string().uuid().nullable())
+      .optional(),
     criteria: z.array(criterionRefSchema).optional(),
   })
   .strict();
