@@ -7,6 +7,7 @@ import type {
   IssueCriteriaItem,
   WcagCriterion,
   UpdateIssueRequest,
+  WcagVersion,
 } from "@/types/issue";
 import { updateIssueSchema } from "@/lib/validation/issues";
 
@@ -97,9 +98,7 @@ export async function GET(
     const tags: Tag[] = (issues_tags ?? []).map((it) => it.tags);
 
     // Fetch linked assessment via join table assessments_issues
-    let assessmentRef:
-      | { id: string; name: string; wcag_version: string }
-      | undefined = undefined;
+    let assessmentRef: IssueRead["assessment"] | undefined = undefined;
     try {
       const { data: assessJoins, error: assessErr } = await supabase
         .from("assessments_issues")
@@ -117,11 +116,17 @@ export async function GET(
               | undefined)
           : (rel as { id: string; name: string; wcag_version: string } | null);
         if (a) {
-          assessmentRef = {
-            id: a.id,
-            name: a.name,
-            wcag_version: a.wcag_version,
-          };
+          if (isWcagVersion(a.wcag_version)) {
+            assessmentRef = {
+              id: a.id,
+              name: a.name,
+              wcag_version: a.wcag_version,
+            };
+          } else {
+            console.warn(
+              `Unexpected wcag_version "${a.wcag_version}" for assessment ${a.id}; omitting from response`,
+            );
+          }
         }
       }
     } catch (e) {
@@ -171,9 +176,7 @@ export async function GET(
       tags,
       criteria: includeCriteria ? criteriaItems : undefined,
       criteria_codes: includeCriteria ? criteria_codes : undefined,
-      assessment: assessmentRef
-        ? (assessmentRef as unknown as IssueRead["assessment"])
-        : undefined,
+      assessment: assessmentRef ? assessmentRef : undefined,
     };
 
     return NextResponse.json(responseIssue);
@@ -184,6 +187,11 @@ export async function GET(
       { status: 500 },
     );
   }
+}
+
+// Narrowing helper for WCAG versions coming from DB (strings)
+function isWcagVersion(v: string): v is WcagVersion {
+  return v === "2.0" || v === "2.1" || v === "2.2";
 }
 
 /**
@@ -334,7 +342,7 @@ export async function PATCH(
     // Handle assessment link update if provided (explicit null clears the link)
     if (assessment_id !== undefined) {
       // Remove any existing link first to enforce single assessment per issue
-      const { error: delAssessErr, data: test } = await supabase
+      const { error: delAssessErr } = await supabase
         .from("assessments_issues")
         .delete()
         .eq("issue_id", id);
@@ -461,12 +469,17 @@ export async function PATCH(
           wcag_version: string;
         } | null;
         if (rel) {
-          assessmentRef = {
-            id: rel.id,
-            name: rel.name,
-            wcag_version:
-              rel.wcag_version as unknown as IssueRead["assessment"]["wcag_version"],
-          };
+          if (isWcagVersion(rel.wcag_version)) {
+            assessmentRef = {
+              id: rel.id,
+              name: rel.name,
+              wcag_version: rel.wcag_version,
+            };
+          } else {
+            console.warn(
+              `Unexpected wcag_version "${rel.wcag_version}" for assessment ${rel.id}; omitting from response`,
+            );
+          }
         }
       }
     } catch (e) {
