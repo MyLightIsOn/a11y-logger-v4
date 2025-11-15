@@ -70,11 +70,32 @@ export function CoreFields({ register, errors }: Props) {
                   </option>
                   /
                   {config.selectOptions &&
-                    config.selectOptions.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt}
-                      </option>
-                    ))}
+                    config.selectOptions.map((opt) => {
+                      let severityText;
+
+                      switch (opt) {
+                        case "1":
+                          severityText = "Critical";
+                          break;
+                        case "2":
+                          severityText = "High";
+                          break;
+                        case "3":
+                          severityText = "Medium";
+                          break;
+                        case "4":
+                          severityText = "Low";
+                          break;
+                        default:
+                          severityText = undefined; // or whatever default you want
+                      }
+
+                      return (
+                        <option key={opt} value={opt}>
+                          {severityText}
+                        </option>
+                      );
+                    })}
                 </select>
               </div>
             )}
