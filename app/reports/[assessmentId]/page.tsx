@@ -160,8 +160,7 @@ export default function ReportDetailsPage() {
                 onClick={() => setIsDeleteModalOpen(true)}
                 data-testid="delete-report-button"
               >
-                {deleteReports.isPending ? "Deleting..." : "Delete"}{" "}
-                <Trash2 className="ml-2" />
+                {deleteReports.isPending ? "Deleting..." : "Delete"} <Trash2 />
               </Button>
             </>
           }

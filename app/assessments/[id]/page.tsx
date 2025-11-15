@@ -9,7 +9,7 @@ import {
   Edit,
   EyeIcon,
   PlusIcon,
-  Trash,
+  Trash2,
 } from "lucide-react";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
@@ -270,17 +270,16 @@ export default function AssessmentDetailPage() {
                   variant="outline"
                   onClick={() => router.push(`/assessments/${id}/edit`)}
                 >
-                  Edit <Edit />
+                  <Edit /> Edit
                 </Button>
               )}
               <Button
-                className={"min-w-[100px]"}
                 variant="destructive"
                 onClick={showDeleteConfirmation}
                 disabled={deleteAssessment.isPending}
               >
-                {deleteAssessment.isPending ? "Deleting..." : "Delete"}{" "}
-                <Trash />
+                <Trash2 />
+                {deleteAssessment.isPending ? "Deleting..." : "Delete"}
               </Button>
             </>
           }

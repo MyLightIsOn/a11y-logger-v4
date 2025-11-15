@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, EyeIcon, PlusIcon, Trash2 } from "lucide-react";
 import { useProjectDetails } from "@/lib/query/use-project-details-query";
 import { useDeleteProjectMutation } from "@/lib/query/use-delete-project-mutation";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ import { formatDate } from "@/lib/utils";
 import type { Assessment } from "@/types/assessment";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { useQueries } from "@tanstack/react-query";
-import { assessmentsApi } from "@/lib/api";
+import { assessmentsApi, vpatsApi } from "@/lib/api";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
@@ -30,6 +30,45 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const { data: project, isLoading, error } = useProjectDetails({ id });
   const deleteProject = useDeleteProjectMutation();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [hasVpat, setHasVpat] = React.useState<boolean | null>(null);
+  const [vpatId, setVpatId] = React.useState<string | null>(null);
+  const [creatingVpat, setCreatingVpat] = React.useState(false);
+
+  // Check for an existing VPAT for this project (client-side filter for now)
+  React.useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await vpatsApi.listAll();
+        if (!active) return;
+        const rows = res?.data?.data || [];
+        const match = rows
+          .filter((r) => String(r.project_id) === String(id))
+          // Prefer the most recently updated, if multiple
+          .sort(
+            (a, b) =>
+              new Date(b.updated_at).getTime() -
+              new Date(a.updated_at).getTime(),
+          )[0];
+        if (match) {
+          setHasVpat(true);
+          setVpatId(String(match.vpat_id));
+        } else {
+          setHasVpat(false);
+          setVpatId(null);
+        }
+      } catch (e) {
+        console.log(e);
+        if (!active) return;
+        setHasVpat(false);
+        setVpatId(null);
+      }
+    };
+    if (id) void load();
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   // Prepare aggregated issue stats across all linked assessments.
   const assessmentIds = React.useMemo(
@@ -176,22 +215,58 @@ export default function ProjectDetailPage({ params }: PageProps) {
         <ButtonToolbar
           buttons={
             <>
+              {/* VPAT: View or Generate depending on existence */}
+              {hasVpat && vpatId ? (
+                <Button
+                  className={"min-w-[140px]"}
+                  variant="outline"
+                  onClick={() => router.push(`/vpats/${vpatId}`)}
+                  aria-label="View VPAT"
+                >
+                  <EyeIcon /> View VPAT
+                </Button>
+              ) : null}
+              {!hasVpat && hasVpat !== null ? (
+                <Button
+                  variant={"success"}
+                  className={"ml-0 overflow-visible"}
+                  disabled={creatingVpat}
+                  onClick={async () => {
+                    try {
+                      setCreatingVpat(true);
+                      const title = `${project?.name ?? "Project"} VPAT`;
+                      const res = await vpatsApi.create({
+                        projectId: id as unknown as string,
+                        title,
+                        description: project?.description ?? undefined,
+                      });
+                      if (res?.success && res?.data?.id) {
+                        router.push(`/vpats/${res.data.id}`);
+                      }
+                    } finally {
+                      setCreatingVpat(false);
+                    }
+                  }}
+                >
+                  <PlusIcon />{" "}
+                  {creatingVpat ? "Generating..." : "Generate VPAT"}
+                </Button>
+              ) : null}
               <Button
                 className={"min-w-[100px]"}
                 variant="outline"
                 onClick={() => router.push(`/projects/${id}/edit`)}
               >
-                Edit <Edit />
+                <Edit /> Edit
               </Button>
               <Button
-                className={"min-w-[120px]"}
                 variant="destructive"
                 disabled={deleteProject.isPending}
                 onClick={showDeleteConfirmation}
                 data-testid="delete-project-button"
               >
-                {deleteProject.isPending ? "Deleting..." : "Delete"}{" "}
-                <Trash2 className="ml-2" />
+                <Trash2 />
+                {deleteProject.isPending ? "Deleting..." : "Delete"}
               </Button>
             </>
           }

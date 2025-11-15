@@ -15,13 +15,13 @@ interface HasVpat {
 }
 
 const EditVPATButton: React.FC<HasVpat> = ({ vpat }) => (
-  <Button variant="outline" asChild aria-label="Edit VPAT">
+  <Button variant="outline" asChild aria-label="Edit">
     <a
       href={`/vpats/${encodeURIComponent(String(vpat?.id ?? ""))}/edit`}
       rel="noopener noreferrer"
     >
       <EditIcon />
-      Edit VPAT
+      Edit
     </a>
   </Button>
 );

@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Trash } from "lucide-react";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ImageModal } from "@/components/custom/layout/image-modal";
@@ -99,7 +99,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
             variant="destructive"
             onClick={() => setIsDeleteOpen(true)}
           >
-            Delete <Trash className="ml-2 h-4 w-4" />
+            <Trash2 /> Delete
           </Button>
         </div>
       </div>

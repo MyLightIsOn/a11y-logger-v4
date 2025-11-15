@@ -321,7 +321,9 @@ export function DataTable<T>({
     if (statusFilter && selectedStatuses.length > 0) {
       processedData = processedData.filter((item) => {
         const statusVal = statusFilter.accessor(item);
-        return statusVal != null && selectedStatuses.includes(String(statusVal));
+        return (
+          statusVal != null && selectedStatuses.includes(String(statusVal))
+        );
       });
     }
 
@@ -486,7 +488,7 @@ export function DataTable<T>({
               onClick={showDeleteConfirmation}
               className="flex items-center gap-1"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 />
               Delete Selected ({selectedRows.length})
             </Button>
           )}
