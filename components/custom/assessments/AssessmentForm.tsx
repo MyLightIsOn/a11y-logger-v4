@@ -156,10 +156,10 @@ export function AssessmentForm({
           />
         </div>
       ) : null}
-      <div className="bg-white rounded-lg border border-primary shadow-md dark:bg-card dark:border-border overflow-hidden p-6 mb-6">
+      <div>
         <form id={formId} onSubmit={handleSubmit(internalSubmit)} noValidate>
           {/* Name */}
-          <section className="bg-card rounded-lg mb-4">
+          <section className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md">
             <label htmlFor="name" className="block text-xl font-bold">
               Name <span className="text-destructive">*</span>
             </label>
@@ -187,7 +187,7 @@ export function AssessmentForm({
           </section>
 
           {/* Description */}
-          <section className="bg-card rounded-lg mb-4">
+          <section className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md">
             <label htmlFor="description" className="block text-xl font-bold">
               Description
             </label>
@@ -214,7 +214,7 @@ export function AssessmentForm({
           </section>
 
           {/* WCAG Version */}
-          <section className="bg-card rounded-lg mb-4">
+          <section className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md">
             <label htmlFor="wcag_version" className="block text-xl font-bold">
               WCAG Version <span className="text-destructive">*</span>
             </label>
@@ -222,7 +222,11 @@ export function AssessmentForm({
               Select the WCAG version this assessment targets.
             </p>
             <Select
-              value={(currentVersion || (initialData?.wcag_version as WcagVersion | undefined) || "")}
+              value={
+                currentVersion ||
+                (initialData?.wcag_version as WcagVersion | undefined) ||
+                ""
+              }
               onValueChange={(v) => {
                 setValue("wcag_version", v as WcagVersion, {
                   shouldValidate: true,

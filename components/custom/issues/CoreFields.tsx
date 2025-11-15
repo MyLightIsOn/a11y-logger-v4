@@ -20,7 +20,7 @@ export function CoreFields({ register, errors }: Props) {
         return (
           <section
             key={config.field}
-            className="bg-card rounded-lg p-4 border border-border mb-4"
+            className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md"
           >
             <label htmlFor={config.field} className="block text-lg font-bold">
               {config.label}

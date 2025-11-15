@@ -277,6 +277,18 @@ function IssueForm({
                 uploading={uploading}
                 uploadError={uploadError}
                 screenshots={uploadedUrls}
+                existingImages={
+                  Array.isArray(watch("screenshots"))
+                    ? (watch("screenshots") as unknown as string[])
+                    : initialValues?.screenshots ?? []
+                }
+                onRemoveExistingImage={(url) => {
+                  const current = Array.isArray(watch("screenshots"))
+                    ? ([...((watch("screenshots") as unknown as string[]))] as string[])
+                    : [];
+                  const next = current.filter((u) => u !== url);
+                  setValue("screenshots", next, { shouldDirty: true });
+                }}
               />
             </div>
           </div>
