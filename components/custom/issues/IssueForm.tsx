@@ -82,7 +82,6 @@ function IssueForm({
         screenshots: initialValues.screenshots ?? [],
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, initialValues, reset]);
 
   // Load assessments to resolve the selected assessment's WCAG version for AI context
@@ -268,7 +267,6 @@ function IssueForm({
                 selected={selectedTagIds}
                 onSelectedChangeAction={onTagsChange}
               />
-
             </div>
             <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
               <AttachmentsSection
@@ -280,11 +278,13 @@ function IssueForm({
                 existingImages={
                   Array.isArray(watch("screenshots"))
                     ? (watch("screenshots") as unknown as string[])
-                    : initialValues?.screenshots ?? []
+                    : (initialValues?.screenshots ?? [])
                 }
                 onRemoveExistingImage={(url) => {
                   const current = Array.isArray(watch("screenshots"))
-                    ? ([...((watch("screenshots") as unknown as string[]))] as string[])
+                    ? ([
+                        ...(watch("screenshots") as unknown as string[]),
+                      ] as string[])
                     : [];
                   const next = current.filter((u) => u !== url);
                   setValue("screenshots", next, { shouldDirty: true });
@@ -306,11 +306,18 @@ function IssueForm({
                 aria-describedby="issue-submit-status"
               >
                 {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <SaveIcon className="h-4 w-4" aria-hidden="true" />
                 )}
-                {isSaving ? "Saving Issue..." : mode === "edit" ? "Save Changes" : "Create Issue"}
+                {isSaving
+                  ? "Saving Issue..."
+                  : mode === "edit"
+                    ? "Save Changes"
+                    : "Create Issue"}
               </Button>
               <span
                 id="issue-submit-status"
@@ -318,7 +325,11 @@ function IssueForm({
                 aria-live="polite"
                 className="sr-only"
               >
-                {isSaving ? (mode === "edit" ? "Saving Issue" : "Creating Issue") : ""}
+                {isSaving
+                  ? mode === "edit"
+                    ? "Saving Issue"
+                    : "Creating Issue"
+                  : ""}
               </span>
               <Button
                 variant="destructive"
