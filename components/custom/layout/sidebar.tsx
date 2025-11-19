@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,6 @@ export default function SideBar({
       Icon: FileCheck,
     },
     { href: "/issues", title: "Issues", label: "Issues", Icon: AlertTriangle },
-    { href: "/vpats", title: "VPATs", label: "VPATS", Icon: ClipboardList },
     { href: "/account", title: "Account", label: "Account", Icon: User },
   ];
 

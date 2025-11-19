@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import VPATTable from "@/app/vpats/[vpatId]/VPATTable";
 import { Button } from "@/components/ui/button";
-import { EditIcon, File, FileCode } from "lucide-react";
+import { EditIcon, File, FileCode, Trash2 } from "lucide-react";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 import type { Vpat } from "@/types/vpat";
+import { useDeleteVpatMutation } from "@/lib/query/use-delete-vpat-mutation";
 
 interface HasVpat {
   vpat: Vpat;
@@ -62,10 +63,25 @@ const ExportPDFButton: React.FC<ExportPDFButtonProps> = ({
 
 function Page() {
   const { vpatId } = useParams<{ vpatId: string }>();
+  const router = useRouter();
 
   const { data: vpat, isLoading, isError, error } = useVpatDraft(vpatId);
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
+  const deleteVpat = useDeleteVpatMutation();
+
+  const confirmAndDelete = async () => {
+    if (!vpatId) return;
+    const ok = window.confirm(
+      "Are you sure you want to delete this VPAT? This action cannot be undone.",
+    );
+    if (!ok) return;
+    deleteVpat.mutate(String(vpatId), {
+      onSuccess: () => {
+        router.push("/vpats");
+      },
+    });
+  };
 
   return (
     <div className={"min-h-full"}>
@@ -98,6 +114,15 @@ function Page() {
                     setExportingPdf={setExportingPdf}
                   />
                   <EditVPATButton vpat={vpat} />
+                  <Button
+                    variant="destructive"
+                    onClick={confirmAndDelete}
+                    disabled={deleteVpat.isPending}
+                    aria-label="Delete VPAT"
+                  >
+                    <Trash2 />
+                    {deleteVpat.isPending ? "Deleting..." : "Delete"}
+                  </Button>
                 </>
               }
             />

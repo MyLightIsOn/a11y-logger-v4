@@ -139,6 +139,11 @@ export class VpatsApiService extends BaseApiService {
       `${this.basePath}/${vpatId}/criteria/${encodeURIComponent(code)}/issues`,
     );
   }
+
+  // Delete a VPAT and all its related data
+  async deleteVpat(vpatId: UUID): Promise<ApiResponse<null>> {
+    return super.delete<null>(`${this.basePath}/${vpatId}`);
+  }
 }
 
 // Export a singleton instance for convenience

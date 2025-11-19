@@ -139,11 +139,65 @@ export async function PUT(
   }
 }
 
+/**
+ * DELETE /api/vpats/[vpatId]
+ * Deletes a VPAT and cascades to related rows (draft rows, versions, shares).
+ */
+export async function DELETE(
+  _request: NextRequest,
+  ctx: { params: Promise<{ vpatId: UUID }> },
+) {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { vpatId } = await ctx.params;
+
+    // Ensure VPAT exists and is owned by the user (creator) or belongs to a project the user owns.
+    // Prefer strict check by created_by for now.
+    const { data: row, error: rowErr } = await supabase
+      .from("vpat")
+      .select("id, created_by")
+      .eq("id", vpatId)
+      .single();
+
+    if (rowErr || !row) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if ((row as { created_by?: string }).created_by !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Deleting the VPAT row cascades to vpat_row_draft and vpat_version; vpat_share cascades via version_id FK.
+    const { error: delErr } = await supabase.from("vpat").delete().eq("id", vpatId);
+    if (delErr) {
+      console.error("Error deleting VPAT:", delErr);
+      return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Unhandled error in DELETE /api/vpats/[vpatId]:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
     headers: {
-      Allow: "GET, PUT, POST, OPTIONS",
+      Allow: "GET, PUT, POST, DELETE, OPTIONS",
     },
   });
 }
