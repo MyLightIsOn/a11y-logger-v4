@@ -625,6 +625,7 @@ export function DataTable<T>({
       {totalPages > 1 && (
         <div className="flex items-center justify-end space-x-2">
           <Button
+            className="min-w-[10px]"
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(1)}
@@ -633,6 +634,7 @@ export function DataTable<T>({
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
+            className="min-w-[10px]"
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage - 1)}
@@ -644,6 +646,7 @@ export function DataTable<T>({
             Page {currentPage} of {totalPages}
           </span>
           <Button
+            className="min-w-[10px]"
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(currentPage + 1)}
@@ -652,6 +655,7 @@ export function DataTable<T>({
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
+            className="min-w-[10px]"
             variant="outline"
             size="sm"
             onClick={() => handlePageChange(totalPages)}
