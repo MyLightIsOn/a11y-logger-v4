@@ -218,7 +218,6 @@ export default function ProjectDetailPage({ params }: PageProps) {
               {/* VPAT: View or Generate depending on existence */}
               {hasVpat && vpatId ? (
                 <Button
-                  className={"min-w-[140px]"}
                   variant="outline"
                   onClick={() => router.push(`/vpats/${vpatId}`)}
                   aria-label="View VPAT"
@@ -253,7 +252,6 @@ export default function ProjectDetailPage({ params }: PageProps) {
                 </Button>
               ) : null}
               <Button
-                className={"min-w-[100px]"}
                 variant="outline"
                 onClick={() => router.push(`/projects/${id}/edit`)}
               >

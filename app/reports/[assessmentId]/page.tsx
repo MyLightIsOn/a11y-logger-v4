@@ -10,12 +10,18 @@ import { reportsApi } from "@/lib/api";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { getWcagByCode } from "@/lib/wcag/reference";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Trash2, Download } from "lucide-react";
 import Link from "next/link";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import { LoadingIndicator } from "@/components/custom/projects/common";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { useDeleteReportMutation } from "@/lib/query/use-delete-report-mutation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -146,15 +152,36 @@ export default function ReportDetailsPage() {
           buttons={
             <>
               <Button
-                className={"min-w-[100px]"}
                 variant="outline"
                 onClick={() => router.push(`/reports/${assessmentId}/edit`)}
                 disabled={!report}
               >
                 Edit <Edit />
               </Button>
+              {report ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className={"a11y-focus"}
+                      variant="outline"
+                      aria-label="Export report"
+                    >
+                      <Download /> Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className={"bg-white dark:bg-card-dark"}
+                  >
+                    <DropdownMenuItem disabled>Export as PDF</DropdownMenuItem>
+                    <DropdownMenuItem disabled>Export as HTML</DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      Export as Markdown
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
               <Button
-                className={"min-w-[120px]"}
                 variant="destructive"
                 disabled={deleteReports.isPending || !report}
                 onClick={() => setIsDeleteModalOpen(true)}

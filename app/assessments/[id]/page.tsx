@@ -256,7 +256,6 @@ export default function AssessmentDetailPage() {
               )}
               {hasReport ? (
                 <Button
-                  className={"min-w-[140px]"}
                   variant="outline"
                   onClick={() => router.push(`/reports/${id}`)}
                   aria-label="View latest report"
@@ -266,7 +265,6 @@ export default function AssessmentDetailPage() {
               ) : null}
               {hasReport && true && (
                 <Button
-                  className={"min-w-[100px]"}
                   variant="outline"
                   onClick={() => router.push(`/assessments/${id}/edit`)}
                 >

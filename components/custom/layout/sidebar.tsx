@@ -67,7 +67,7 @@ export default function SideBar({
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 aria-controls="nav"
                 aria-expanded={!collapsed}
-                className={"h-10 w-10 p-0 relative right-2"}
+                className={"h-10 w-10 min-w-[10px] p-0 relative right-2"}
                 onClick={() => {
                   localStorage.setItem("sidebar:collapsed", String(!collapsed));
                   setCollapsed(!collapsed);
