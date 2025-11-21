@@ -226,6 +226,7 @@ function IssueForm({
       },
     });
   };
+
   return (
     <div>
       <IssueFormAssessments
@@ -234,19 +235,21 @@ function IssueForm({
         selectedAssessmentId={selectedAssessmentId}
       />
 
+      {/* AIAssistPanel should be visible only when creating an issue, regardless of assessment selection */}
+      {mode === "create" && selectedAssessment && (
+        <AIAssistPanel
+          watch={watch}
+          getValues={getValues}
+          setValue={setValue}
+          assessments={assessments}
+        />
+      )}
+
+      {/* Form is shown after an assessment is selected */}
       {selectedAssessmentId && (
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-wrap">
             <div className="p-6 w-full md:w-2/3">
-              {!selectedAssessment && (
-                <AIAssistPanel
-                  watch={watch}
-                  getValues={getValues}
-                  setValue={setValue}
-                  assessments={assessments}
-                />
-              )}
-
               <CoreFields register={register} errors={errors} />
 
               <WcagCriteriaSection
