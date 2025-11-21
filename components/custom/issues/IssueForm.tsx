@@ -249,7 +249,7 @@ function IssueForm({
       {selectedAssessmentId && (
         <form id={formId} onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-wrap">
-            <div className="p-6 w-full md:w-2/3">
+            <div className="p-6 pl-0 pt-0 w-full md:w-2/3">
               <CoreFields register={register} errors={errors} />
 
               <WcagCriteriaSection
@@ -271,7 +271,7 @@ function IssueForm({
                 onSelectedChangeAction={onTagsChange}
               />
             </div>
-            <div className="p-6 w-full md:w-1/3 dark:bg-border-border border-l border-border">
+            <div className="p-6 pr-0 pt-0 w-full md:w-1/3 dark:bg-border-border border-l border-border">
               <AttachmentsSection
                 filesToUpload={filesToUpload}
                 onFilesChangeAction={setFilesToUpload}
