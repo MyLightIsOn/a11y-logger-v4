@@ -175,7 +175,35 @@ export default function ReportDetailsPage() {
                     className={"bg-white dark:bg-card-dark"}
                   >
                     <DropdownMenuItem>
-                      <PDFDownloadLink document={<MyDocument />}>
+                      <PDFDownloadLink
+                        document={
+                          <MyDocument
+                            assessmentId={assessmentId}
+                            assessmentName={assessment?.name}
+                            generatedAt={new Date().toISOString()}
+                            stats={
+                              stats
+                                ? {
+                                    critical: stats.critical,
+                                    high: stats.high,
+                                    medium: stats.medium,
+                                    low: stats.low,
+                                    total: stats.total,
+                                  }
+                                : undefined
+                            }
+                            overview={report?.executive_summary?.overview}
+                            topRisks={report?.executive_summary?.top_risks}
+                            quickWins={report?.executive_summary?.quick_wins}
+                            issues={issues.map((iss) => ({
+                              id: iss.id,
+                              title: iss.title,
+                              severity: iss.severity as unknown as string,
+                              wcag_codes: iss.criteria_codes ?? [],
+                            }))}
+                          />
+                        }
+                      >
                         Export as PDF
                       </PDFDownloadLink>
                     </DropdownMenuItem>

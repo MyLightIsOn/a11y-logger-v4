@@ -18,7 +18,7 @@ export const PDFDownloadLink = dynamic(
   {
     loading: () => (
       <Button>
-        <Loader2 className={"animate-spin"} />
+        <Loader2 className={"animate-spin"}></Loader2>
         Loading
       </Button>
     ),
