@@ -1,6 +1,5 @@
 "use client";
 import dynamic from "next/dynamic";
-export { MyDocument } from "@/app/reports/[assessmentId]/print/document";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 

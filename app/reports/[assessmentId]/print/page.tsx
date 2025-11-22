@@ -1,5 +1,6 @@
 "use client";
-import { PDFViewer, MyDocument } from "@/app/reports/[assessmentId]/print/pdf";
+import { PDFViewer } from "@/app/reports/[assessmentId]/print/pdf";
+import { MyDocument } from "@/app/reports/[assessmentId]/print/document";
 import { useParams } from "next/navigation";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import * as React from "react";
@@ -41,12 +42,21 @@ export default function Page() {
   }, [assessmentId]);
 
   // Map issues into lightweight PDFIssue shape
-  const pdfIssues = issues.map((iss) => ({
-    id: iss.id,
-    title: iss.title,
-    severity: iss.severity as unknown as string,
-    wcag_codes: iss.criteria_codes ?? [],
-  }));
+  const pdfIssues = issues.map((iss) => {
+    const codes =
+      (iss as unknown as { criteria_codes?: string[] }).criteria_codes ??
+      ((iss as unknown as { criteria?: { code: string }[] }).criteria
+        ? (iss as unknown as { criteria?: { code: string }[] }).criteria!.map(
+            (c) => c.code,
+          )
+        : []);
+    return {
+      id: iss.id,
+      title: iss.title,
+      severity: iss.severity as unknown as string,
+      wcag_codes: codes,
+    };
+  });
 
   return (
     <PDFViewer className={"h-screen"}>

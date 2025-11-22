@@ -22,10 +22,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  PDFDownloadLink,
-  MyDocument,
-} from "@/app/reports/[assessmentId]/print/pdf";
+import { PDFDownloadLink } from "@/app/reports/[assessmentId]/print/pdf";
+import { MyDocument } from "@/app/reports/[assessmentId]/print/document";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -116,7 +114,7 @@ export default function ReportDetailsPage() {
       const codes =
         (issue as { criteria_codes?: string[] }).criteria_codes || [];
       for (const raw of codes) {
-        const code = typeof raw === "string" ? raw.trim() : "";
+        const code = raw.trim();
         if (!/^\d+\.\d+\.\d+$/.test(code)) continue;
         const s = issuesByCode.get(code) || new Set<string>();
         s.add(issue.id);
@@ -198,12 +196,25 @@ export default function ReportDetailsPage() {
                             overview={report?.executive_summary?.overview}
                             topRisks={report?.executive_summary?.top_risks}
                             quickWins={report?.executive_summary?.quick_wins}
-                            issues={issues.map((iss) => ({
-                              id: iss.id,
-                              title: iss.title,
-                              severity: iss.severity as unknown as string,
-                              wcag_codes: iss.criteria_codes ?? [],
-                            }))}
+                            issues={issues.map((iss) => {
+                              const codes =
+                                (iss as unknown as { criteria_codes?: string[] })
+                                  .criteria_codes ??
+                                ((iss as unknown as { criteria?: { code: string }[] })
+                                  .criteria
+                                  ? (
+                                      iss as unknown as {
+                                        criteria?: { code: string }[];
+                                      }
+                                    ).criteria!.map((c) => c.code)
+                                  : []);
+                              return {
+                                id: iss.id,
+                                title: iss.title,
+                                severity: iss.severity as unknown as string,
+                                wcag_codes: codes,
+                              };
+                            })}
                           />
                         }
                       >
