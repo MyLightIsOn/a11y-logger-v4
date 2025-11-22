@@ -162,7 +162,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
           </div>
 
           <div>
-            <div className="flex items-center justify-between p-3 border rounded-md bg-muted/30 mb-4">
+            <div className="flex items-center justify-between p-3 border rounded-md bg-card mb-4">
               <div className="flex items-center gap-2">
                 <Switch
                   id="toggle-hide-zero-issues"
@@ -316,6 +316,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                           </td>
                           <td className="p-3 align-top text-center">
                             <Button
+                              className={"min-w-12"}
                               variant="default"
                               type="button"
                               disabled={busyCode === row.code}
