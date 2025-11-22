@@ -76,7 +76,7 @@ export default function NewAssessmentPage() {
               )}
               {createAssessment.isPending
                 ? "Saving Assessment..."
-                : "Save Assessment"}
+                : "Save Changes"}
             </Button>
             <span
               id="submit-status"

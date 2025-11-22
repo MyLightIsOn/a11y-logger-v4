@@ -101,11 +101,16 @@ export default function EditAssessmentPage({ params }: PageProps) {
                   aria-describedby="submit-status"
                 >
                   {updateAssessment.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <SaveIcon className="h-4 w-4" aria-hidden="true" />
                   )}
-                  {updateAssessment.isPending ? "Saving Assessment..." : "Save Assessment"}
+                  {updateAssessment.isPending
+                    ? "Saving Assessment..."
+                    : "Save Changes"}
                 </Button>
                 <span
                   id="submit-status"

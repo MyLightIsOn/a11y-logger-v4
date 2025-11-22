@@ -83,7 +83,7 @@ export default function NewProjectPage() {
               ) : (
                 <SaveIcon className="h-4 w-4" aria-hidden="true" />
               )}
-              {createProject.isPending ? "Saving Project..." : "Save Project"}
+              {createProject.isPending ? "Saving Project..." : "Save Changes"}
             </Button>
             <span
               id="submit-status"

@@ -263,14 +263,13 @@ export default function AssessmentDetailPage() {
                   <EyeIcon /> View Report
                 </Button>
               ) : null}
-              {hasReport && true && (
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/assessments/${id}/edit`)}
-                >
-                  <Edit /> Edit
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => router.push(`/assessments/${id}/edit`)}
+                aria-label="Edit assessment"
+              >
+                <Edit /> Edit
+              </Button>
               <Button
                 variant="destructive"
                 onClick={showDeleteConfirmation}
