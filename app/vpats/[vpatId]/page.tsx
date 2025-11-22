@@ -6,10 +6,16 @@ import { useParams, useRouter } from "next/navigation";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import VPATTable from "@/app/vpats/[vpatId]/VPATTable";
 import { Button } from "@/components/ui/button";
-import { EditIcon, File, FileCode, Trash2 } from "lucide-react";
+import { EditIcon, Download, Trash2 } from "lucide-react";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 import type { Vpat } from "@/types/vpat";
 import { useDeleteVpatMutation } from "@/lib/query/use-delete-vpat-mutation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HasVpat {
   vpat: Vpat;
@@ -27,39 +33,42 @@ const EditVPATButton: React.FC<HasVpat> = ({ vpat }) => (
   </Button>
 );
 
-const ExportHTMLButton: React.FC<HasVpat> = ({ vpat }) => (
-  <Button variant="outline" asChild aria-label="Export HTML VPAT report">
-    <a
-      href={`/api/vpats/${encodeURIComponent(String(vpat?.id ?? ""))}/download?format=html`}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      <FileCode />
-      Export HTML
-    </a>
-  </Button>
-);
-
-type ExportPDFButtonProps = HasVpat & {
-  setExportingPdf: React.Dispatch<React.SetStateAction<boolean>>;
+// Single Export dropdown to match Assessment report page behavior
+const ExportMenu: React.FC<{
+  vpat: Vpat;
   exportingPdf: boolean;
+  setExportingPdf: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ vpat, exportingPdf, setExportingPdf }) => {
+  const htmlUrl = `/api/vpats/${encodeURIComponent(String(vpat?.id ?? ""))}/download?format=html`;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" aria-label="Export VPAT">
+          <Download /> Export
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className={"bg-white dark:bg-card-dark"}>
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault();
+            if (!exportingPdf) handleExportPdf({ setExportingPdf, vpat });
+          }}
+          disabled={exportingPdf}
+        >
+          {exportingPdf ? "Exporting PDF…" : "Export as PDF"}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={(e) => {
+            e.preventDefault();
+            window.open(htmlUrl, "_blank", "noopener,noreferrer");
+          }}
+        >
+          Export as HTML
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
-
-const ExportPDFButton: React.FC<ExportPDFButtonProps> = ({
-  setExportingPdf,
-  vpat,
-  exportingPdf,
-}) => (
-  <Button
-    variant="outline"
-    onClick={() => handleExportPdf({ setExportingPdf, vpat })}
-    disabled={exportingPdf}
-    aria-label="Export PDF VPAT report"
-  >
-    <File />
-    {exportingPdf ? "Exporting…" : "Export PDF"}
-  </Button>
-);
 
 function Page() {
   const { vpatId } = useParams<{ vpatId: string }>();
@@ -107,8 +116,7 @@ function Page() {
             <ButtonToolbar
               buttons={
                 <>
-                  <ExportHTMLButton vpat={vpat} />
-                  <ExportPDFButton
+                  <ExportMenu
                     vpat={vpat}
                     exportingPdf={exportingPdf}
                     setExportingPdf={setExportingPdf}
