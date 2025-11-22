@@ -24,6 +24,7 @@ export interface MyDocumentProps {
   topRisks?: string[];
   quickWins?: string[];
   issues?: PDFIssue[];
+  personaSummaries?: { persona: string; summary: string }[];
 }
 
 const styles = StyleSheet.create({
@@ -48,6 +49,8 @@ const styles = StyleSheet.create({
   issueRow: { marginBottom: 6 },
   issueTitle: { fontSize: 10, fontWeight: 600 },
   smallMuted: { fontSize: 9, color: "#666" },
+  personaRow: { marginBottom: 8 },
+  personaName: { fontSize: 10, fontWeight: 600 },
 });
 
 export const MyDocument = ({
@@ -59,6 +62,7 @@ export const MyDocument = ({
   topRisks,
   quickWins,
   issues,
+  personaSummaries,
 }: MyDocumentProps) => {
   const printedAt = generatedAt
     ? new Date(generatedAt).toLocaleString()
@@ -140,6 +144,19 @@ export const MyDocument = ({
             <Text style={styles.smallMuted}>No issues to display.</Text>
           </View>
         )}
+
+        {/* Persona Summaries */}
+        {personaSummaries && personaSummaries.length ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Persona Summaries</Text>
+            {personaSummaries.map((p, i) => (
+              <View key={`persona-${i}`} style={styles.personaRow}>
+                <Text style={styles.personaName}>{p.persona}</Text>
+                <Text style={styles.text}>{p.summary}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
       </Page>
     </Document>
   );

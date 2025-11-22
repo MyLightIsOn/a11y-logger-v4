@@ -10,7 +10,11 @@ export const assessmentQueryKey = (id: string): AssessmentQueryKey => [
   { id },
 ];
 
-export type AssessmentIssuesQueryKey = ["assessments", { id: string }, "issues"];
+export type AssessmentIssuesQueryKey = [
+  "assessments",
+  { id: string },
+  "issues",
+];
 export const assessmentIssuesQueryKey = (
   id: string,
 ): AssessmentIssuesQueryKey => ["assessments", { id }, "issues"];
@@ -48,7 +52,12 @@ export function useAssessmentDetails(id?: string): UseAssessmentDetailsResult {
   const enabled = Boolean(id && id.length > 0);
 
   // Fetch the assessment entity
-  const assessmentQuery = useQuery<Assessment, Error, Assessment, AssessmentQueryKey>({
+  const assessmentQuery = useQuery<
+    Assessment,
+    Error,
+    Assessment,
+    AssessmentQueryKey
+  >({
     queryKey: assessmentQueryKey(id ?? ""),
     queryFn: async () => {
       if (!id) throw new Error("Assessment ID is required");
@@ -84,18 +93,28 @@ export function useAssessmentDetails(id?: string): UseAssessmentDetailsResult {
 
   const isLoading = assessmentQuery.isLoading || issuesQuery.isLoading;
   const isFetching = assessmentQuery.isFetching || issuesQuery.isFetching;
-  const errorOut: Error | undefined = (assessmentQuery.error ?? issuesQuery.error) ?? undefined;
+  const errorOut: Error | undefined =
+    assessmentQuery.error ?? issuesQuery.error ?? undefined;
 
   const refetch = async () => {
     await Promise.all([assessmentQuery.refetch(), issuesQuery.refetch()]);
   };
 
   // Optimistic delete mutation
-  const deleteMutation = useMutation<unknown, Error, void, {
-    prevAssessment?: Assessment;
-    prevIssues?: { data: Issue[]; stats: AssessmentIssuesStats; count: number };
-    prevList?: Assessment[];
-  }>({
+  const deleteMutation = useMutation<
+    unknown,
+    Error,
+    void,
+    {
+      prevAssessment?: Assessment;
+      prevIssues?: {
+        data: Issue[];
+        stats: AssessmentIssuesStats;
+        count: number;
+      };
+      prevList?: Assessment[];
+    }
+  >({
     mutationKey: ["assessments", "delete", { id }],
     mutationFn: async () => {
       if (!id) throw new Error("Assessment ID is required");
@@ -154,8 +173,12 @@ export function useAssessmentDetails(id?: string): UseAssessmentDetailsResult {
       // Invalidate related caches to ensure consistency
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["assessments"] }),
-        queryClient.invalidateQueries({ queryKey: assessmentQueryKey(id ?? "") }),
-        queryClient.invalidateQueries({ queryKey: assessmentIssuesQueryKey(id ?? "") }),
+        queryClient.invalidateQueries({
+          queryKey: assessmentQueryKey(id ?? ""),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: assessmentIssuesQueryKey(id ?? ""),
+        }),
       ]);
     },
   });

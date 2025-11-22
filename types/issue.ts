@@ -18,7 +18,6 @@ export interface Issue {
   selector?: string;
   code_snippet?: string;
   screenshots: string[];
-  // Legacy free-text criteria; kept for backward compatibility with current UI
   criteria?: string;
   status: IssueStatus;
   created_at: string;

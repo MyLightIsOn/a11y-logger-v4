@@ -1,5 +1,5 @@
 "use client";
-import { PDFViewer, MyDocument } from "@/app/pdf";
+import { PDFViewer, MyDocument } from "@/app/reports/[assessmentId]/print/pdf";
 import { useParams } from "next/navigation";
 import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import * as React from "react";
@@ -7,8 +7,7 @@ import { reportsApi } from "@/lib/api";
 
 export default function Page() {
   const { assessmentId } = useParams<{ assessmentId: string }>();
-  const { assessment, issues, stats, isLoading } =
-    useAssessmentDetails(assessmentId);
+  const { assessment, issues, stats } = useAssessmentDetails(assessmentId);
 
   const [overview, setOverview] = React.useState<string | undefined>(undefined);
   const [topRisks, setTopRisks] = React.useState<string[] | undefined>(
@@ -17,6 +16,9 @@ export default function Page() {
   const [quickWins, setQuickWins] = React.useState<string[] | undefined>(
     undefined,
   );
+  const [personaSummaries, setPersonaSummaries] = React.useState<
+    { persona: string; summary: string }[] | undefined
+  >(undefined);
 
   React.useEffect(() => {
     let active = true;
@@ -29,6 +31,7 @@ export default function Page() {
         setOverview(r?.executive_summary?.overview);
         setTopRisks(r?.executive_summary?.top_risks ?? []);
         setQuickWins(r?.executive_summary?.quick_wins ?? []);
+        setPersonaSummaries(r?.persona_summaries ?? []);
       }
     };
     void load();
@@ -44,8 +47,6 @@ export default function Page() {
     severity: iss.severity as unknown as string,
     wcag_codes: iss.criteria_codes ?? [],
   }));
-
-  console.log(isLoading);
 
   return (
     <PDFViewer className={"h-screen"}>
@@ -67,6 +68,7 @@ export default function Page() {
         overview={overview}
         topRisks={topRisks}
         quickWins={quickWins}
+        personaSummaries={personaSummaries}
         issues={pdfIssues}
       />
     </PDFViewer>

@@ -22,7 +22,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PDFDownloadLink, MyDocument } from "@/app/pdf";
+import {
+  PDFDownloadLink,
+  MyDocument,
+} from "@/app/reports/[assessmentId]/print/pdf";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
