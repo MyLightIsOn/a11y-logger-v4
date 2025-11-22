@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PDFDownloadLink, MyDocument } from "@/app/pdf";
 
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
@@ -173,7 +174,11 @@ export default function ReportDetailsPage() {
                     align="end"
                     className={"bg-white dark:bg-card-dark"}
                   >
-                    <DropdownMenuItem disabled>Export as PDF</DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <PDFDownloadLink document={<MyDocument />}>
+                        Export as PDF
+                      </PDFDownloadLink>
+                    </DropdownMenuItem>
                     <DropdownMenuItem disabled>Export as HTML</DropdownMenuItem>
                     <DropdownMenuItem disabled>
                       Export as Markdown
