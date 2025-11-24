@@ -38,7 +38,12 @@ function sanitizeKey(code: string) {
 }
 
 export type VpatFormHandle = {
-  saveDraft: () => Promise<void>;
+  getSaveTargets: () => { codes: string[]; totalCriteria: number };
+  saveDraft: (observer?: {
+    onStart?: (total: number) => void;
+    onProgress?: (saved: number, total: number, code: string) => void;
+    onDone?: () => void;
+  }) => Promise<void>;
 };
 
 type FormValues = {

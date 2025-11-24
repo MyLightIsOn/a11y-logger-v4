@@ -1,6 +1,10 @@
 import { getWcagByCode, type CriteriaDetail } from "@/lib/wcag/reference";
 import { camelToTitle } from "@/lib/utils";
-import type { VpatRowDraft, ConformanceValue, SaveVpatRowRequest } from "@/types/vpat";
+import type {
+  VpatRowDraft,
+  ConformanceValue,
+  SaveVpatRowRequest,
+} from "@/types/vpat";
 /**
  * Parse a WCAG criterion code (e.g., "1.4.13") into its numeric tuple [1,4,13].
  * Returns null for invalid codes.
@@ -101,7 +105,7 @@ export function computeNextNEmpty(
   const byCriterionId = new Map<string, VpatRowDraft>();
   if (Array.isArray(draftRows)) {
     for (const r of draftRows) {
-      if (r && typeof r.wcag_criterion_id === "string") {
+      if (r) {
         byCriterionId.set(r.wcag_criterion_id, r);
       }
     }
@@ -257,8 +261,48 @@ export function buildVpatFormHandle(options: {
 }) {
   const { getValues, updateVpat, saveRow, idByCode, originalCriteria } =
     options;
+  function computeChangedCodes() {
+    const values = getValues();
+    const entries = Object.entries(values.criteria || {});
+    const changed: string[] = [];
+    for (const [sanitizedCode, data] of entries) {
+      const code = sanitizedCode.replace(/_/g, ".");
+      const criterionId = idByCode.get(code);
+      if (!criterionId) continue;
+      const currentConformance = (data?.conformance || "").trim();
+      const currentRemarks = (data?.remarks || "").trim();
+
+      const original = originalCriteria?.[sanitizedCode] || {
+        conformance: "",
+        remarks: "",
+      };
+      const originalConformance = (original?.conformance || "").trim();
+      const originalRemarks = (original?.remarks || "").trim();
+
+      const sameConformance =
+        normalizeConformance(currentConformance) ===
+        normalizeConformance(originalConformance);
+      const sameRemarks = currentRemarks === originalRemarks;
+      if (!sameConformance || !sameRemarks) {
+        changed.push(code);
+      }
+    }
+    return changed;
+  }
+
   return {
-    async saveDraft() {
+    /**
+     * Preview which criteria rows will be saved (changed) and the total number of criteria available.
+     */
+    getSaveTargets(): { codes: string[]; totalCriteria: number } {
+      const codes = computeChangedCodes();
+      return { codes, totalCriteria: idByCode.size };
+    },
+    async saveDraft(observer?: {
+      onStart?: (total: number) => void;
+      onProgress?: (saved: number, total: number, code: string) => void;
+      onDone?: () => void;
+    }) {
       const values = getValues();
       // Update title/description first
       const title = (values.title || "").trim();
@@ -274,33 +318,17 @@ export function buildVpatFormHandle(options: {
         console.error("Failed to update VPAT header", e);
       }
 
-      // Save only criteria that have changes compared to originalCriteria
-      const entries = Object.entries(values.criteria || {});
-      for (const [sanitizedCode, data] of entries) {
-        const code = sanitizedCode.replace(/_/g, ".");
+      const changedCodes = computeChangedCodes();
+      observer?.onStart?.(changedCodes.length);
+      let saved = 0;
+      for (const code of changedCodes) {
+        const sanitizedCode = code.replace(/\./g, "_");
         const criterionId = idByCode.get(code);
         if (!criterionId) continue;
+        const data = values.criteria?.[sanitizedCode];
         const currentConformance = (data?.conformance || "").trim();
         const currentRemarks = (data?.remarks || "").trim();
-
-        const original = originalCriteria?.[sanitizedCode] || {
-          conformance: "",
-          remarks: "",
-        };
-        const originalConformance = (original?.conformance || "").trim();
-        const originalRemarks = (original?.remarks || "").trim();
-
-        // Compare normalized values: conformance normalized to RHF internal, remarks trimmed
-        const sameConformance =
-          normalizeConformance(currentConformance) ===
-          normalizeConformance(originalConformance);
-        const sameRemarks = currentRemarks === originalRemarks;
-        if (sameConformance && sameRemarks) {
-          continue; // skip unchanged rows
-        }
-
         try {
-          // Map UI conformance (camelCase) -> ConformanceValue title case
           const mapped: ConformanceValue | null =
             currentConformance.length > 0
               ? (camelToTitle(currentConformance) as ConformanceValue)
@@ -314,8 +342,19 @@ export function buildVpatFormHandle(options: {
           });
         } catch (e) {
           console.error(`Failed to save row for ${code}`, e);
+        } finally {
+          saved += 1;
+          observer?.onProgress?.(saved, changedCodes.length, code);
         }
       }
+      observer?.onDone?.();
     },
-  } as { saveDraft: () => Promise<void> };
+  } as {
+    getSaveTargets: () => { codes: string[]; totalCriteria: number };
+    saveDraft: (observer?: {
+      onStart?: (total: number) => void;
+      onProgress?: (saved: number, total: number, code: string) => void;
+      onDone?: () => void;
+    }) => Promise<void>;
+  };
 }
