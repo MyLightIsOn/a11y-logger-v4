@@ -65,6 +65,13 @@ function Page() {
                     type="button"
                     onClick={async () => {
                       if (savingAll) return;
+                      // Require all rows to have conformance selected before proceeding
+                      const valid =
+                        formRef.current?.validateConformanceOrFocus?.();
+                      if (!valid) {
+                        // Do not open modal; focus has been moved to the first empty select
+                        return;
+                      }
                       // Open confirmation modal and compute targets
                       const targets = formRef.current?.getSaveTargets();
                       setTotalToSave(targets?.codes.length ?? 0);
@@ -181,6 +188,14 @@ function Page() {
                   type="button"
                   onClick={async () => {
                     if (savingAll) return;
+                    // Re-validate before performing save to guard against last-second changes
+                    const valid =
+                      formRef.current?.validateConformanceOrFocus?.();
+                    if (!valid) {
+                      // Close modal so the user can fix the selection
+                      setModalOpen(false);
+                      return;
+                    }
                     setSavingAll(true);
                     setModalStep("saving");
                     try {
@@ -196,6 +211,8 @@ function Page() {
                           setModalStep("done");
                         },
                       });
+                    } catch {
+                      setModalOpen(false);
                     } finally {
                       setSavingAll(false);
                     }

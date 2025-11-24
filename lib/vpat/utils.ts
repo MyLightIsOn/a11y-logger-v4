@@ -258,8 +258,10 @@ export function buildVpatFormHandle(options: {
   };
   idByCode: Map<string, string>;
   originalCriteria?: Record<string, { conformance?: string; remarks?: string }>;
+  /** Optional callback to run before saving. Should return true when valid; false to block save. */
+  preValidate?: () => boolean;
 }) {
-  const { getValues, updateVpat, saveRow, idByCode, originalCriteria } =
+  const { getValues, updateVpat, saveRow, idByCode, originalCriteria, preValidate } =
     options;
   function computeChangedCodes() {
     const values = getValues();
@@ -298,11 +300,30 @@ export function buildVpatFormHandle(options: {
       const codes = computeChangedCodes();
       return { codes, totalCriteria: idByCode.size };
     },
+    /** Run pre-validation (if provided). Returns true when valid; otherwise focuses the first issue and returns false. */
+    validateConformanceOrFocus(): boolean {
+      if (typeof preValidate === "function") {
+        try {
+          return Boolean(preValidate());
+        } catch {
+          return false;
+        }
+      }
+      return true;
+    },
     async saveDraft(observer?: {
       onStart?: (total: number) => void;
       onProgress?: (saved: number, total: number, code: string) => void;
       onDone?: () => void;
     }) {
+      // Validate before saving
+      if (typeof preValidate === "function") {
+        const ok = Boolean(preValidate());
+        if (!ok) {
+          // Block save if validation fails
+          throw new Error("Missing conformance selections");
+        }
+      }
       const values = getValues();
       // Update title/description first
       const title = (values.title || "").trim();
@@ -351,6 +372,7 @@ export function buildVpatFormHandle(options: {
     },
   } as {
     getSaveTargets: () => { codes: string[]; totalCriteria: number };
+    validateConformanceOrFocus: () => boolean;
     saveDraft: (observer?: {
       onStart?: (total: number) => void;
       onProgress?: (saved: number, total: number, code: string) => void;

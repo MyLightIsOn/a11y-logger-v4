@@ -39,6 +39,7 @@ function sanitizeKey(code: string) {
 
 export type VpatFormHandle = {
   getSaveTargets: () => { codes: string[]; totalCriteria: number };
+  validateConformanceOrFocus: () => boolean;
   saveDraft: (observer?: {
     onStart?: (total: number) => void;
     onProgress?: (saved: number, total: number, code: string) => void;
@@ -110,6 +111,36 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
         saveRow,
         idByCode,
         originalCriteria: criteriaDefaults,
+        preValidate: () => {
+          // Ensure every criterion has a conformance selection
+          const values = getValues();
+          const all = criteriaArray; // require for all rows, not just filtered
+          for (const c of all) {
+            const key = sanitizeKey(c.code);
+            const conf = values?.criteria?.[key]?.conformance || "";
+            if (!conf || String(conf).trim().length === 0) {
+              // Try to focus select in DOM. If hidden due to filter, unhide then focus.
+              const selectId = `vpat-conformance-${key}`;
+              const el = document.getElementById(
+                selectId,
+              ) as HTMLSelectElement | null;
+              if (!el && hideZeroIssues) {
+                setHideZeroIssues(false);
+                // Allow the DOM to re-render then focus
+                setTimeout(() => {
+                  const retry = document.getElementById(
+                    selectId,
+                  ) as HTMLSelectElement | null;
+                  retry?.focus();
+                }, 0);
+              } else {
+                el?.focus();
+              }
+              return false;
+            }
+          }
+          return true;
+        },
       }),
     );
 
@@ -279,6 +310,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                           </td>
                           <td className="p-3 align-top">
                             <select
+                              id={`vpat-conformance-${key}`}
                               className="w-full border rounded px-3 py-3 bg-transparent"
                               disabled={busyAll || busyCode === row.code}
                               aria-disabled={busyAll || busyCode === row.code}
