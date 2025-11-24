@@ -275,8 +275,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                           <td className="p-3 align-top">
                             <select
                               className="w-full border rounded px-3 py-3 bg-transparent"
-                              disabled={busyCode === row.code}
-                              aria-disabled={busyCode === row.code}
+                              disabled={busyAll || busyCode === row.code}
+                              aria-disabled={busyAll || busyCode === row.code}
                               {...register(
                                 `criteria.${key}.conformance` as const,
                               )}
@@ -298,8 +298,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                             <Textarea
                               className="w-full border rounded px-2 py-1"
                               rows={3}
-                              disabled={busyCode === row.code}
-                              aria-disabled={busyCode === row.code}
+                              disabled={busyAll || busyCode === row.code}
+                              aria-disabled={busyAll || busyCode === row.code}
                               {...register(`criteria.${key}.remarks` as const)}
                             />
                           </td>
@@ -308,7 +308,10 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                               type="button"
                               aria-label={`Open issues for ${row.code} ${row.name}`}
                               className="font-semibold text-2xl underline"
+                              disabled={busyAll}
+                              aria-disabled={busyAll}
                               onClick={() => {
+                                if (busyAll) return;
                                 setDrawerCriterion({
                                   code: row.code,
                                   name: row.name,
@@ -325,8 +328,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                               className={"min-w-12"}
                               variant="default"
                               type="button"
-                              disabled={busyCode === row.code}
-                              aria-busy={busyCode === row.code}
+                              disabled={busyAll || busyCode === row.code}
+                              aria-busy={busyAll || busyCode === row.code}
                               onClick={async () => {
                                 try {
                                   const criterionId = idByCode.get(row.code);
