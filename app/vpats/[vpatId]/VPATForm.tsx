@@ -248,7 +248,9 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                   <thead className="bg-muted/50">
                     <tr className="text-left">
                       <th className="p-3 w-[22rem]">Criterion</th>
-                      <th className="p-3 w-[10rem]">Conformance</th>
+                      <th className="p-3 w-[10rem]">
+                        Conformance <span className="text-destructive">*</span>
+                      </th>
                       <th className="p-3">Remarks</th>
                       <th className="p-3 w-[5rem] text-center">Issues</th>
                       <th className="p-3 w-[5rem] text-center whitespace-nowrap">
@@ -273,6 +275,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                           <td className="p-3 align-top">
                             <select
                               className="w-full border rounded px-3 py-3 bg-transparent"
+                              disabled={busyCode === row.code}
+                              aria-disabled={busyCode === row.code}
                               {...register(
                                 `criteria.${key}.conformance` as const,
                               )}
@@ -294,6 +298,8 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
                             <Textarea
                               className="w-full border rounded px-2 py-1"
                               rows={3}
+                              disabled={busyCode === row.code}
+                              aria-disabled={busyCode === row.code}
                               {...register(`criteria.${key}.remarks` as const)}
                             />
                           </td>
