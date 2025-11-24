@@ -5,7 +5,7 @@ import { UserProfileLink } from "@/components/custom/user-profile-link";
 
 function Header() {
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white border-primary shadow-md dark:bg-card border-b dark:border-border relative z-10">
+    <div className="flex items-center justify-between px-4 py-3 bg-white border-primary shadow-md dark:bg-card border-b dark:border-border relative z-20">
       <Logo text="A11yPM" />
       <div className="flex items-center gap-4">
         <UserProfileLink />

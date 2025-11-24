@@ -19,6 +19,8 @@ export default function SideBar({
   readonly children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [hovered, setHovered] = useState<boolean>(false);
+  const [focusWithin, setFocusWithin] = useState<boolean>(false);
 
   // Initialize from localStorage on mount
   useEffect(() => {
@@ -30,6 +32,10 @@ export default function SideBar({
       // ignore
     }
   }, []);
+
+  // When the sidebar is set to collapsed, allow temporary expansion on hover or focus within
+  const isInteracting = hovered || focusWithin;
+  const effectiveCollapsed = collapsed && !isInteracting;
 
   const linkBaseClass =
     "flex items-center gap-3 px-3 py-2 text-primary transition-all hover:underline dark:text-gray-400 dark:hover:text-black dark:hover:bg-white dark:focus:text-black dark:focus:bg-white hover:bg-black hover:text-white ";
@@ -52,66 +58,63 @@ export default function SideBar({
   ];
 
   return (
-    <div className={"w-full"}>
-      <div
+    <div className={"w-full relative min-h-screen"}>
+      {/* Overlay sidebar: positioned on top of content, does not shift layout */}
+      <nav
         className={
-          `grid relative min-h-full ` +
-          (collapsed ? "grid-cols-[72px_1fr]" : "grid-cols-[240px_1fr]")
+          (effectiveCollapsed ? "w-[72px]" : "w-[240px]") +
+          " fixed left-0 top-0 bottom-0 z-10 border-r bg-primary-foreground dark:bg-card pt-[65px] transition-all duration-200"
         }
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onFocusCapture={() => setFocusWithin(true)}
+        onBlurCapture={(e) => {
+          // Only clear when focus leaves the entire nav, not when moving between children
+          const current = e.currentTarget as HTMLElement;
+          const next = e.relatedTarget as Node | null;
+          if (!next || !current.contains(next)) {
+            setFocusWithin(false);
+          }
+        }}
       >
-        <nav className="border-r bg-primary-foreground dark:bg-card pt-[65px]">
-          <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex items-center justify-end px-2 bg-transparent">
-              <Button
-                variant={"outline"}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-controls="nav"
-                aria-expanded={!collapsed}
-                className={"h-10 w-10 min-w-[10px] p-0 relative right-2"}
-                onClick={() => {
-                  localStorage.setItem("sidebar:collapsed", String(!collapsed));
-                  setCollapsed(!collapsed);
-                }}
-              >
-                {collapsed ? <ChevronRight /> : <ChevronLeft />}{" "}
-                <span className={"sr-only"}>
-                  {collapsed ? "Expand" : "Collapse"}
-                </span>
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-visible relative">
-              <nav
-                id={"nav"}
-                className={
-                  "grid items-start text-sm font-medium" +
-                  (collapsed ? "px-1" : "px-4")
-                }
-              >
-                {navItems.map(({ href, title, label, Icon }) => (
-                  <Link
-                    key={href}
-                    className={
-                      linkBaseClass + (collapsed ? "justify-center" : "")
-                    }
-                    href={href}
-                    title={title}
-                  >
-                    <Icon className={collapsed ? "h-6 w-6" : "h-4 w-4"} />
-                    <span className={collapsed ? "sr-only" : ""}>{label}</span>
-                  </Link>
-                ))}
-              </nav>
-            </div>
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex-1 overflow-visible relative pt-10">
+            <nav
+              id={"nav"}
+              className={
+                "grid items-start text-sm font-medium" +
+                (effectiveCollapsed ? " px-1" : " px-4")
+              }
+            >
+              {navItems.map(({ href, title, label, Icon }) => (
+                <Link
+                  key={href}
+                  className={
+                    linkBaseClass + (effectiveCollapsed ? "justify-center" : "")
+                  }
+                  href={href}
+                  title={title}
+                >
+                  <Icon
+                    className={effectiveCollapsed ? "h-6 w-6" : "h-4 w-4"}
+                  />
+                  <span className={effectiveCollapsed ? "sr-only" : ""}>
+                    {label}
+                  </span>
+                </Link>
+              ))}
+            </nav>
           </div>
-        </nav>
-        <main
-          id={"main"}
-          className="flex flex-col min-h-screen p-4 overflow-auto pt-[65px]"
-        >
-          {children}
-        </main>
-      </div>
+        </div>
+      </nav>
+
+      {/* Main content takes full width; sidebar overlays it */}
+      <main
+        id={"main"}
+        className="flex flex-col min-h-screen p-4 overflow-auto pt-[65px]"
+      >
+        {children}
+      </main>
     </div>
   );
 }

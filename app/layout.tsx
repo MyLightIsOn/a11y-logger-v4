@@ -56,7 +56,7 @@ export default function RootLayout({
             <Header />
             <main
               id={"main"}
-              className="flex flex-col items-center justify-center -mt-[122px] pt-[65px] min-h-full w-full"
+              className="flex flex-col items-center justify-center -mt-[122px] pt-[65px] min-h-full w-full pl-[75px]"
             >
               {children}
             </main>
