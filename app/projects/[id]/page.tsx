@@ -240,15 +240,14 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         description: project?.description ?? undefined,
                       });
                       if (res?.success && res?.data?.id) {
-                        router.push(`/vpats/${res.data.id}`);
+                        router.push(`/vpats/${res.data.id}/edit`);
                       }
                     } finally {
                       setCreatingVpat(false);
                     }
                   }}
                 >
-                  <PlusIcon />{" "}
-                  {creatingVpat ? "Generating..." : "Generate VPAT"}
+                  <PlusIcon /> {creatingVpat ? "Generating..." : "Create VPAT"}
                 </Button>
               ) : null}
               <Button
