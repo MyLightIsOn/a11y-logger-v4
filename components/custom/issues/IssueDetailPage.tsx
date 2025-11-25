@@ -48,7 +48,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   const deleteButtonRef = React.useRef<HTMLButtonElement>(null);
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 h-full">
+      <div className="container py-6 h-full">
         <div className="flex gap-2 my-4 justify-end">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-24" />
@@ -79,7 +79,7 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container px-4 py-6">
       <div className="mb-4 flex justify-between items-center">
         <Link
           href="/issues"

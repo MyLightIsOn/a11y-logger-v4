@@ -142,7 +142,7 @@ export default function ReportDetailsPage() {
   const pageError = error || assessError?.message;
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-full min-w-full">
+    <div className="container px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
         <Link
           href={`/assessments/${assessmentId}`}
@@ -198,10 +198,16 @@ export default function ReportDetailsPage() {
                             quickWins={report?.executive_summary?.quick_wins}
                             issues={issues.map((iss) => {
                               const codes =
-                                (iss as unknown as { criteria_codes?: string[] })
-                                  .criteria_codes ??
-                                ((iss as unknown as { criteria?: { code: string }[] })
-                                  .criteria
+                                (
+                                  iss as unknown as {
+                                    criteria_codes?: string[];
+                                  }
+                                ).criteria_codes ??
+                                ((
+                                  iss as unknown as {
+                                    criteria?: { code: string }[];
+                                  }
+                                ).criteria
                                   ? (
                                       iss as unknown as {
                                         criteria?: { code: string }[];

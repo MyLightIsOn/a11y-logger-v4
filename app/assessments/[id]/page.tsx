@@ -183,7 +183,7 @@ export default function AssessmentDetailPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="container mx-auto py-6 h-full">
+      <div className="container py-6 h-full">
         <div className="flex gap-2 my-4 justify-end">
           <Skeleton className="h-10 w-24" />
           <Skeleton className="h-10 w-24" />
@@ -196,7 +196,7 @@ export default function AssessmentDetailPage() {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container py-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -214,7 +214,7 @@ export default function AssessmentDetailPage() {
   // Not Found state
   if (!assessment) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container py-6">
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Not Found</AlertTitle>
@@ -232,7 +232,7 @@ export default function AssessmentDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"

@@ -42,7 +42,7 @@ export default function NewAssessmentPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
         <Link
           href="/assessments"

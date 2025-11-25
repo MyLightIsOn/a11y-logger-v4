@@ -7,31 +7,17 @@ import {
   User,
   Folder,
   AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export default function SideBar({
   children,
 }: {
   readonly children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed] = useState<boolean>(true);
   const [hovered, setHovered] = useState<boolean>(false);
   const [focusWithin, setFocusWithin] = useState<boolean>(false);
-
-  // Initialize from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("sidebar:collapsed");
-      if (saved != null) setCollapsed(saved === "true");
-    } catch (e) {
-      console.log(e);
-      // ignore
-    }
-  }, []);
 
   // When the sidebar is set to collapsed, allow temporary expansion on hover or focus within
   const isInteracting = hovered || focusWithin;

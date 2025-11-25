@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useVpatDraft } from "@/lib/query/use-vpat-queries";
 import { useParams, useRouter } from "next/navigation";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
@@ -10,6 +10,7 @@ import { EditIcon, Download, Trash2 } from "lucide-react";
 import { handleExportPdf } from "@/app/vpats/[vpatId]/data";
 import type { Vpat } from "@/types/vpat";
 import { useDeleteVpatMutation } from "@/lib/query/use-delete-vpat-mutation";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,13 +79,11 @@ function Page() {
 
   const [exportingPdf, setExportingPdf] = useState<boolean>(false);
   const deleteVpat = useDeleteVpatMutation();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const deleteButtonRef = useRef<HTMLButtonElement | null>(null);
 
-  const confirmAndDelete = async () => {
+  const handleDelete = () => {
     if (!vpatId) return;
-    const ok = window.confirm(
-      "Are you sure you want to delete this VPAT? This action cannot be undone.",
-    );
-    if (!ok) return;
     deleteVpat.mutate(String(vpatId), {
       onSuccess: () => {
         router.push("/vpats");
@@ -109,7 +108,7 @@ function Page() {
       )}
 
       {vpat && (
-        <div className={"container mx-auto px-4 py-8 min-h-full"}>
+        <div className={"container px-4 py-8 min-h-full"}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">VPAT Detail</h1>
 
@@ -124,9 +123,10 @@ function Page() {
                   <EditVPATButton vpat={vpat} />
                   <Button
                     variant="destructive"
-                    onClick={confirmAndDelete}
+                    onClick={() => setIsDeleteModalOpen(true)}
                     disabled={deleteVpat.isPending}
                     aria-label="Delete VPAT"
+                    ref={deleteButtonRef}
                   >
                     <Trash2 />
                     {deleteVpat.isPending ? "Deleting..." : "Delete"}
@@ -138,6 +138,17 @@ function Page() {
           <VPATTable vpat={vpat} />
         </div>
       )}
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this VPAT? This action cannot be undone."
+        confirmButtonText="Delete"
+        cancelButtonText="Cancel"
+        triggerRef={deleteButtonRef}
+      />
     </div>
   );
 }
