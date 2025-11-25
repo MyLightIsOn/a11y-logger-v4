@@ -84,9 +84,12 @@ function Page() {
 
   const handleDelete = () => {
     if (!vpatId) return;
+    const projectId = vpat?.project_id;
     deleteVpat.mutate(String(vpatId), {
       onSuccess: () => {
-        router.push("/vpats");
+        if (projectId) {
+          router.push(`/projects/${encodeURIComponent(String(projectId))}`);
+        }
       },
     });
   };
