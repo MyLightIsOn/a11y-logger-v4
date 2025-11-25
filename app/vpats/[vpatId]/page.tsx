@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePublishVpat } from "@/lib/query/use-vpat-queries";
 
 interface HasVpat {
   vpat: Vpat;
@@ -81,6 +82,7 @@ function Page() {
   const deleteVpat = useDeleteVpatMutation();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const deleteButtonRef = useRef<HTMLButtonElement | null>(null);
+  const publishVpat = usePublishVpat(vpatId);
 
   const handleDelete = () => {
     if (!vpatId) return;
@@ -118,6 +120,18 @@ function Page() {
             <ButtonToolbar
               buttons={
                 <>
+                  <Button
+                    onClick={() => publishVpat.mutate()}
+                    disabled={publishVpat.isPending || vpat?.status === "published"}
+                    aria-label={vpat?.status === "published" ? "Published" : "Publish VPAT"}
+                    variant={vpat?.status === "published" ? "secondary" : "default"}
+                  >
+                    {publishVpat.isPending
+                      ? "Publishing…"
+                      : vpat?.status === "published"
+                        ? "Published"
+                        : "Publish"}
+                  </Button>
                   <ExportMenu
                     vpat={vpat}
                     exportingPdf={exportingPdf}
