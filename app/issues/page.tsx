@@ -24,6 +24,19 @@ import {
 } from "@/components/ui/card";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
+function deviceTypeLabel(v?: string | null) {
+  switch (v) {
+    case "desktop_web":
+      return "Desktop Web";
+    case "mobile_web":
+      return "Mobile Web";
+    case "native":
+      return "Native";
+    default:
+      return v || "—";
+  }
+}
+
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
     case "1":
@@ -217,6 +230,20 @@ export default function Page() {
         ),
       },
       {
+        header: "Device",
+        accessorKey: "device_type",
+        sortable: false,
+        cell: (issue: Issue) => (
+          <Badge
+            variant="outline"
+            className="px-2 py-1 bg-gray-50 text-gray-800 text-xs rounded-full"
+            title={deviceTypeLabel((issue as Issue & { device_type?: string }).device_type)}
+          >
+            {deviceTypeLabel((issue as Issue & { device_type?: string }).device_type)}
+          </Badge>
+        ),
+      },
+      {
         header: "Tags",
         accessorKey: "tags",
         sortable: false,
@@ -275,8 +302,14 @@ export default function Page() {
             label: "Status",
             defaultSelected: ["open"],
             options: [
-              { value: "open", label: "Opened", colorClass: "bg-green-500" },
+              { value: "open", label: "Open", colorClass: "bg-green-500" },
+              {
+                value: "in_progress",
+                label: "In Progress",
+                colorClass: "bg-blue-500",
+              },
               { value: "closed", label: "Closed", colorClass: "bg-gray-500" },
+              { value: "archive", label: "Archived", colorClass: "bg-slate-500" },
             ],
           }}
           onRowClick={(issue) => router.push(`/issues/${issue.id}`)}

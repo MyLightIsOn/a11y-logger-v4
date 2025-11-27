@@ -136,6 +136,13 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
             codeSnippet={issue.code_snippet}
           />
 
+          <EnvironmentDisplay
+            deviceType={issue.device_type}
+            browser={issue.browser}
+            operatingSystem={issue.operating_system}
+            assistiveTechnology={issue.assistive_technology}
+          />
+
           <StandardsDisplay
             criteria={issue.criteria}
             criteriaCodes={issue.criteria_codes}
@@ -192,9 +199,11 @@ export function IssueHeader({ title, severity, status }: IssueHeaderProps) {
         >
           {status === "open"
             ? "Open"
-            : status === "closed"
-              ? "Closed"
-              : "Archived"}
+            : status === "in_progress"
+              ? "In Progress"
+              : status === "closed"
+                ? "Closed"
+                : "Archived"}
         </Badge>
         <Badge
           variant="outline"
@@ -225,6 +234,70 @@ export function IssueHeader({ title, severity, status }: IssueHeaderProps) {
         </Badge>
       </div>
     </header>
+  );
+}
+
+// Environment display section
+interface EnvironmentDisplayProps {
+  deviceType?: string;
+  browser?: string;
+  operatingSystem?: string;
+  assistiveTechnology?: string;
+}
+
+function formatDeviceType(v?: string): string | null {
+  if (!v) return null;
+  switch (v) {
+    case "desktop_web":
+      return "Desktop Web";
+    case "mobile_web":
+      return "Mobile Web";
+    case "native":
+      return "Native";
+    default:
+      return v;
+  }
+}
+
+export function EnvironmentDisplay({
+  deviceType,
+  browser,
+  operatingSystem,
+  assistiveTechnology,
+}: EnvironmentDisplayProps) {
+  const hasAny = !!(deviceType || browser || operatingSystem || assistiveTechnology);
+  if (!hasAny) return null;
+  const devLabel = formatDeviceType(deviceType);
+  return (
+    <section className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md">
+      <h3 className="text-lg font-bold mb-2">Environment</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        {devLabel && (
+          <div>
+            <div className="text-muted-foreground">Device type</div>
+            <div>{devLabel}</div>
+          </div>
+        )}
+        {browser && (
+          <div>
+            <div className="text-muted-foreground">Browser</div>
+            <div>{browser}</div>
+          </div>
+        )}
+        {operatingSystem && (
+          <div>
+            <div className="text-muted-foreground">Operating system</div>
+            <div>{operatingSystem}</div>
+          </div>
+        )}
+        {assistiveTechnology && (
+          <div>
+            <div className="text-muted-foreground">Assistive technology</div>
+            <div>{assistiveTechnology}</div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

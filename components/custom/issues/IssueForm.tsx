@@ -22,6 +22,16 @@ import type { CreateIssueInput } from "@/lib/validation/issues";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import { Button } from "@/components/ui/button";
 import { Loader2, SaveIcon, XIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { deviceTypeEnum } from "@/lib/validation/issues";
+import type { DeviceType } from "@/types/common";
 
 type IssueFormProps = {
   mode?: "create" | "edit";
@@ -53,17 +63,19 @@ function IssueForm({
       suggested_fix: "",
       severity: "3",
       status: "open",
-      // Only include keys defined by CreateIssueInput
       assessment_id: undefined,
       criteria: [],
       tag_ids: [],
       screenshots: [],
+      device_type: "desktop_web",
+      browser: "",
+      operating_system: "",
+      assistive_technology: "",
     },
   });
   // When editing, prefill the form once initialValues arrive
   React.useEffect(() => {
     if (mode === "edit" && initialValues) {
-      // Only set keys that exist on the schema
       reset({
         title: initialValues.title ?? "",
         description: initialValues.description ?? "",
@@ -80,6 +92,12 @@ function IssueForm({
           : [],
         tag_ids: initialValues.tag_ids ?? [],
         screenshots: initialValues.screenshots ?? [],
+        device_type:
+          (initialValues.device_type as DeviceType | undefined) ??
+          "desktop_web",
+        browser: initialValues.browser ?? "",
+        operating_system: initialValues.operating_system ?? "",
+        assistive_technology: initialValues.assistive_technology ?? "",
       });
     }
   }, [mode, initialValues, reset]);
@@ -165,12 +183,10 @@ function IssueForm({
     if (mode === "edit") {
       // Update existing issue
       if (!issueId) return;
-      // Build patch payload; send arrays as-is, omit undefineds
       const patch = {
         title: form.title || undefined,
         description: form.description || undefined,
         severity: form.severity || undefined,
-        // status is not editable in this form currently
         suggested_fix: form.suggested_fix || undefined,
         impact: form.impact || undefined,
         url: form.url || undefined,
@@ -178,12 +194,15 @@ function IssueForm({
         code_snippet: form.code_snippet || undefined,
         screenshots: uploadResult ?? form.screenshots ?? undefined,
         tag_ids: form.tag_ids ?? undefined,
-        // allow updating or clearing the assessment link
         assessment_id:
           form.assessment_id !== undefined ? form.assessment_id : undefined,
         criteria: Array.isArray(form.criteria)
           ? (form.criteria as Array<{ version: WcagVersion; code: string }>)
           : undefined,
+        device_type: (form.device_type as DeviceType) || undefined,
+        browser: form.browser || undefined,
+        operating_system: form.operating_system || undefined,
+        assistive_technology: form.assistive_technology || undefined,
       };
       updateIssue.mutate(
         { id: issueId, payload: patch },
@@ -218,6 +237,10 @@ function IssueForm({
         ? (form.criteria as Array<{ version: WcagVersion; code: string }>)
         : [],
       assessment_id: assessmentId,
+      device_type: (form.device_type as DeviceType) || "desktop_web",
+      browser: form.browser || undefined,
+      operating_system: form.operating_system || undefined,
+      assistive_technology: form.assistive_technology || undefined,
     });
 
     createIssue.mutate(payload, {
@@ -251,6 +274,98 @@ function IssueForm({
           <div className="flex flex-wrap">
             <div className="p-6 pl-0 pt-0 w-full md:w-2/3">
               <CoreFields register={register} errors={errors} />
+
+              {/* Environment / Device section */}
+              <section className="bg-card rounded-lg p-4 border border-border mb-4 shadow-md">
+                <h3 className="text-lg font-bold mb-2">Environment</h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Optional: capture the device/browser context where you
+                  observed the issue.
+                </p>
+
+                {/* Device Type */}
+                <div className="mb-4">
+                  <label htmlFor="device_type" className="block font-medium">
+                    Device type
+                  </label>
+                  <div className="mt-2">
+                    <Select
+                      value={String(watch("device_type") ?? "desktop_web")}
+                      onValueChange={(v) =>
+                        setValue("device_type", v as DeviceType, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        })
+                      }
+                    >
+                      <SelectTrigger aria-describedby="device_type-help">
+                        <SelectValue placeholder="Select device type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(
+                          deviceTypeEnum.options as unknown as DeviceType[]
+                        ).map((opt) => (
+                          <SelectItem key={opt} value={opt}>
+                            {opt === "desktop_web"
+                              ? "Desktop Web"
+                              : opt === "mobile_web"
+                                ? "Mobile Web"
+                                : "Native"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p
+                      id="device_type-help"
+                      className="text-sm text-gray-500 mt-1"
+                    >
+                      Matches the allowed values enforced by the database.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Browser */}
+                <div className="mb-4">
+                  <label htmlFor="browser" className="block font-medium">
+                    Browser
+                  </label>
+                  <Input
+                    id="browser"
+                    placeholder="e.g., Chrome 130, Firefox 132"
+                    {...register("browser")}
+                  />
+                </div>
+
+                {/* Operating System */}
+                <div className="mb-4">
+                  <label
+                    htmlFor="operating_system"
+                    className="block font-medium"
+                  >
+                    Operating system
+                  </label>
+                  <Input
+                    id="operating_system"
+                    placeholder="e.g., macOS 15, Windows 11, iOS 18"
+                    {...register("operating_system")}
+                  />
+                </div>
+
+                {/* Assistive Technology */}
+                <div>
+                  <label
+                    htmlFor="assistive_technology"
+                    className="block font-medium"
+                  >
+                    Assistive technology
+                  </label>
+                  <Input
+                    id="assistive_technology"
+                    placeholder="e.g., VoiceOver, NVDA, JAWS, TalkBack"
+                    {...register("assistive_technology")}
+                  />
+                </div>
+              </section>
 
               <WcagCriteriaSection
                 isLoading={wcagLoading}
