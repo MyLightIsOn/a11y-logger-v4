@@ -1,6 +1,5 @@
 import React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { CircleSlash } from "lucide-react";
 
 /**
  * Loading indicator component for assessments
@@ -19,18 +18,14 @@ export function LoadingIndicator() {
 export function EmptyState() {
   return (
     <div
-      className="text-center py-8 bg-card rounded-lg"
+      className="text-center pt-[10%] flex flex-col justify-center items-center rounded-lg"
       data-testid="empty-state"
     >
-      <p className="text-gray-500 mb-4">
-        No assessments found. Create your first assessment to get started.
-      </p>
-      <Link
-        href="/assessments/new"
-        className="inline-flex items-center justify-center"
-      >
-        <Button>Create Assessment</Button>
-      </Link>
+      <CircleSlash
+        className="text-gray-500 w-16 h-16 mb-4"
+        data-testid="icon"
+      />
+      <p className="mb-4">No assessments found</p>
     </div>
   );
 }

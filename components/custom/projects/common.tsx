@@ -1,4 +1,5 @@
 import React from "react";
+import { CircleSlash } from "lucide-react";
 
 /**
  * Loading indicator component
@@ -17,12 +18,14 @@ export function LoadingIndicator() {
 export function EmptyState() {
   return (
     <div
-      className="text-center py-8 bg-card rounded-lg"
+      className="text-center pt-[10%] flex flex-col justify-center items-center rounded-lg"
       data-testid="empty-state"
     >
-      <p className="text-gray-500">
-        No projects found. Create your first project!
-      </p>
+      <CircleSlash
+        className="text-gray-500 w-16 h-16 mb-4"
+        data-testid="icon"
+      />
+      <p className="mb-4">No projects found</p>
     </div>
   );
 }
