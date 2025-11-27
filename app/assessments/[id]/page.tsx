@@ -334,6 +334,7 @@ export default function AssessmentDetailPage() {
             >
               <p className={"font-bold text-right w-1/2"}>Guidelines:</p>
               <p className={"w-1/2"}>
+                WCAG{" "}
                 {assessment?.wcag_version
                   ? String(assessment.wcag_version).toUpperCase()
                   : "Not specified"}
