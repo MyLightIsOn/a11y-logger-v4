@@ -1,6 +1,7 @@
 import { severityEnum, statusEnum } from "@/lib/validation/issues";
 import type { CreateIssueRequest, WcagVersion } from "@/types/issue";
 import type { StatsBySeverity } from "@/lib/validation/report";
+import { DeviceType } from "@/types/common";
 
 export type Option = { value: string; label: string };
 
@@ -24,6 +25,7 @@ const statusLabels: Record<
   string
 > = {
   open: "Open",
+  in_progress: "In Progress",
   closed: "Closed",
   archive: "Archived",
 };
@@ -165,6 +167,11 @@ export function normalizeCreateIssuePayload(input: {
   tag_ids?: string[];
   criteria: { version: WcagVersion; code: string }[];
   assessment_id: string;
+  // New environment/device metadata (optional; defaults applied by schema/backend)
+  device_type?: string;
+  browser?: string;
+  operating_system?: string;
+  assistive_technology?: string;
 }): CreateIssueRequest {
   const trim = (v?: string) => (typeof v === "string" ? v.trim() : v);
   const emptyToUndef = (v?: string) => {
@@ -192,5 +199,9 @@ export function normalizeCreateIssuePayload(input: {
         : undefined,
     criteria: input.criteria,
     assessment_id: input.assessment_id,
+    device_type: emptyToUndef(input.device_type) as DeviceType | undefined,
+    browser: emptyToUndef(input.browser),
+    operating_system: emptyToUndef(input.operating_system),
+    assistive_technology: emptyToUndef(input.assistive_technology),
   };
 }

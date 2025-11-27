@@ -8,10 +8,14 @@ export const severityEnum = z.enum(["1", "2", "3", "4"], {
   invalid_type_error: "Severity must be one of '1' | '2' | '3' | '4'",
 });
 
-export const statusEnum = z.enum(["open", "closed", "archive"], {
+export const statusEnum = z.enum(["open", "in_progress", "closed", "archive"], {
   required_error: "Status is required",
-  invalid_type_error: "Status must be one of 'open' | 'closed' | 'archive'",
+  invalid_type_error:
+    "Status must be one of 'open' | 'in_progress' | 'closed' | 'archive'",
 });
+
+// Mirrors DB CHECK constraint for public.issues.device_type
+export const deviceTypeEnum = z.enum(["native", "mobile_web", "desktop_web"]);
 
 export const wcagVersionEnum = z
   .enum(["2.0", "2.1", "2.2"])
@@ -125,6 +129,11 @@ export const createIssueSchema = z
     tag_ids: z.array(z.string()).optional(),
     assessment_id: z.string().uuid().optional(),
     criteria: z.array(criterionRefSchema).default([]),
+    // New environment/device metadata (Step 2)
+    device_type: deviceTypeEnum.default("desktop_web"),
+    browser: z.string().trim().max(200).optional(),
+    operating_system: z.string().trim().max(200).optional(),
+    assistive_technology: z.string().trim().max(200).optional(),
   })
   .strict();
 
@@ -187,8 +196,9 @@ export const updateIssueSchema = z
       .preprocess((v) => (v === "" ? null : v), z.string().uuid().nullable())
       .optional(),
     criteria: z.array(criterionRefSchema).optional(),
+    device_type: deviceTypeEnum.optional(),
+    browser: z.string().trim().max(200).optional(),
+    operating_system: z.string().trim().max(200).optional(),
+    assistive_technology: z.string().trim().max(200).optional(),
   })
   .strict();
-
-export type UpdateIssueSchema = typeof updateIssueSchema;
-export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;

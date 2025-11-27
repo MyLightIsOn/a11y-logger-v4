@@ -1,4 +1,4 @@
-import { Severity, IssueStatus, UUID } from "@/types/common";
+import { Severity, IssueStatus, UUID, DeviceType } from "@/types/common";
 import { Tag } from "./tag";
 
 /**
@@ -20,6 +20,10 @@ export interface Issue {
   screenshots: string[];
   criteria?: string;
   status: IssueStatus;
+  device_type?: DeviceType; // DB default: 'desktop_web'
+  browser?: string;
+  operating_system?: string;
+  assistive_technology?: string;
   created_at: string;
   updated_at: string;
   tags?: Tag[];
@@ -73,12 +77,15 @@ export interface IssueRead {
   code_snippet?: string;
   screenshots: string[];
   status: IssueStatus;
+  device_type?: DeviceType; // DB default: 'desktop_web'
+  browser?: string;
+  operating_system?: string;
+  assistive_technology?: string;
   created_at: string;
   updated_at: string;
   tags?: Tag[];
   criteria_codes?: string[];
   criteria?: IssueCriteriaItem[];
-  // Linked assessment (via join table). Optional if not associated.
   assessment?: IssueAssessmentRef;
 }
 
@@ -97,6 +104,10 @@ export interface CreateIssueRequest {
   tag_ids?: UUID[];
   criteria: CriterionRef[];
   assessment_id: UUID;
+  device_type?: DeviceType; // default if omitted: 'desktop_web'
+  browser?: string;
+  operating_system?: string;
+  assistive_technology?: string;
 }
 
 /** Update/Patch request type for Issues. All fields optional; criteria replaces the full set when provided. */
@@ -112,13 +123,10 @@ export interface UpdateIssueRequest {
   code_snippet?: string;
   screenshots?: string[];
   tag_ids?: UUID[];
-  /**
-   * Optional linked assessment for the Issue. When provided, replaces the current link.
-   */
   assessment_id?: UUID | null;
-  /**
-   * When provided, this array represents the full desired criteria set for the Issue
-   * (bulk add/remove). It will be validated and de-duplicated by the API.
-   */
   criteria?: CriterionRef[];
+  device_type?: DeviceType;
+  browser?: string;
+  operating_system?: string;
+  assistive_technology?: string;
 }
