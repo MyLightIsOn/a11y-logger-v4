@@ -24,16 +24,34 @@ import {
 } from "@/components/ui/card";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
-function deviceTypeLabel(v?: string | null) {
-  switch (v) {
-    case "desktop_web":
-      return "Desktop Web";
-    case "mobile_web":
-      return "Mobile Web";
-    case "native":
-      return "Native";
+// Status helpers
+function statusBadgeClasses(status?: string | null) {
+  switch (status) {
+    case "open":
+      return "bg-green-100 border-green-700 text-green-900";
+    case "in_progress":
+      return "bg-blue-100 border-blue-700 text-blue-900";
+    case "closed":
+      return "bg-gray-100 border-gray-700 text-gray-900";
+    case "archive":
+      return "bg-slate-100 border-slate-700 text-slate-900";
     default:
-      return v || "—";
+      return "bg-gray-50 border-gray-400 text-gray-700";
+  }
+}
+
+function statusLabel(status?: string | null) {
+  switch (status) {
+    case "open":
+      return "Open";
+    case "in_progress":
+      return "In Progress";
+    case "closed":
+      return "Closed";
+    case "archive":
+      return "Archived";
+    default:
+      return "—";
   }
 }
 
@@ -230,18 +248,21 @@ export default function Page() {
         ),
       },
       {
-        header: "Device",
-        accessorKey: "device_type",
-        sortable: false,
-        cell: (issue: Issue) => (
-          <Badge
-            variant="outline"
-            className="px-2 py-1 bg-gray-50 text-gray-800 text-xs rounded-full"
-            title={deviceTypeLabel((issue as Issue & { device_type?: string }).device_type)}
-          >
-            {deviceTypeLabel((issue as Issue & { device_type?: string }).device_type)}
-          </Badge>
-        ),
+        header: "Status",
+        accessorKey: "status",
+        sortable: true,
+        cell: (issue: Issue) => {
+          const s = (issue as Issue & { status?: string | null }).status;
+          return (
+            <Badge
+              variant="outline"
+              className={`px-2 py-1 text-xs rounded-full ${statusBadgeClasses(s)}`}
+              title={statusLabel(s)}
+            >
+              {statusLabel(s)}
+            </Badge>
+          );
+        },
       },
       {
         header: "Tags",
@@ -309,7 +330,11 @@ export default function Page() {
                 colorClass: "bg-blue-500",
               },
               { value: "closed", label: "Closed", colorClass: "bg-gray-500" },
-              { value: "archive", label: "Archived", colorClass: "bg-slate-500" },
+              {
+                value: "archive",
+                label: "Archived",
+                colorClass: "bg-slate-500",
+              },
             ],
           }}
           onRowClick={(issue) => router.push(`/issues/${issue.id}`)}
