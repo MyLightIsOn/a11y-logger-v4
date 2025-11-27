@@ -1,4 +1,0 @@
-Name,Format,Type,Description
-issue_id,uuid,string,
-criteria_codes,text[],array,
-criteria,jsonb,json,

@@ -1,8 +1,0 @@
-Name,Format,Type,Description
-id,uuid,string,
-code,text,string,
-name,text,string,
-version,text,string,
-level,text,string,
-is_deprecated,boolean,boolean,
-created_at,timestamp with time zone,string,

@@ -1,4 +1,0 @@
-Name,Format,Type,Description
-issue_id,uuid,string,
-criterion_id,uuid,string,
-created_at,timestamp with time zone,string,

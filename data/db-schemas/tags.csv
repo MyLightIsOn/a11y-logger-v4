@@ -1,7 +1,0 @@
-Name,Format,Type,Description
-id,uuid,string,
-label,text,string,
-slug,text,string,
-created_at,timestamp with time zone,string,
-updated_at,timestamp with time zone,string,
-user_id,uuid,string,
