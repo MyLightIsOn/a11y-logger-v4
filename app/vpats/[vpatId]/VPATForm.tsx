@@ -179,7 +179,7 @@ const VpatForm = forwardRef<VpatFormHandle, { vpat: Vpat | null | undefined }>(
     }, [vpat, criteriaDefaults, reset, formState.isDirty]);
 
     return (
-      <div className={drawerOpen ? "pr-[34rem]" : undefined}>
+      <div>
         <form>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-card rounded-lg shadow-md border border-border mb-4">
             <div className="space-y-2">
