@@ -59,10 +59,10 @@ export function LoginForm({
           <CardDescription>
             Enter your email below to login to your account
             <p className={"text-center mt-5"}>
-              <span className={"font-bold text-md"}>Email:</span> test@test.com
+              <span className={"font-bold text-md"}>Email:</span> user@demo.com
             </p>
             <p className={"text-center"}>
-              <span className={"font-bold text-md"}>Password:</span> Test123!
+              <span className={"font-bold text-md"}>Password:</span> demo123!
             </p>
           </CardDescription>
         </CardHeader>

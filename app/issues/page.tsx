@@ -24,37 +24,6 @@ import {
 } from "@/components/ui/card";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 
-// Status helpers
-function statusBadgeClasses(status?: string | null) {
-  switch (status) {
-    case "open":
-      return "bg-green-100 border-green-700 text-green-900";
-    case "in_progress":
-      return "bg-blue-100 border-blue-700 text-blue-900";
-    case "closed":
-      return "bg-gray-100 border-gray-700 text-gray-900";
-    case "archive":
-      return "bg-slate-100 border-slate-700 text-slate-900";
-    default:
-      return "bg-gray-50 border-gray-400 text-gray-700";
-  }
-}
-
-function statusLabel(status?: string | null) {
-  switch (status) {
-    case "open":
-      return "Open";
-    case "in_progress":
-      return "In Progress";
-    case "closed":
-      return "Closed";
-    case "archive":
-      return "Archived";
-    default:
-      return "—";
-  }
-}
-
 function severityBadgeClasses(severity?: string) {
   switch (severity) {
     case "1":
@@ -248,23 +217,6 @@ export default function Page() {
         ),
       },
       {
-        header: "Status",
-        accessorKey: "status",
-        sortable: true,
-        cell: (issue: Issue) => {
-          const s = (issue as Issue & { status?: string | null }).status;
-          return (
-            <Badge
-              variant="outline"
-              className={`px-2 py-1 text-xs rounded-full ${statusBadgeClasses(s)}`}
-              title={statusLabel(s)}
-            >
-              {statusLabel(s)}
-            </Badge>
-          );
-        },
-      },
-      {
         header: "Tags",
         accessorKey: "tags",
         sortable: false,
@@ -323,18 +275,8 @@ export default function Page() {
             label: "Status",
             defaultSelected: ["open"],
             options: [
-              { value: "open", label: "Open", colorClass: "bg-green-500" },
-              {
-                value: "in_progress",
-                label: "In Progress",
-                colorClass: "bg-blue-500",
-              },
+              { value: "open", label: "Opened", colorClass: "bg-green-500" },
               { value: "closed", label: "Closed", colorClass: "bg-gray-500" },
-              {
-                value: "archive",
-                label: "Archived",
-                colorClass: "bg-slate-500",
-              },
             ],
           }}
           onRowClick={(issue) => router.push(`/issues/${issue.id}`)}
