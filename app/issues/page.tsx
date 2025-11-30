@@ -38,9 +38,15 @@ function severityBadgeClasses(severity?: string) {
 }
 
 function DescriptionFirstLine({ text }: { text?: string | null }) {
-  if (!text) return <span className="text-muted-foreground">—</span>;
-  const firstLine = text.split("\n")[0]?.trim();
-  return <span className="text-muted-foreground">{firstLine || "—"}</span>;
+  if (!text || !text.trim())
+    return <span className="text-muted-foreground">—</span>;
+  // Show up to the first 5 visual lines of the description
+  // Preserve newlines from the original text for readability
+  return (
+    <span className="text-muted-foreground line-clamp-5 whitespace-pre-line">
+      {text}
+    </span>
+  );
 }
 
 export default function Page() {
