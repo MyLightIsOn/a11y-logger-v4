@@ -32,6 +32,9 @@ function EditIssueFormContainer() {
     url: data.url,
     selector: data.selector,
     code_snippet: data.code_snippet,
+    browser: data.browser,
+    operating_system: data.operating_system,
+    assistive_technology: data.assistive_technology,
     screenshots: data.screenshots ?? [],
     tag_ids: (data.tags || []).map((t) => t.id),
     criteria: Array.isArray(data.criteria)
