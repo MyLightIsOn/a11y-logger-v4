@@ -72,7 +72,6 @@ export default function NewProjectPage() {
         buttons={
           <>
             <Button
-              className="bg-success dark:bg-successfles"
               type="submit"
               form="create-project-form"
               disabled={createProject.isPending}

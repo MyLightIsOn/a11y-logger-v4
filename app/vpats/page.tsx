@@ -45,7 +45,7 @@ export default function VpatsListPage() {
         <h1 className="text-2xl font-bold">VPATs</h1>
         {vpats && vpats.length > 0 && (
           <Link href={"/vpats/new"}>
-            <Button className={"ml-5 bg-success dark:bg-success"}>
+            <Button className={"ml-5"}>
               Create VPAT <PlusIcon />
             </Button>
           </Link>

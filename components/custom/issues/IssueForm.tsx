@@ -417,7 +417,6 @@ function IssueForm({
           buttons={
             <>
               <Button
-                variant="success"
                 type="submit"
                 form={formId}
                 disabled={isSaving}

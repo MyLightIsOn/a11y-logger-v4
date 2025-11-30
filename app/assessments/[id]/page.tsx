@@ -244,11 +244,7 @@ export default function AssessmentDetailPage() {
           buttons={
             <>
               {!hasReport && hasReport !== null && (
-                <Button
-                  asChild
-                  variant={"success"}
-                  className={"ml-5 overflow-visible"}
-                >
+                <Button asChild className={"ml-5 overflow-visible"}>
                   <Link href={`/reports/${id}/create`}>
                     <PlusIcon /> Create Report
                   </Link>

@@ -227,7 +227,6 @@ export default function ProjectDetailPage({ params }: PageProps) {
               ) : null}
               {!hasVpat && hasVpat !== null ? (
                 <Button
-                  variant={"success"}
                   className={"ml-0 overflow-visible"}
                   disabled={creatingVpat}
                   onClick={async () => {

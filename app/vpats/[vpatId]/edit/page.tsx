@@ -61,7 +61,6 @@ function Page() {
               buttons={
                 <>
                   <Button
-                    variant="success"
                     type="button"
                     onClick={async () => {
                       if (savingAll) return;

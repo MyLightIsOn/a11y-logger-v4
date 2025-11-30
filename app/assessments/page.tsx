@@ -52,11 +52,7 @@ function Page() {
         <ButtonToolbar
           buttons={
             <>
-              <Button
-                asChild
-                variant={"success"}
-                className={"ml-5 overflow-visible"}
-              >
+              <Button asChild className={"ml-5 overflow-visible"}>
                 <Link href={"/assessments/new"}>
                   <PlusIcon /> Create Assessment
                 </Link>

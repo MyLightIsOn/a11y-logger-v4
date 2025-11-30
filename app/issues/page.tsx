@@ -241,11 +241,7 @@ export default function Page() {
           buttons={
             <>
               <ViewModeToggle viewMode={viewMode} setViewMode={setViewMode} />
-              <Button
-                asChild
-                variant={"success"}
-                className={"ml-5 overflow-visible"}
-              >
+              <Button asChild className={"ml-5 overflow-visible"}>
                 <Link href={"/issues/new"}>
                   <PlusIcon /> Create Issue
                 </Link>

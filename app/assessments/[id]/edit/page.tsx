@@ -94,7 +94,6 @@ export default function EditAssessmentPage({ params }: PageProps) {
             buttons={
               <>
                 <Button
-                  className="bg-success dark:bg-successfles"
                   type="submit"
                   form="edit-assessment-form"
                   disabled={updateAssessment.isPending}

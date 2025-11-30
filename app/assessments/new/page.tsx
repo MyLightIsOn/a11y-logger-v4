@@ -63,7 +63,6 @@ export default function NewAssessmentPage() {
         buttons={
           <>
             <Button
-              className="bg-success dark:bg-successfles"
               type="submit"
               form="create-assessment-form"
               disabled={createAssessment.isPending}

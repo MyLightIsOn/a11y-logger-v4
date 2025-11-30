@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Button } from "./button";
+import { Trash2, XIcon } from "lucide-react";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -75,19 +76,16 @@ export function ConfirmationModal({
         className="relative bg-card rounded-lg shadow-lg p-6 max-w-md w-full mx-4"
         onClick={(e: React.MouseEvent) => e.stopPropagation()} // Prevent clicks on the content from closing the modal
       >
-        <h2 
-          id="confirmation-title" 
+        <h2
+          id="confirmation-title"
           className="text-xl font-semibold mb-4 text-primary"
         >
           {title}
         </h2>
         <p className="mb-6 text-muted-foreground">{message}</p>
         <div className="flex justify-end space-x-4">
-          <Button
-            ref={cancelButtonRef}
-            variant="outline"
-            onClick={onClose}
-          >
+          <Button ref={cancelButtonRef} variant="outline" onClick={onClose}>
+            <XIcon />
             {cancelButtonText}
           </Button>
           <Button
@@ -97,7 +95,7 @@ export function ConfirmationModal({
               onClose();
             }}
           >
-            {confirmButtonText}
+            <Trash2 /> {confirmButtonText}
           </Button>
         </div>
       </div>
