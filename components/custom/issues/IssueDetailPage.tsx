@@ -81,12 +81,14 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   return (
     <div className="container px-4 py-6">
       <div className="mb-4 flex justify-between items-center">
-        <Link
-          href="/issues"
+        <button
+          type="button"
+          onClick={() => router.back()}
           className="hover:underline flex items-center a11y-focus w-fit"
+          aria-label="Go back"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Issues
-        </Link>
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </button>
         <div className="flex gap-2">
           <Link href={`/issues/${issue.id}/edit`}>
             <Button aria-label="Edit issue" variant="outline">
