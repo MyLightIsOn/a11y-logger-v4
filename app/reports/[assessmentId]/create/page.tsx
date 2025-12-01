@@ -246,12 +246,17 @@ export default function CreateReportPage() {
   return (
     <div className="container px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
-        <Link
-          href={`/reports/${assessmentId}`}
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            router.back();
+          }}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+          aria-label="Go back"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Report Detail
-        </Link>
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </a>
       </div>
 
       <div className={"flex justify-between items-center mb-4"}>

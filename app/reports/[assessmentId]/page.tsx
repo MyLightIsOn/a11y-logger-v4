@@ -11,7 +11,6 @@ import { useAssessmentDetails } from "@/lib/query/use-assessment-details-query";
 import IssueStatisticsChart from "@/components/custom/issue-statistics-chart";
 import { getWcagByCode } from "@/lib/wcag/reference";
 import { ArrowLeft, Edit, Trash2, Download } from "lucide-react";
-import Link from "next/link";
 import ButtonToolbar from "@/app/vpats/[vpatId]/ButtonToolbar";
 import { LoadingIndicator } from "@/components/custom/projects/common";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal";
@@ -144,12 +143,17 @@ export default function ReportDetailsPage() {
   return (
     <div className="container px-4 py-8 min-h-full min-w-full">
       <div className="flex justify-between items-center mb-6">
-        <Link
-          href={`/assessments/${assessmentId}`}
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            router.back();
+          }}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+          aria-label="Go back"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Assessment Detail
-        </Link>
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </a>
         <ButtonToolbar
           buttons={
             <>

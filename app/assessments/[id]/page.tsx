@@ -203,9 +203,17 @@ export default function AssessmentDetailPage() {
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
         <div className="mt-4">
-          <Button onClick={() => router.push("/assessments")}>
-            Back to Assessments
-          </Button>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              router.back();
+            }}
+            className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </a>
         </div>
       </div>
     );
@@ -223,9 +231,17 @@ export default function AssessmentDetailPage() {
           </AlertDescription>
         </Alert>
         <div className="mt-4">
-          <Button onClick={() => router.push("/assessments")}>
-            Back to Assessments
-          </Button>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              router.back();
+            }}
+            className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </a>
         </div>
       </div>
     );
@@ -234,12 +250,17 @@ export default function AssessmentDetailPage() {
   return (
     <div className="container px-4 py-8">
       <div className="mb-6 flex justify-between items-center">
-        <Link
-          href="/assessments"
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            router.back();
+          }}
           className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
+          aria-label="Go back"
         >
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to all Assessments
-        </Link>
+          <ArrowLeft className="h-4 w-4 mr-1" /> Back
+        </a>
         <ButtonToolbar
           buttons={
             <>

@@ -81,14 +81,17 @@ export default function IssueDetailPage({ issueId }: IssueDetailPageProps) {
   return (
     <div className="container px-4 py-6">
       <div className="mb-4 flex justify-between items-center">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="hover:underline flex items-center a11y-focus w-fit"
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            router.back();
+          }}
+          className="dark:text-white hover:underline flex items-center a11y-focus w-fit"
           aria-label="Go back"
         >
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
-        </button>
+        </a>
         <div className="flex gap-2">
           <Link href={`/issues/${issue.id}/edit`}>
             <Button aria-label="Edit issue" variant="outline">
@@ -267,7 +270,12 @@ export function EnvironmentDisplay({
   operatingSystem,
   assistiveTechnology,
 }: EnvironmentDisplayProps) {
-  const hasAny = !!(deviceType || browser || operatingSystem || assistiveTechnology);
+  const hasAny = !!(
+    deviceType ||
+    browser ||
+    operatingSystem ||
+    assistiveTechnology
+  );
   if (!hasAny) return null;
   const devLabel = formatDeviceType(deviceType);
   return (
@@ -465,7 +473,7 @@ export function AttachmentsDisplay({ screenshots }: AttachmentsDisplayProps) {
   };
 
   return (
-    <section className="bg-card border border-border rounded-lg mb-4 p-4 shadow-md bg-card">
+    <section className="border border-border rounded-lg mb-4 p-4 shadow-md bg-card">
       <h2 className="text-lg font-semibold mb-2">Screenshots</h2>
       {!screenshots || screenshots.length === 0 ? (
         <p className="text-sm text-gray-600">No screenshots attached.</p>
