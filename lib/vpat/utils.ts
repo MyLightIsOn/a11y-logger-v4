@@ -177,8 +177,10 @@ export function getCriteriaDefaults(
     const code = codeById.get(row.wcag_criterion_id);
     if (!code) continue;
     const key = sanitize(code);
+    const normalized = normalizeConformance(row.conformance ?? null);
     out[key] = {
-      conformance: normalizeConformance(row.conformance ?? null),
+      // Default to "supports" when no conformance is set in the draft
+      conformance: normalized && normalized.length > 0 ? normalized : "supports",
       remarks: row.remarks ?? "",
     };
   }

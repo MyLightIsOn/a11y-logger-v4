@@ -353,7 +353,7 @@ export default function ReportDetailsPage() {
                 {report.persona_summaries.map((p) => (
                   <Card key={p.persona}>
                     <CardHeader>
-                      <CardTitle>{p.persona}</CardTitle>
+                      <CardTitle>{p.persona.replace("(blind)", "")}</CardTitle>
                     </CardHeader>
                     <CardContent>{p.summary}</CardContent>
                   </Card>
