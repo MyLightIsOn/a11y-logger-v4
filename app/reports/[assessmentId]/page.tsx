@@ -200,6 +200,7 @@ export default function ReportDetailsPage() {
                             overview={report?.executive_summary?.overview}
                             topRisks={report?.executive_summary?.top_risks}
                             quickWins={report?.executive_summary?.quick_wins}
+                            personaSummaries={report?.persona_summaries}
                             issues={issues.map((iss) => {
                               const codes =
                                 (
